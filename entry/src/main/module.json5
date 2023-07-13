@@ -34,6 +34,15 @@
                 "visible": true
             }
         ],
+        "extensionAbilities": [
+            {
+                "name": "DataShareExtAbility",
+                "srcEntrance": "./ets/DataAbility/DataShareExtAbility.ets",
+                "type": "dataShare",
+                "uri": "datashare://calendardata",
+                "visible": true
+            }
+        ],
         "metadata": [
             {
                 "name": "hmos.app.quickfix",
