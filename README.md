@@ -1,39 +1,77 @@
-# applications_calendar_data
+# CalendarData
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+## 1. Introduction
 
-#### 软件架构
-软件架构说明
+The calendardata application is a preset application in OpenHarmony that provides the function of adding, deleting, modifying, and checking the schedule
+
+## 2. Directory Structure
+```
+├─AppScope
+│  │  
+│  └─resources                       # resource file
+├─common
+│  │  
+│  └─src
+│      └─main  
+│          └─ets                     # basic methods           
+├─datamanager 
+│  └─src
+│      └─main
+│          └─ets                     # data manager                     
+├─dataprovider
+│  └─src
+│      └─main
+│          └─ets                     # the proxy of data manager          
+├─datastructure 
+│  └─src
+│      └─main 
+│          └─ets                     # data structure               
+├─entry
+│  └─src
+│      └─main                        # the entry of project          
+├─rrule
+│  └─src
+│      └─main
+│          └─ets                     # recurrence rule          
+└─signature                          # certificate file
+```
+
+### Architecture
+
+![](./figures/architecture.png)
+
+- **product**
+  Business form layer: Distinguish various forms of applications for different products and screens, including personalized business, component configuration, and personalized resource packages。
+
+- **feature**
+  Common feature layer: An abstract collection of common feature components that can be referenced by various application forms。
+
+- **common**
+  Common capability layer: Basic capability set, modules that each application form must rely on, including tool classes and common resource packages。
+
+## 3. Packaging
+
+Open project engineering by DevEco Studio, choose: Build → Build Haps(s)/APP(s) → Build Hap(s)
+
+![](./figures/build_haps.png)
+
+After compilation, the HAP package will be generated in the `\build\outputs` path in the project directory (if no signature is configured, only unsigned HAP packages will be generated)
+
+![](./figures/build_output_dir_release.png)
+
+### Install
+
+Install the compiled hap package using the command: hdc_std install "HAP packet address"
+
+![](./figures/calendar_install.png)
+
+## Constraint
+- Development Environment
+    - **DevEco Studio for OpenHarmony**: Version number greater than 3.1.1.101, Download and Install OpenHarmony SDK API Version 10(The initial IDE configuration can refer to the IDE usage documentation)
+- Language
+    - ArkTS
+- Limitation
+    - This example only supports running on standard systems
 
 
-#### 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 使用说明
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### 参与贡献
-
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
