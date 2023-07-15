@@ -1,0 +1,18 @@
+{
+  "name": "@ohos/dataprovider",
+  "description": "a npm package which contains arkUI2.0 page",
+  "ohos": {
+    "org": ""
+  },
+  "version": "1.0.0",
+  "main": "index.ets",
+  "types": "",
+  "repository": {},
+  "license": "ISC",
+  "dependencies": {
+    "@ohos/common": "file:../common",
+    "@ohos/datamanager": "file:../datamanager",
+    "@ohos/datastructure": "file:../datastructure"
+  },
+  "type": "module"
+}

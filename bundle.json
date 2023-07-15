@@ -1,0 +1,37 @@
+{
+    "name": "@ohos/calendardata",
+    "description": "Calendar manager service for standard system.",
+    "version": "3.1",
+    "license": "Apache License 2.0",
+    "publishAs": "code-segment",
+    "segment": {
+        "destPath": "applications/standard/calendardata"
+    },
+    "dirs": {},
+    "scripts": {},
+    "component": {
+        "name": "calendardata",
+        "subsystem": "applications",
+        "syscap": [],
+        "features": [],
+        "adapted_system_type": [
+            "standard"
+        ],
+        "rom": "",
+        "ram": "",
+        "deps": {
+            "components": [],
+            "third_party": []
+        },
+        "build": {
+            "group_type": {
+                "service_group": [
+                    "//applications/standard/calendardata/calendarmanager:calendarmanager"
+                ]
+            },
+            "test": [
+                "//applications/standard/calendardata/calendarmanager/test:unittest"
+            ]
+        }
+    }
+}

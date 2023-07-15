@@ -1,0 +1,12 @@
+{
+  "module": {
+    "name": "datastructure",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ],
+    "installationFree": false,
+    "uiSyntax": "ets"
+  }
+}

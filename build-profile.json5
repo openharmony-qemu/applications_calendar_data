@@ -1,0 +1,60 @@
+{
+    "app": {
+        "signingConfigs": [
+            {
+                "name": "release",
+                "material": {
+                    "certpath": "signature/OpenHarmony.cer",
+                    "storePassword": "00000016A43DB287656F9CFA087114488027CD89E3231C93D42EC5194FB828F4371A1E204CD5",
+                    "keyAlias": "OpenHarmony Application Release",
+                    "keyPassword": "000000167CF0026BCB30B41577DAC2A9799D19ECBEE46B840885676FF359D455D3A1D7FACC8C",
+                    "profile": "signature/calendardata.p7b",
+                    "signAlg": "SHA256withECDSA",
+                    "storeFile": "signature/OpenHarmony.p12"
+                }
+            }
+        ],
+        "compileSdkVersion": 10,
+        "compatibleSdkVersion": 10,
+        "products": [
+            {
+                "name": "default",
+                "signingConfig": "release",
+            }
+        ]
+    },
+    "modules": [
+        {
+            "name": "entry",
+            "srcPath": "./entry",
+            "targets": [
+                {
+                    "name": "default",
+                    "applyToProducts": [
+                        "default"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "common",
+            "srcPath": "./common"
+        },
+        {
+            "name": "datastructure",
+            "srcPath": "./datastructure"
+        },
+        {
+            "name": "datamanager",
+            "srcPath": "./datamanager"
+        },
+        {
+            "name": "rrule",
+            "srcPath": "./rrule"
+        },
+        {
+            "name": "dataprovider",
+            "srcPath": "./dataprovider"
+        }
+    ]
+}
