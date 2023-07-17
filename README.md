@@ -36,22 +36,13 @@ CalendarData is a preset application in OpenHarmony. It allows users to add, del
 └─signature                          # Certificate file
 ```
 
-## Architecture
+### Architecture
 
 ![](./figures/architecture.png)
 
-- **product**
-  
-  Business form layer: distinguishes applications for different products and screens, including personalized services, component configurations, and personalized resource packages.
+As a built-in basic application, Calendar implements basic user operations such as querying daily and monthly views and creating and querying calendars. The Calendar APIs provide SQL-free, object-based data read and write capabilities. CalendarData manages calendars, reminders, and data.
 
-- **feature**
-  
-  Common feature layer: abstract collection of common feature components, which can be referenced by various application forms.
-
-- **common**
-  
-  Common capability layer: basic capability set, which is a module that each application form must depend on, including utility classes and common resource packages.
-## Packing
+## How to Use
 
 Open a project in DevEco Studio and choose **Build > Build Haps(s)/APP(s) > Build Hap(s)**.
 
@@ -61,23 +52,22 @@ After the build is complete, a HAP file is generated in **\build\outputs** in th
 
 ![](./figures/build_output_dir_release.png)
 
-## Installation
-
 Run the **hdc_std install "*hap package address*"** command to install the compiled HAP file.
 
 ![](./figures/calendar_install.png)
 
 ## Constraints
 - Development environments
-  
    - DevEco Studio for OpenHarmony: version later than 3.1.1.101
    
    - OpenHarmony SDK: API version 10
    
-  For details about the initial DevEco Studio configuration, see the DevEco Studio usage document.
+   For details about the initial DevEco Studio configuration, see the DevEco Studio usage document.
+   
 - Programming language
-  
+   
    ArkTS
+   
 - Limitations
-  
+   
    This application can only be run on standard-system devices.
