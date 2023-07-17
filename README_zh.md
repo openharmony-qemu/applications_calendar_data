@@ -1,10 +1,10 @@
 # 日历存储应用
 
-## 1. 项目介绍
+## 项目介绍
 
-日历存储应用是OpenHarmony中预置的应用，提供日程的增删改查功能
+日历存储应用是OpenHarmony中预置的应用，提供日程的增删改查功能。
 
-## 2. 目录结构
+## 目录结构
 ```
 ├─AppScope
 │  │  
@@ -40,28 +40,19 @@
 
 ![](./figures/architecture.png)
 
-- **product**
-  业务形态层：区分不同产品、不同屏幕的各形态应用，含有个性化业务，组件的配置，以及个性化资源包。
-
-- **feature**
-  公共特性层：抽象的公共特性组件集合，可以被各应用形态引用。
-
-- **common**
-  公共能力层：基础能力集，每个应用形态都必须依赖的模块，包含工具类和通用的资源包
+Calendar作为内建基础应用，实现日月视图查看、日程创建查看等与用户交互相关的基础操作；Calendar API提供免SQL的对象化数据读写访问能力；CalendarData负责日程管理、提醒管理以及数据管理等功能。
   
-## 3. 打包
+## 使用说明
 
-在DevEco Studio打开项目工程，选择Build → Build Haps(s)/APP(s) → Build Hap(s)
+在DevEco Studio打开项目工程，选择Build → Build Haps(s)/APP(s) → Build Hap(s)。
 
 ![](./figures/build_haps.png)
 
-编译完成后，hap包会生成在工程目录下的 `\build\outputs`路径下（如果没有配置签名，则只会生成未签名的hap包）
+编译完成后，hap包会生成在工程目录下的 `\build\outputs`路径下。（如果没有配置签名，则只会生成未签名的hap包）
 
 ![](./figures/build_output_dir_release.png)
 
-### 安装
-
-使用hdc_std install "hap包地址" 命令进行安装编译后的hap包
+使用hdc_std install "hap包地址" 命令进行安装编译后的hap包。
 
 ![](./figures/calendar_install.png)
 

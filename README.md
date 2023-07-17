@@ -1,77 +1,73 @@
 # CalendarData
 
-## 1. Introduction
+## Introduction
 
-The calendardata application is a preset application in OpenHarmony that provides the function of adding, deleting, modifying, and checking the schedule
+CalendarData is a preset application in OpenHarmony. It allows users to add, delete, modify, and query calendars.
 
-## 2. Directory Structure
+## Directory Structure
 ```
 ├─AppScope
 │  │  
-│  └─resources                       # resource file
+│  └─resources                       # Resource files
 ├─common
 │  │  
 │  └─src
 │      └─main  
-│          └─ets                     # basic methods           
+│          └─ets                     # Common methods           
 ├─datamanager 
 │  └─src
 │      └─main
-│          └─ets                     # data manager                     
+│          └─ets                     # Data manager                    
 ├─dataprovider
 │  └─src
 │      └─main
-│          └─ets                     # the proxy of data manager          
+│          └─ets                     # Data manager proxy        
 ├─datastructure 
 │  └─src
 │      └─main 
-│          └─ets                     # data structure               
+│          └─ets                     # Data structure              
 ├─entry
 │  └─src
-│      └─main                        # the entry of project          
+│      └─main                        # Application entry         
 ├─rrule
 │  └─src
 │      └─main
-│          └─ets                     # recurrence rule          
-└─signature                          # certificate file
+│          └─ets                     # Recurrence rule         
+└─signature                          # Certificate file
 ```
 
 ### Architecture
 
 ![](./figures/architecture.png)
 
-- **product**
-  Business form layer: Distinguish various forms of applications for different products and screens, including personalized business, component configuration, and personalized resource packages。
+As a built-in basic application, Calendar implements basic user operations such as querying daily and monthly views and creating and querying calendars. The Calendar APIs provide SQL-free, object-based data read and write capabilities. CalendarData manages calendars, reminders, and data.
 
-- **feature**
-  Common feature layer: An abstract collection of common feature components that can be referenced by various application forms。
+## How to Use
 
-- **common**
-  Common capability layer: Basic capability set, modules that each application form must rely on, including tool classes and common resource packages。
-
-## 3. Packaging
-
-Open project engineering by DevEco Studio, choose: Build → Build Haps(s)/APP(s) → Build Hap(s)
+Open a project in DevEco Studio and choose **Build > Build Haps(s)/APP(s) > Build Hap(s)**.
 
 ![](./figures/build_haps.png)
 
-After compilation, the HAP package will be generated in the `\build\outputs` path in the project directory (if no signature is configured, only unsigned HAP packages will be generated)
+After the build is complete, a HAP file is generated in **\build\outputs** in the project directory. (If no signature is configured, an unsigned HAP file is generated.)
 
 ![](./figures/build_output_dir_release.png)
 
-### Install
-
-Install the compiled hap package using the command: hdc_std install "HAP packet address"
+Run the **hdc_std install "*hap package address*"** command to install the compiled HAP file.
 
 ![](./figures/calendar_install.png)
 
-## Constraint
-- Development Environment
-    - **DevEco Studio for OpenHarmony**: Version number greater than 3.1.1.101, Download and Install OpenHarmony SDK API Version 10(The initial IDE configuration can refer to the IDE usage documentation)
-- Language
-    - ArkTS
-- Limitation
-    - This example only supports running on standard systems
-
-
-
+## Constraints
+- Development environments
+   - DevEco Studio for OpenHarmony: version later than 3.1.1.101
+   
+   - OpenHarmony SDK: API version 10
+   
+   For details about the initial DevEco Studio configuration, see the DevEco Studio usage document.
+   
+- Programming language
+   
+   ArkTS
+   
+- Limitations
+   
+   This application can only be run on standard-system devices.
