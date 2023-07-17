@@ -10,7 +10,7 @@
     "dirs": {},
     "scripts": {},
     "component": {
-        "name": "calendardata",
+        "name": "calendar_data",
         "subsystem": "applications",
         "syscap": [],
         "features": [],
