@@ -1,0 +1,119 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+
+config("calendarmanager_public_config") {
+  include_dirs = [
+    "//foundation/arkui/napi/interfaces/kits",
+    "//third_party/node/src",
+    "//foundation/distributeddatamgr/data_share/interfaces/inner_api/common/include",
+    "./common",
+    "./native/include",
+    "./napi/include",
+  ]
+}
+
+ohos_shared_library("calendarmanager") {
+  sources = [
+    "./napi/src/module_register.cpp",
+    "./napi/src/module_init.cpp",
+    "./napi/src/event_filter_napi.cpp",
+    "./napi/src/calendar_manager_napi.cpp",
+    "./napi/src/calendar_napi.cpp",
+    "./napi/src/napi_util.cpp",
+    "./napi/src/napi_queue.cpp",
+    "./napi/src/napi_env.cpp",
+    "./napi/src/calendar_enum_napi.cpp",
+    "./native/src/native_calendar.cpp",
+    "./native/src/native_calendar_manager.cpp",
+    "./native/src/event_filter.cpp",
+    "./native/src/data_share_helper_manager.cpp",
+    "./native/src/calendar_env.cpp",
+    "./native/src/native_util.cpp",
+  ]
+
+  deps = [
+    "//foundation/ability/ability_runtime/frameworks/native/ability/native:data_ability_helper",
+    "//foundation/ability/ability_runtime/interfaces/inner_api/ability_manager:ability_manager",
+    "//foundation/arkui/napi:ace_napi",
+  ]
+
+  public_configs = [ ":calendarmanager_public_config" ]
+
+  external_deps = [
+    "ability_base:zuri",
+    "ability_base:want",
+    "ability_runtime:napi_base_context",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "ipc:ipc_single"
+  ]
+
+  if (is_standard_system) {
+    external_deps += [ "hiviewdfx_hilog_native:libhilog" ]
+  } else {
+    external_deps += [ "hilog:libhilog" ]
+  }
+
+  public_deps = []
+  relative_install_dir = "module"
+  part_name = "calendardata"
+  subsystem_name = "applications"
+}
+
+ohos_static_library("calendarmanager_static") {
+  sources = [
+    "./native/src/native_calendar.cpp",
+    "./native/src/native_calendar_manager.cpp",
+    "./native/src/event_filter.cpp",
+    "./native/src/data_share_helper_manager.cpp",
+    "./native/src/calendar_env.cpp",
+    "./native/src/native_util.cpp",
+  ]
+
+  deps = [
+    "//foundation/ability/ability_runtime/frameworks/native/ability/native:data_ability_helper",
+    "//foundation/ability/ability_runtime/interfaces/inner_api/ability_manager:ability_manager",
+    "//foundation/arkui/napi:ace_napi",
+  ]
+
+  public_configs = [ ":calendarmanager_public_config" ]
+
+  external_deps = [
+    "ability_base:zuri",
+    "ability_base:want",
+    "ability_runtime:napi_base_context",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:ability_manager",
+    "c_utils:utils",
+    "data_share:datashare_common",
+    "data_share:datashare_consumer",
+    "ipc:ipc_single"
+  ]
+
+  if (is_standard_system) {
+    external_deps += [ "hiviewdfx_hilog_native:libhilog" ]
+  } else {
+    external_deps += [ "hilog:libhilog" ]
+  }
+
+  public_deps = []
+  part_name = "calendardata"
+  subsystem_name = "applications"
+}

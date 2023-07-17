@@ -1,0 +1,78 @@
+/*
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef CALENDAR_NATIVE_UTILS_H
+#define CALENDAR_NATIVE_UTILS_H
+
+#include <string>
+#include <string_view>
+#include <vector>
+#include <map>
+
+#include "calendar_define.h"
+#include "datashare_result_set.h"
+#include "datashare_values_bucket.h"
+#include "native_calendar.h"
+
+namespace OHOS::CalendarApi::Native {
+    using DataShareResultSetPtr = std::shared_ptr<DataShare::DataShareResultSet>;
+    void DumpCalendarAccount(const CalendarAccount &account);
+    void DumpEvent(const Event &event);
+    DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId);
+    DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, int eventId);
+    int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int& out);
+    int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, std::string& out);
+
+    std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPtr &resultSet);
+    int ResultSetToEvents(std::vector<Event> &events,
+        DataShareResultSetPtr &resultSet, const std::vector<std::string>& columns);
+    int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet);
+
+    bool ColorParse(const std::string& colorStr, uint32_t& colorValue);
+
+    template<typename T>
+    int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, T& out)
+    {
+        int index = 0;
+        auto fieldNameStr = string(fieldName);
+        auto ret = resultSet->GetColumnIndex(fieldNameStr, index);
+        if (ret != DataShare::E_OK) {
+            return ret;
+        }
+        return GetIndexValue(resultSet, index, out);
+    }
+
+    template<typename T>
+    int GetValueOptional(DataShareResultSetPtr &resultSet, string_view fieldName, std::optional<T>& out)
+    {
+        out = std::nullopt;
+        int index = 0;
+        auto fieldNameStr = string(fieldName);
+        auto ret = resultSet->GetColumnIndex(string(fieldName), index);
+        if (ret != DataShare::E_OK) {
+            return ret;
+        }
+        T value;
+        ret = GetIndexValue(resultSet, index, value);
+        if (ret != DataShare::E_OK) {
+            return ret;
+        }
+        out = value;
+        return ret;
+    }
+}
+ // namespace OHOS::Calendar::NativeUtils
+
+#endif /* CALENDAR_NATIVE_UTILS_H */
