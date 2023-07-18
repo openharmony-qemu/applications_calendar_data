@@ -58,7 +58,7 @@ Run the **hdc_std install "*hap package address*"** command to install the compi
 
 ![](./figures/calendar_install.png)
 
-### Building based OpenHarmony version
+### Building based on OpenHarmony version
 
 In the root directory of the OpenHarmony source code, run the following command to build the CalendarData separately:
 
