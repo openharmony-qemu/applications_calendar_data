@@ -44,6 +44,8 @@ Calendar作为内建基础应用，实现日月视图查看、日程创建查看
   
 ## 使用说明
 
+### 基于IDE构建
+
 在DevEco Studio打开项目工程，选择Build → Build Haps(s)/APP(s) → Build Hap(s)。
 
 ![](./figures/build_haps.png)
@@ -55,6 +57,18 @@ Calendar作为内建基础应用，实现日月视图查看、日程创建查看
 使用hdc_std install "hap包地址" 命令进行安装编译后的hap包。
 
 ![](./figures/calendar_install.png)
+
+### 基于OpenHarmony版本构建
+
+在OpenHarmony源码目录下，调用一下命令，单独编译calendar_data
+
+```
+./build.sh --product-name rk3568 --ccache --build-target calendar_data
+```
+> **说明：**
+--product-name：产品名称，例如Hi3516DV300、rk3568等。
+--ccache：编译时使用缓存功能。
+--build-target: 编译的部件名称。
 
 ## 约束
 - 开发环境
