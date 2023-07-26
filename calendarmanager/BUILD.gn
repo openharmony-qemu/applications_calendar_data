@@ -72,7 +72,7 @@ ohos_shared_library("calendarmanager") {
 
   public_deps = []
   relative_install_dir = "module"
-  part_name = "calendardata"
+  part_name = "calendar_data"
   subsystem_name = "applications"
 }
 
