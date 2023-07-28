@@ -44,8 +44,6 @@ ohos_shared_library("calendarmanager") {
   ]
 
   deps = [
-    "//foundation/ability/ability_runtime/frameworks/native/ability/native:data_ability_helper",
-    "//foundation/ability/ability_runtime/interfaces/inner_api/ability_manager:ability_manager",
     "//foundation/arkui/napi:ace_napi",
   ]
 
@@ -58,6 +56,7 @@ ohos_shared_library("calendarmanager") {
     "ability_runtime:ability_manager",
     "ability_runtime:abilitykit_native",
     "ability_runtime:napi_base_context",
+    "ability_runtime:data_ability_helper",
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
@@ -87,8 +86,6 @@ ohos_static_library("calendarmanager_static") {
   ]
 
   deps = [
-    "//foundation/ability/ability_runtime/frameworks/native/ability/native:data_ability_helper",
-    "//foundation/ability/ability_runtime/interfaces/inner_api/ability_manager:ability_manager",
     "//foundation/arkui/napi:ace_napi",
   ]
 
@@ -101,6 +98,7 @@ ohos_static_library("calendarmanager_static") {
     "ability_runtime:ability_manager",
     "ability_runtime:abilitykit_native",
     "ability_runtime:napi_base_context",
+    "ability_runtime:data_ability_helper",
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
