@@ -43,9 +43,7 @@ ohos_shared_library("calendarmanager") {
     "./native/src/native_util.cpp",
   ]
 
-  deps = [
-    "//foundation/arkui/napi:ace_napi",
-  ]
+  deps = []
 
   public_configs = [ ":calendarmanager_public_config" ]
 
@@ -61,6 +59,7 @@ ohos_shared_library("calendarmanager") {
     "data_share:datashare_common",
     "data_share:datashare_consumer",
     "ipc:ipc_single",
+    "napi:ace_napi"
   ]
 
   if (is_standard_system) {
@@ -85,9 +84,7 @@ ohos_static_library("calendarmanager_static") {
     "./native/src/native_util.cpp",
   ]
 
-  deps = [
-    "//foundation/arkui/napi:ace_napi",
-  ]
+  deps = []
 
   public_configs = [ ":calendarmanager_public_config" ]
 
@@ -103,6 +100,7 @@ ohos_static_library("calendarmanager_static") {
     "data_share:datashare_common",
     "data_share:datashare_consumer",
     "ipc:ipc_single",
+    "napi:ace_napi"
   ]
 
   if (is_standard_system) {
