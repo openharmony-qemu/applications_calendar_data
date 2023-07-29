@@ -59,7 +59,7 @@ ohos_shared_library("calendarmanager") {
     "data_share:datashare_common",
     "data_share:datashare_consumer",
     "ipc:ipc_single",
-	"napi:ace_napi"
+    "napi:ace_napi"
   ]
 
   if (is_standard_system) {
@@ -100,7 +100,7 @@ ohos_static_library("calendarmanager_static") {
     "data_share:datashare_common",
     "data_share:datashare_consumer",
     "ipc:ipc_single",
-	"napi:ace_napi"
+    "napi:ace_napi"
   ]
 
   if (is_standard_system) {
