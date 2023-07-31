@@ -1,5 +1,5 @@
 {
-    "name": "@ohos/calendardata",
+    "name": "@ohos/calendar_data",
     "description": "Calendar manager service for standard system.",
     "version": "3.1",
     "license": "Apache License 2.0",
