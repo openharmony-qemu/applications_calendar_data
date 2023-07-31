@@ -58,15 +58,10 @@ ohos_shared_library("calendarmanager") {
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
+    "hilog:libhilog",
     "ipc:ipc_single",
-    "napi:ace_napi"
+    "napi:ace_napi",
   ]
-
-  if (is_standard_system) {
-    external_deps += [ "hiviewdfx_hilog_native:libhilog" ]
-  } else {
-    external_deps += [ "hilog:libhilog" ]
-  }
 
   public_deps = []
   relative_install_dir = "module"
@@ -99,15 +94,10 @@ ohos_static_library("calendarmanager_static") {
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
+    "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi"
   ]
-
-  if (is_standard_system) {
-    external_deps += [ "hiviewdfx_hilog_native:libhilog" ]
-  } else {
-    external_deps += [ "hilog:libhilog" ]
-  }
 
   public_deps = []
   part_name = "calendar_data"
