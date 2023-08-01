@@ -1,5 +1,5 @@
 {
-    "name": "@ohos/calendardata",
+    "name": "@ohos/calendar_data",
     "description": "Calendar manager service for standard system.",
     "version": "3.1",
     "license": "Apache License 2.0",
@@ -20,7 +20,18 @@
         "rom": "",
         "ram": "",
         "deps": {
-            "components": [],
+            "components": [
+			  "ability_base",
+			  "ability_runtime",
+			  "access_token",
+			  "c_utils",
+			  "data_share",
+			  "hilog",
+			  "ipc",
+			  "napi",
+			  "safwk",
+			  "samgr"
+			],
             "third_party": []
         },
         "build": {
