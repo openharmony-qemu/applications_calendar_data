@@ -81,12 +81,12 @@ struct Event {
     EventType type;
     optional<Location> location;
     optional<string> title;
-    int64_t start;
-    int64_t end;
+    int64_t startTime;
+    int64_t endTime;
     optional<bool> isAllDay;
     vector<Attendee> attendees;
     optional<string> timeZone;
-    optional<vector<int>> remind;
+    optional<vector<int>> reminderTime;
     optional<RecurrenceRule> recurrenceRule;
     optional<string> description;
     optional<EventService> service;
