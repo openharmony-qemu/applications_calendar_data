@@ -38,8 +38,8 @@ void DumpEvent(const Event &event)
         LOG_DEBUG("location [null]");
     }
     LOG_DEBUG("title    :%{public}s", event.title.value_or("").c_str());
-    LOG_DEBUG("start    :%{public}lu", event.start);
-    LOG_DEBUG("end      :%{public}lu", event.end);
+    LOG_DEBUG("startTime    :%{public}lu", event.startTime);
+    LOG_DEBUG("endTime      :%{public}lu", event.endTime);
     LOG_DEBUG("isAllDay :%{public}d", event.isAllDay.value_or(0));
 
     for (const auto &attendee : event.attendees) {
@@ -58,8 +58,8 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
 
     LOG_DEBUG("title %{public}s", event.title.value_or("").c_str());
     valuesBucket.Put("title", event.title.value_or(""));
-    valuesBucket.Put("dtstart", event.start);
-    valuesBucket.Put("dtend", event.end);
+    valuesBucket.Put("dtstart", event.startTime);
+    valuesBucket.Put("dtend", event.endTime);
     LOG_DEBUG("description %{public}s", event.description.value_or("").c_str());
 
     valuesBucket.Put("description", event.description.value_or(""));

@@ -152,11 +152,11 @@ HWTEST_F(EventFilterTest, FilterByTime_test_001, testing::ext::TestSize.Level1)
     Event event;
     event.title = title;
     auto timeNow = Now();
-    event.start = timeNow;
-    event.end = timeNow + 100000;
+    event.startTime = timeNow;
+    event.endTime = timeNow + 100000;
     auto eventId = calendar->AddEvent(event);
     ASSERT_TRUE(eventId > 0);
-    auto events = calendar->GetEvents(FilterByTime(event.start, event.end), {});
+    auto events = calendar->GetEvents(FilterByTime(event.startTime, event.endTime), {});
     ASSERT_EQ(1, events.size());
     EXPECT_EQ(events.at(0).title.value(), title);
 }
@@ -166,14 +166,14 @@ HWTEST_F(EventFilterTest, FilterByTime_test_002, testing::ext::TestSize.Level1)
     Event event;
     event.title = "FilterByTime_test_002";
     auto timeNow = Now();
-    event.start = timeNow;
+    event.startTime = timeNow;
     const int64_t interval = 100;
-    event.end = timeNow + interval;
+    event.endTime = timeNow + interval;
     auto eventId = calendar->AddEvent(event);
     ASSERT_TRUE(eventId > 0);
-    auto events = calendar->GetEvents(FilterByTime(event.start - interval * 2, event.start - interval), {});
+    auto events = calendar->GetEvents(FilterByTime(event.startTime - interval * 2, event.startTime - interval), {});
     EXPECT_TRUE(events.empty());
-    events = calendar->GetEvents(FilterByTime(event.end + interval, event.end + interval * 2), {});
+    events = calendar->GetEvents(FilterByTime(event.endTime + interval, event.endTime + interval * 2), {});
     ASSERT_TRUE(events.empty());
 }
 
@@ -183,18 +183,18 @@ HWTEST_F(EventFilterTest, FilterByTime_test_003, testing::ext::TestSize.Level1)
     auto timeNow = Now();
     Event event1;
     event1.title = title1;
-    event1.start = timeNow;
+    event1.startTime = timeNow;
     const int64_t interval = 100;
-    event1.end = timeNow + interval;
+    event1.endTime = timeNow + interval;
     const string title2 = "FilterByTime_test_003_2";
     Event event2;
     event2.title = title2;
-    event2.start = timeNow;
-    event2.end = timeNow + interval * 2;
+    event2.startTime = timeNow;
+    event2.endTime = timeNow + interval * 2;
 
     auto count = calendar->AddEvents({event1, event2});
     ASSERT_TRUE(count == 2);
-    auto events = calendar->GetEvents(FilterByTime(timeNow, event2.end), {});
+    auto events = calendar->GetEvents(FilterByTime(timeNow, event2.endTime), {});
     ASSERT_EQ(2, events.size());
     EXPECT_EQ(events.at(0).title.value(), title1);
     EXPECT_EQ(events.at(1).title.value(), title2);
