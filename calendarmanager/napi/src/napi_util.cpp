@@ -555,14 +555,14 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     GetNamedPropertyOptional(env, in, "title", out.title);
     GetNamedPropertyOptional(env, in, "location", out.location);
-    status = GetNamedProperty(env, in, "start", out.start);
-    CHECK_RETURN((status == napi_ok), "invalid entry start", status);
-    status = GetNamedProperty(env, in, "end", out.end);
-    CHECK_RETURN((status == napi_ok), "invalid entry end", status);
+    status = GetNamedProperty(env, in, "startTime", out.startTime);
+    CHECK_RETURN((status == napi_ok), "invalid entry startTime", status);
+    status = GetNamedProperty(env, in, "endTime", out.endTime);
+    CHECK_RETURN((status == napi_ok), "invalid entry endTime", status);
     GetNamedPropertyOptional(env, in, "isAllDay", out.isAllDay);
     GetNamedProperty(env, in, "attendee", out.attendees); // colud be empty not check result
     GetNamedPropertyOptional(env, in, "timeZone", out.timeZone);
-    GetNamedPropertyOptional(env, in, "remind", out.remind);
+    GetNamedPropertyOptional(env, in, "reminderTime", out.reminderTime);
     GetNamedPropertyOptional(env, in, "recurrenceRule", out.recurrenceRule);
     GetNamedPropertyOptional(env, in, "description", out.description);
     GetNamedPropertyOptional(env, in, "service", out.service);

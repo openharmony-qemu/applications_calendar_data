@@ -39,10 +39,10 @@ static const std::vector<struct JsEnumInt> g_eventType = {
 };
 
 static const std::vector<struct JsEnumInt> g_recurrenceType = {
-    { "YEAR", RecurrenceType::YEAR },
-    { "MONTH", RecurrenceType::MONTH },
-    { "WEEK", RecurrenceType::WEEK },
-    { "DAY", RecurrenceType::DAY },
+    { "YEARLY", RecurrenceType::YEARLY },
+    { "MONTHLY", RecurrenceType::MONTHLY },
+    { "WEEKLY", RecurrenceType::WEEKLY },
+    { "DAILY", RecurrenceType::DAILY },
 };
 
 static const std::vector<struct JsEnumString> g_calendarTypeKey = {

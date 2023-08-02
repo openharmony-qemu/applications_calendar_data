@@ -57,10 +57,10 @@ struct Attendee {
 };
 
 enum RecurrenceType {
-    YEAR = 0,
-    MONTH = 1,
-    WEEK = 2,
-    DAY = 3,
+    YEARLY = 0,
+    MONTHLY = 1,
+    WEEKLY = 2,
+    DAILY = 3,
 };
 
 struct RecurrenceRule {
