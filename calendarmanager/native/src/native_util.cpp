@@ -38,8 +38,8 @@ void DumpEvent(const Event &event)
         LOG_DEBUG("location [null]");
     }
     LOG_DEBUG("title    :%{public}s", event.title.value_or("").c_str());
-    LOG_DEBUG("startTime    :%{public}lu", event.startTime);
-    LOG_DEBUG("endTime      :%{public}lu", event.endTime);
+    LOG_DEBUG("startTime    :%{public}s", std::to_string(event.startTime).c_str());
+    LOG_DEBUG("endTime      :%{public}s", std::to_string(event.endTime).c_str());
     LOG_DEBUG("isAllDay :%{public}d", event.isAllDay.value_or(0));
 
     for (const auto &attendee : event.attendees) {
