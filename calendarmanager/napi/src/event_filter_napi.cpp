@@ -134,7 +134,8 @@ napi_value EventFilterNapi::FilterByTime(napi_env env, napi_callback_info info)
     };
     ctxt->GetCbInfo(env, info, input);
     auto execute = [ctxt]() {
-        LOG_DEBUG("execute start:%{public}lu, end:%{public}lu", ctxt->start, ctxt->end);
+        LOG_DEBUG("execute start:%{public}s, end:%{public}s", std::to_string(ctxt->start).c_str(),
+            std::to_string(ctxt->end).c_str());
         CHECK_RETURN_VOID(ctxt->filter != nullptr, "filter is null!");
         auto nativeFilter = Native::FilterByTime(ctxt->start, ctxt->end);
         LOG_DEBUG("nativeFilter %{public}p", nativeFilter.get());
