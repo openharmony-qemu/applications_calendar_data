@@ -52,7 +52,8 @@ std::shared_ptr<EventFilter> FilterById(const std::vector<int> &ids)
 
 std::shared_ptr<EventFilter> FilterByTime(int64_t start, int64_t end)
 {
-    LOG_DEBUG("FilterByTime start:%{public}ld end:%{public}ld", start, end);
+    LOG_DEBUG("FilterByTime start:%{public}s end:%{public}s",
+        std::to_string(start).c_str(), std::to_string(end).c_str());
     auto predicates = std::make_shared<DataShare::DataSharePredicates>();
     if (!predicates) {
         LOG_ERROR("DataSharePredicates make failed");
