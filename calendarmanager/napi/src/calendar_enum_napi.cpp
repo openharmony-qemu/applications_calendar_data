@@ -60,7 +60,7 @@ static const std::vector<struct JsEnumString> g_serviceType = {
     { "SHOPPING", "Shopping" },
     { "TRIP", "Trip" },
     { "CLASS", "Class" },
-    { "SPORTS_GAME", "SportsEvents" },
+    { "SPORTS_EVENTS", "SportsEvents" },
     { "SPORTS_EXERCISE", "SportsExercise" },
 };
 

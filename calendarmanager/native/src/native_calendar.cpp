@@ -212,8 +212,8 @@ bool Calendar::SetConfig(const CalendarConfig& config)
             return false;
         }
     }
-    if (config.enableRemind) {
-        valuesBucket.Put("canReminder", config.enableRemind.value());
+    if (config.enableReminder) {
+        valuesBucket.Put("canReminder", config.enableReminder.value());
     }
     if (valuesBucket.IsEmpty()) {
         LOG_INFO("no need update");

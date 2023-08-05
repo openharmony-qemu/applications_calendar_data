@@ -417,7 +417,7 @@ napi_status SetValue(napi_env env, const CalendarAccount& in, napi_value& out)
 napi_status GetValue(napi_env env, napi_value in, CalendarConfig& out)
 {
     LOG_DEBUG("napi_value -> CalendarConfig ");
-    NapiUtil::GetNamedPropertyOptional(env, in, "enableRemind", out.enableRemind);
+    NapiUtil::GetNamedPropertyOptional(env, in, "enableReminder", out.enableReminder);
     NapiUtil::GetNamedPropertyOptional(env, in, "color", out.color);
     return napi_ok;
 }
@@ -428,11 +428,11 @@ napi_status SetValue(napi_env env, const CalendarConfig& in, napi_value& out)
     napi_status status = napi_create_object(env, &out);
     CHECK_RETURN((status == napi_ok), "invalid entry object", status);
 
-    if (in.enableRemind) {
+    if (in.enableReminder) {
         napi_value enableRemindValue = nullptr;
-        status = SetValue(env, in.enableRemind.value(), enableRemindValue);
-        CHECK_RETURN((status == napi_ok), "invalid entry enableRemind", status);
-        napi_set_named_property(env, out, "enableRemind", enableRemindValue);
+        status = SetValue(env, in.enableReminder.value(), enableRemindValue);
+        CHECK_RETURN((status == napi_ok), "invalid entry enableReminder", status);
+        napi_set_named_property(env, out, "enableReminder", enableRemindValue);
     }
     if (in.color) {
         napi_value colorValue = nullptr;
