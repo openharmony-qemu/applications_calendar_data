@@ -171,7 +171,7 @@ HWTEST_F(CalendarTest, UpdateEvents_test_1, testing::ext::TestSize.Level1)
 HWTEST_F(CalendarTest, GetConfig_default_test, testing::ext::TestSize.Level1)
 {
     auto config = calendar->GetConfig();
-    EXPECT_FALSE(config.enableRemind.has_value());
+    EXPECT_FALSE(config.enableReminder.has_value());
     EXPECT_FALSE(config.color.has_value());
 }
 
@@ -181,7 +181,7 @@ HWTEST_F(CalendarTest, SetConfig_empty_param_test, testing::ext::TestSize.Level1
     auto ret = calendar->SetConfig(config);
     ASSERT_TRUE(ret);
     auto configExpect = calendar->GetConfig();
-    EXPECT_FALSE(configExpect.enableRemind.has_value());
+    EXPECT_FALSE(configExpect.enableReminder.has_value());
     EXPECT_FALSE(configExpect.color.has_value());
 }
 
@@ -208,12 +208,12 @@ HWTEST_F(CalendarTest, SetConfig_with_color_test, testing::ext::TestSize.Level1)
 {
     CalendarConfig config;
     config.color = "#aabbcc";
-    config.enableRemind = false;
+    config.enableReminder = false;
     ASSERT_TRUE(calendar->SetConfig(config));
     auto configExpect = calendar->GetConfig();
     EXPECT_EQ(config, configExpect);
     config.color = "#aabbccdd";
-    config.enableRemind = true;
+    config.enableReminder = true;
     ASSERT_TRUE(calendar->SetConfig(config));
     configExpect = calendar->GetConfig();
     EXPECT_EQ(config, configExpect);

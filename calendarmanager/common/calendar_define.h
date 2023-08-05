@@ -64,7 +64,7 @@ enum RecurrenceType {
 };
 
 struct RecurrenceRule {
-    RecurrenceType recurrenceType;
+    RecurrenceType recurrenceFrequency;
     optional<bool> enable;
     optional<int> expire;
 };
@@ -94,11 +94,11 @@ struct Event {
 
 
 struct CalendarConfig {
-    optional<bool> enableRemind;
+    optional<bool> enableReminder;
     optional<string> color;
     bool operator==(const CalendarConfig& other) const
     {
-        return enableRemind == other.enableRemind && color == other.color;
+        return enableReminder == other.enableReminder && color == other.color;
     }
 };
 
