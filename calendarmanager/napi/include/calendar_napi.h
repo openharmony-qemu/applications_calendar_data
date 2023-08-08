@@ -41,8 +41,8 @@ public:
     static napi_value UpdateEvent(napi_env env, napi_callback_info info);
     static napi_value UpdateEvents(napi_env env, napi_callback_info info);
     static napi_value GetEvents(napi_env env, napi_callback_info info);
-    static napi_value GetConfigure(napi_env env, napi_callback_info info);
-    static napi_value SetConfigure(napi_env env, napi_callback_info info);
+    static napi_value GetConfig(napi_env env, napi_callback_info info);
+    static napi_value SetConfig(napi_env env, napi_callback_info info);
     static napi_value GetAccount(napi_env env, napi_callback_info info);
     static napi_value GetId(napi_env env, napi_callback_info cbInfo);
 private:

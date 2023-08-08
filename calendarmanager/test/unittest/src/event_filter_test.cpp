@@ -23,7 +23,7 @@ namespace OHOS::CalendarApi::Native {
 const std::string TEST_NAME = "EventFilterTest";
 static CalendarAccount account {
     TEST_NAME,
-    "EventFilterTest",
+    "local",
     "displayName_EventFilterTest"
 };
 class EventFilterTest : public testing::Test {
