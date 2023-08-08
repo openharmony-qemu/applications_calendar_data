@@ -24,7 +24,7 @@ namespace OHOS::CalendarApi::Native {
 const std::string TEST_NAME = "EventAttendeeTest";
 static CalendarAccount account {
     TEST_NAME,
-    CalendarType.LOCAL,
+    "local",
     "displayName_EventAttendeeTest"
 };
 class EventAttendeeTest : public testing::Test {

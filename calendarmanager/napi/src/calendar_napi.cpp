@@ -352,14 +352,11 @@ napi_value CalendarNapi::GetConfig(napi_env env, napi_callback_info info)
     }
     auto nativeCalendar = calendarNapi->GetNative();
     CHECK_RETURN(nativeCalendar != nullptr, "nativeCalendar nullptr", nullptr);
-    auto account = nativeCalendar->GetAccount();
-    LOG_DEBUG("account.name:%{public}s", account.name.c_str());
-    LOG_DEBUG("account.type:%{public}s", account.type.c_str());
-    if (account.displayName) {
-        LOG_DEBUG("account.displayName:%{public}s", account.displayName.value().c_str());
-    }
+    auto config = nativeCalendar->GetConfig();
+    LOG_DEBUG("config.enableReminder:%{public}d", config.enableReminder.value_or(-1));
+    LOG_DEBUG("config.color:%{public}s", config.color.value_or("null").c_str());
     napi_value result;
-    status = NapiUtil::SetValue(env, account, result);
+    status = NapiUtil::SetValue(env, config, result);
     if (status != napi_ok) {
         LOG_ERROR("SetValue failed %{public}d", status);
         return nullptr;
