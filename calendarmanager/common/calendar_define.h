@@ -41,10 +41,14 @@ enum EventType : uint32_t {
 
 
 struct Location {
-public:
     optional<string> location;
     optional<int> longitude;
     optional<int> latitude;
+
+    bool operator==(const Location& other) const
+    {
+        return location == other.location && longitude == other.longitude && latitude == other.latitude;
+    }
 };
 
 struct Attendee {

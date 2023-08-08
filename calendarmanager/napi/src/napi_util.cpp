@@ -446,12 +446,36 @@ napi_status SetValue(napi_env env, const CalendarConfig& in, napi_value& out)
 napi_status GetValue(napi_env env, napi_value in, Location& out)
 {
     LOG_DEBUG("napi_value -> Location ");
+    NapiUtil::GetNamedPropertyOptional(env, in, "location", out.location);
+    NapiUtil::GetNamedPropertyOptional(env, in, "longitude", out.longitude);
+    NapiUtil::GetNamedPropertyOptional(env, in, "latitude", out.latitude);
     return napi_ok;
 }
 
 napi_status SetValue(napi_env env, const Location& in, napi_value& out)
 {
     LOG_DEBUG("Location -> napi_value ");
+    napi_status status = napi_create_object(env, &out);
+    CHECK_RETURN((status == napi_ok), "invalid entry object", status);
+
+    if (in.location) {
+        napi_value locationValue = nullptr;
+        status = SetValue(env, in.location.value(), locationValue);
+        CHECK_RETURN((status == napi_ok), "invalid location", status);
+        napi_set_named_property(env, out, "location", locationValue);
+    }
+    if (in.longitude) {
+        napi_value value = nullptr;
+        status = SetValue(env, in.longitude.value(), value);
+        CHECK_RETURN((status == napi_ok), "invalid longitude", status);
+        napi_set_named_property(env, out, "longitude", value);
+    }
+    if (in.latitude) {
+        napi_value value = nullptr;
+        status = SetValue(env, in.latitude.value(), value);
+        CHECK_RETURN((status == napi_ok), "invalid latitude", status);
+        napi_set_named_property(env, out, "latitude", value);
+    }
     return napi_ok;
 }
 
@@ -590,6 +614,12 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
         status = SetValue(env, in.title.value(), titleValue);
         CHECK_RETURN((status == napi_ok), "invalid entry title", status);
         napi_set_named_property(env, out, "title", titleValue);
+    }
+    if (in.location) {
+        napi_value value = nullptr;
+        status = SetValue(env, in.location.value(), value);
+        CHECK_RETURN((status == napi_ok), "invalid location", status);
+        napi_set_named_property(env, out, "location", value);
     }
     return status;
 }

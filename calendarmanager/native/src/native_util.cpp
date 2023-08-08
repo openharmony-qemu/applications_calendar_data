@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "native_util.h"
+#include <sstream>
 #include "calendar_log.h"
+#include "native_util.h"
 
 namespace OHOS::CalendarApi::Native {
 void DumpCalendarAccount(const CalendarAccount &account)
@@ -60,6 +60,22 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     valuesBucket.Put("title", event.title.value_or(""));
     valuesBucket.Put("dtstart", event.startTime);
     valuesBucket.Put("dtend", event.endTime);
+
+    if (event.location) {
+        auto location = event.location.value();
+        if (location.location) {
+            valuesBucket.Put("eventLocation", location.location.value());
+        }
+        if (location.longitude) {
+            // longitude is string in db
+            valuesBucket.Put("location_longitude", std::to_string(location.longitude.value()));
+        }
+        if (location.latitude) {
+            // latitude is string in db
+            valuesBucket.Put("location_latitude", std::to_string(location.latitude.value()));
+        }
+    }
+    
     LOG_DEBUG("description %{public}s", event.description.value_or("").c_str());
 
     valuesBucket.Put("description", event.description.value_or(""));
@@ -161,6 +177,35 @@ std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPt
     return result;
 }
 
+
+std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
+{
+    Location out;
+    string value;
+    auto ret = GetValue(resultSet, "eventLocation", value);
+    out.location = std::make_optional<string>(value);
+    ret |= GetValue(resultSet, "location_longitude", value);
+    int longitudeValue = -1;
+    std::stringstream str2digit;
+    str2digit << value;
+    str2digit >> longitudeValue;
+    if (longitudeValue != -1) {
+        out.longitude = std::make_optional<int>(longitudeValue);
+    }
+    ret |= GetValue(resultSet, "location_latitude", value);
+    int latitudeValue = -1;
+    str2digit << value;
+    str2digit >> latitudeValue;
+    if (latitudeValue != -1) {
+        out.latitude = std::make_optional<int>(latitudeValue);
+    }
+    
+    if (ret != DataShare::E_OK) {
+        return std::nullopt;
+    }
+    return std::make_optional<Location>(out);
+}
+
 int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultSet,
     const std::vector<std::string>& columns)
 {
@@ -181,6 +226,7 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
         GetValueOptional(resultSet, "title", event.title);
         GetValueOptional(resultSet, "description", event.description);
         GetValueOptional(resultSet, "eventTimezone", event.timeZone);
+        event.location = ResultSetToLocation(resultSet);
         events.emplace_back(event);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;

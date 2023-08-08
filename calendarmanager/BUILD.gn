@@ -53,8 +53,8 @@ ohos_shared_library("calendarmanager") {
     "ability_runtime:ability_context_native",
     "ability_runtime:ability_manager",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:napi_base_context",
     "ability_runtime:data_ability_helper",
+    "ability_runtime:napi_base_context",
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
@@ -89,14 +89,14 @@ ohos_static_library("calendarmanager_static") {
     "ability_runtime:ability_context_native",
     "ability_runtime:ability_manager",
     "ability_runtime:abilitykit_native",
-    "ability_runtime:napi_base_context",
     "ability_runtime:data_ability_helper",
+    "ability_runtime:napi_base_context",
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
     "hilog:libhilog",
     "ipc:ipc_single",
-    "napi:ace_napi"
+    "napi:ace_napi",
   ]
 
   public_deps = []
