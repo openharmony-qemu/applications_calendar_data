@@ -381,10 +381,9 @@ napi_status GetValue(napi_env env, napi_value in, CalendarAccount& out)
 {
     LOG_DEBUG("napi_value -> CalendarAccount ");
     napi_status status = NapiUtil::GetNamedProperty(env, in, "name", out.name);
-    if (status != napi_ok) {
-        return status;
-    }
-    NapiUtil::GetNamedProperty(env, in, "type", out.type);
+    CHECK_RETURN((status == napi_ok), "invalid name", status);
+    status = NapiUtil::GetNamedProperty(env, in, "type", out.type);
+    CHECK_RETURN((status == napi_ok), "invalid type", status);
     NapiUtil::GetNamedPropertyOptional(env, in, "displayName", out.displayName);
     return napi_ok;
 }

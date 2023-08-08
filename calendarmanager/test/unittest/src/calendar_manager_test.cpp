@@ -50,7 +50,7 @@ HWTEST_F(CalendarManagerTest, getCalendar_which_no_exist, testing::ext::TestSize
 {
     CalendarAccount test_account {
         "name_getCalendar_which_no_exist",
-        "type_getCalendar_which_no_exist",
+        "local",
         "displayName_getCalendar_which_no_exist"
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
@@ -61,7 +61,7 @@ HWTEST_F(CalendarManagerTest, getCalendar_test_exist, testing::ext::TestSize.Lev
 {
     CalendarAccount test_account {
         "name_getCalendar_test_exist",
-        "type_getCalendar_test_exist",
+        "local",
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
     if (!calendar || CalendarManager::IsDefaultAccount(calendar->GetAccount())) {
@@ -77,7 +77,7 @@ HWTEST_F(CalendarManagerTest, createCalendar_which_not_exist, testing::ext::Test
 {
     CalendarAccount test_account {
         "name_createCalendar_which_not_exist",
-        "type_createCalendar_which_not_exist",
+        "local",
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
     ASSERT_FALSE(calendar);
@@ -92,7 +92,7 @@ HWTEST_F(CalendarManagerTest, createCalendar_which_already_exist, testing::ext::
 {
     CalendarAccount test_account {
         "createCalendar_which_already_exist",
-        "createCalendar_which_already_exist_type",
+        "local",
         "displayName_unit_test"
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
@@ -107,12 +107,12 @@ HWTEST_F(CalendarManagerTest, getAllCalendars_test_1, testing::ext::TestSize.Lev
 {
     CalendarAccount test_account {
         "createAllCalendars_which_already_exist_1",
-        "createCalendar_which_already_exist_type",
+        "local",
         "displayName_unit_test"
     };
     CalendarAccount test_account1 {
         "createAllCalendars_which_already_exist_2",
-        "createCalendar_which_already_exist_type",
+        "local",
         "displayName_unit_test"
     };
     CalendarManager::GetInstance().CreateCalendar(test_account);
@@ -136,7 +136,7 @@ HWTEST_F(CalendarManagerTest, getAccount_test_1, testing::ext::TestSize.Level1)
 {
     CalendarAccount test_account {
         "name_getAccount_test_1",
-        "type_getAccount_test_1",
+        "local",
         "displayName_getAccount_test_1"
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);

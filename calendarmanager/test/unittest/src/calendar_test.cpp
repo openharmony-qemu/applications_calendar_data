@@ -39,7 +39,7 @@ std::shared_ptr<Calendar> CalendarTest::calendar = nullptr;
 const std::string TEST_NAME = "unit_test";
 static CalendarAccount account {
     TEST_NAME,
-    "unit_test",
+    "local",
     "displayName_unit_test"
 };
 

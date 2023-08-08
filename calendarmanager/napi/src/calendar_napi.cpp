@@ -35,8 +35,8 @@ napi_value CalendarNapi::Constructor(napi_env env)
         DECLARE_NAPI_FUNCTION("updateEvent", UpdateEvent),
         DECLARE_NAPI_FUNCTION("updateEvents", UpdateEvents),
         DECLARE_NAPI_FUNCTION("getEvents", GetEvents),
-        DECLARE_NAPI_FUNCTION("getConfigure", GetConfigure),
-        DECLARE_NAPI_FUNCTION("setConfigure", SetConfigure),
+        DECLARE_NAPI_FUNCTION("getConfig", GetConfig),
+        DECLARE_NAPI_FUNCTION("setConfig", SetConfig),
         DECLARE_NAPI_FUNCTION("getAccount", GetAccount),
         DECLARE_NAPI_GETTER("id", GetId)
     };
@@ -330,15 +330,46 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
 }
 
-napi_value CalendarNapi::GetConfigure(napi_env env, napi_callback_info info)
+napi_value CalendarNapi::GetConfig(napi_env env, napi_callback_info info)
 {
-    LOG_INFO("GetConfigure");
-    return napi_value();
+    LOG_INFO("GetConfig");
+    size_t argc = 0;
+    napi_value thisVar = nullptr;
+    auto status = napi_get_cb_info(env, info, &argc, nullptr, &thisVar, nullptr);
+    if (status != napi_ok) {
+        LOG_ERROR("napi_get_cb_info failed %{public}d", status);
+        return nullptr;
+    }
+    CalendarNapi *calendarNapi = nullptr;
+    status = napi_unwrap(env, thisVar, (void **)&calendarNapi);
+    if (status != napi_ok) {
+        LOG_ERROR("napi_unwrap failed %{public}d", status);
+        return nullptr;
+    }
+    if (calendarNapi == nullptr) {
+        LOG_ERROR("reinterpret_cast failed");
+        return nullptr;
+    }
+    auto nativeCalendar = calendarNapi->GetNative();
+    CHECK_RETURN(nativeCalendar != nullptr, "nativeCalendar nullptr", nullptr);
+    auto account = nativeCalendar->GetAccount();
+    LOG_DEBUG("account.name:%{public}s", account.name.c_str());
+    LOG_DEBUG("account.type:%{public}s", account.type.c_str());
+    if (account.displayName) {
+        LOG_DEBUG("account.displayName:%{public}s", account.displayName.value().c_str());
+    }
+    napi_value result;
+    status = NapiUtil::SetValue(env, account, result);
+    if (status != napi_ok) {
+        LOG_ERROR("SetValue failed %{public}d", status);
+        return nullptr;
+    }
+    return result;
 }
 
-napi_value CalendarNapi::SetConfigure(napi_env env, napi_callback_info info)
+napi_value CalendarNapi::SetConfig(napi_env env, napi_callback_info info)
 {
-    LOG_INFO("SetConfigure");
+    LOG_INFO("SetConfig");
     return napi_value();
 }
 
