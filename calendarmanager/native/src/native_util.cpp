@@ -194,6 +194,7 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
     }
     ret |= GetValue(resultSet, "location_latitude", value);
     int latitudeValue = -1;
+    str2digit.clear();
     str2digit << value;
     str2digit >> latitudeValue;
     if (latitudeValue != -1) {
