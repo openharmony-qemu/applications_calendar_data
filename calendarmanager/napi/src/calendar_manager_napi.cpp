@@ -149,40 +149,39 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
     LOG_DEBUG("napi GetAllCalendars called");
     struct GetAllCalendarContext : public ContextBase {
         napi_callback_info info;
-        std::vector<napi_value> calendarNapis;
+        std::vector<napi_ref> refs;
     };
 
     auto ctxt = std::make_shared<GetAllCalendarContext>();
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 0, "invalid arguments!");
+        auto nativteCalendars = Native::CalendarManager::GetInstance().GetAllCalendars();
+        for (auto &calendar : nativteCalendars) {
+            CalendarNapi *calendarNapi = nullptr;
+            auto ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&calendarNapi),
+                CalendarNapi::Constructor(env));
+            CHECK_RETURN_VOID(calendarNapi != nullptr, "new CalendarNapi failed!");
+            calendarNapi->SetNative(calendar);
+            ctxt->refs.emplace_back(ref);
+        }
     };
     ctxt->GetCbInfo(env, info, input);
 
-    auto execute = [ctxt]()->void {
-        auto nativteCalendars = Native::CalendarManager::GetInstance().GetAllCalendars();
-        for (auto &calendar : nativteCalendars) {
-            napi_value tmp = nullptr;
-            auto calendarNapi = new (std::nothrow) CalendarNapi();
-            CHECK_RETURN_VOID(calendarNapi != nullptr, "new CalendarNapi failed!");
-            calendarNapi->SetNative(calendar);
-            auto finalize = [](napi_env env, void* data, void* hint) {
-                LOG_DEBUG("calendar finalize.");
-                auto* calendar = reinterpret_cast<CalendarNapi*>(data);
-                CHECK_RETURN_VOID(calendar != nullptr, "finalize null!");
-                delete calendar;
-            };
-            ctxt->status = napi_wrap(ctxt->env, tmp, calendarNapi, finalize, nullptr, nullptr);
-            CHECK_STATUS_RETURN_VOID(ctxt, "napi_wrap failed!");
-            ctxt->calendarNapis.emplace_back(tmp);
-        }
+    auto execute = [env, ctxt]()->void {
     };
+
     auto output = [env, ctxt](napi_value& result) {
-        ctxt->status = napi_create_array_with_length(env, ctxt->calendarNapis.size(), &result);
+        ctxt->status = napi_create_array_with_length(env, ctxt->refs.size(), &result);
         CHECK_STATUS_RETURN_VOID(ctxt, "create array failed!");
         int index = 0;
-        for (auto& item : ctxt->calendarNapis) {
-            ctxt->status = napi_set_element(env, result, index++, item);
-            CHECK_STATUS_RETURN_VOID(ctxt, "create array failed!");
+        for (auto& ref : ctxt->refs) {
+            napi_value value;
+            ctxt->status = napi_get_reference_value(env, ref, &value);
+            CHECK_STATUS_RETURN_VOID(ctxt, "get ref value failed!");
+            ctxt->status = napi_set_element(env, result, index++, value);
+            CHECK_STATUS_RETURN_VOID(ctxt, "napi_set_element failed!");
+            ctxt->status = napi_delete_reference(env, ref);
+            CHECK_STATUS_RETURN_VOID(ctxt, "napi_delete_reference failed!");
         }
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
