@@ -34,8 +34,8 @@ struct JsEnumString {
 
 
 static const std::vector<struct JsEnumInt> g_eventType = {
-    { "Important", EventType::Important },
-    { "Normal", EventType::Normal },
+    { "IMPORTANT", EventType::Important },
+    { "NORMAL", EventType::Normal },
 };
 
 static const std::vector<struct JsEnumInt> g_recurrenceType = {

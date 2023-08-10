@@ -177,7 +177,8 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     }
     predicates->EqualTo("calendar_id", GetId());
     std::vector<std::string> columns = {"_id", "title", "dtstart", "dtend", "eventLocation",
-        "location_longitude", "location_latitude"};
+        "location_longitude", "location_latitude",
+        "service_type", "service_cp_bz_uri", "service_description"};
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),
         *(predicates.get()), columns, &error);

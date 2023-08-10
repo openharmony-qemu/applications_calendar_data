@@ -37,6 +37,14 @@ void DumpEvent(const Event &event)
     } else {
         LOG_DEBUG("location [null]");
     }
+    if (event.service) {
+        auto service = event.service.value();
+        LOG_DEBUG("service.type  :%{public}s", service.type.c_str());
+        LOG_DEBUG("service.description :%{public}s", service.description.value_or("[null]").c_str());
+        LOG_DEBUG("service.uri  :%{public}s", service.uri.c_str());
+    } else {
+        LOG_DEBUG("service [null]");
+    }
     LOG_DEBUG("title    :%{public}s", event.title.value_or("").c_str());
     LOG_DEBUG("startTime    :%{public}s", std::to_string(event.startTime).c_str());
     LOG_DEBUG("endTime      :%{public}s", std::to_string(event.endTime).c_str());
@@ -51,6 +59,38 @@ void DumpEvent(const Event &event)
     LOG_DEBUG("description  :%{public}s", event.description.value_or("[null]").c_str());
 }
 
+void BuildEventLocation(DataShare::DataShareValuesBucket &valuesBucket, const Event &event)
+{
+    if (!event.location) {
+        return;
+    }
+    auto location = event.location.value();
+    if (location.location) {
+        valuesBucket.Put("eventLocation", location.location.value());
+    }
+    if (location.longitude) {
+        // longitude is string in db
+        valuesBucket.Put("location_longitude", std::to_string(location.longitude.value()));
+    }
+    if (location.latitude) {
+        // latitude is string in db
+        valuesBucket.Put("location_latitude", std::to_string(location.latitude.value()));
+    }
+}
+
+void BuildEventService(DataShare::DataShareValuesBucket &valuesBucket, const Event &event)
+{
+    if (!event.service) {
+        return;
+    }
+    const auto service = event.service.value();
+    if (service.description) {
+        valuesBucket.Put("service_description", service.description.value());
+    }
+    valuesBucket.Put("service_type", service.type);
+    valuesBucket.Put("service_cp_bz_uri", service.uri);
+}
+
 DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId)
 {
     DataShare::DataShareValuesBucket valuesBucket;
@@ -61,20 +101,8 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     valuesBucket.Put("dtstart", event.startTime);
     valuesBucket.Put("dtend", event.endTime);
 
-    if (event.location) {
-        auto location = event.location.value();
-        if (location.location) {
-            valuesBucket.Put("eventLocation", location.location.value());
-        }
-        if (location.longitude) {
-            // longitude is string in db
-            valuesBucket.Put("location_longitude", std::to_string(location.longitude.value()));
-        }
-        if (location.latitude) {
-            // latitude is string in db
-            valuesBucket.Put("location_latitude", std::to_string(location.latitude.value()));
-        }
-    }
+    BuildEventLocation(valuesBucket, event);
+    BuildEventService(valuesBucket, event);
     
     LOG_DEBUG("description %{public}s", event.description.value_or("").c_str());
 
@@ -121,7 +149,7 @@ int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, std::strin
     auto fieldNameStr = string(fieldName);
     auto ret = resultSet->GetColumnIndex(fieldNameStr, index);
     if (ret != DataShare::E_OK) {
-        LOG_ERROR("GetValue [%{public}s] failed [%{public}d]", fieldNameStr.c_str(), ret);
+        LOG_WARN("GetValue [%{public}s] failed [%{public}d]", fieldNameStr.c_str(), ret);
         return ret;
     }
     return resultSet->GetString(index, out);
@@ -207,6 +235,27 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
     return std::make_optional<Location>(out);
 }
 
+std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resultSet)
+{
+    EventService out;
+    string value;
+    auto ret = GetValue(resultSet, "service_type", value);
+    if (ret != DataShare::E_OK) {
+        return std::nullopt;
+    }
+    out.type = value;
+    ret = GetValue(resultSet, "service_cp_bz_uri", value);
+    if (ret != DataShare::E_OK) {
+        return std::nullopt;
+    }
+    out.uri = value;
+    ret = GetValue(resultSet, "service_description", value);
+    if (ret == DataShare::E_OK) {
+        out.description = std::make_optional<string>(value);
+    }
+    return std::make_optional<EventService>(out);
+}
+
 int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultSet,
     const std::vector<std::string>& columns)
 {
@@ -228,7 +277,9 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
         GetValueOptional(resultSet, "description", event.description);
         GetValueOptional(resultSet, "eventTimezone", event.timeZone);
         event.location = ResultSetToLocation(resultSet);
+        event.service = ResultSetToEventService(resultSet);
         events.emplace_back(event);
+        DumpEvent(event);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
 }

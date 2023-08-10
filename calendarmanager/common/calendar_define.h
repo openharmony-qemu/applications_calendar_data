@@ -74,10 +74,9 @@ struct RecurrenceRule {
 };
 
 struct EventService {
-public:
-    optional<string> description;
-    optional<string> type;
+    string type;
     string uri;
+    optional<string> description;
 };
 
 struct Event {
