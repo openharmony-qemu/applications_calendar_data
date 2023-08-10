@@ -81,111 +81,112 @@ std::shared_ptr<Native::EventFilter>& EventFilterNapi::GetNative()
 napi_value EventFilterNapi::FilterById(napi_env env, napi_callback_info info)
 {
     LOG_INFO("FilterById");
-    struct EventFilterByIdContext : public ContextBase {
-        EventFilterNapi *filter;
-        std::vector<int> ids;
-        napi_ref ref = nullptr;
-    };
-    auto ctxt = std::make_shared<EventFilterByIdContext>();
-    auto input = [env, ctxt](size_t argc, napi_value* argv) {
-        CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, "invalid arguments!");
-        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->ids);
-        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
-        ctxt->ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&ctxt->filter),
+    napi_value result = nullptr;
+    napi_value thisVar = nullptr;
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr);
+    NAPI_ASSERT(env, argc == 1, "requires 1 parameter");
+    napi_valuetype valueType = napi_null;
+    napi_typeof(env, argv[0], &valueType);
+    if (valueType != napi_object) {
+        LOG_ERROR("type mismatch for parameter 1");
+        return result;
+    }
+    std::vector<int> ids;
+    bool isArray = false;
+    napi_status status = napi_is_array(env, argv[0], &isArray);
+    if (status != napi_ok || !isArray) {
+        LOG_ERROR("ParseBytesVector, not array");
+        return result;
+    }
+    uint32_t arrayLength = 0;
+    napi_get_array_length(env, argv[0], &arrayLength);
+    for (uint32_t i = 0; i < arrayLength; i++) {
+        napi_value element = nullptr;
+        napi_get_element(env, argv[0], i, &element);
+
+        napi_valuetype valueType = napi_undefined;
+        napi_typeof(env, element, &valueType);
+        if (valueType != napi_number) {
+            LOG_ERROR("ParseBytesVector, not number!");
+            return result;;
+        }
+
+        uint32_t byteValue = 0x0;
+        napi_get_value_uint32(env, element, &byteValue);
+        ids.push_back(static_cast<int>(byteValue));
+    }
+
+
+    EventFilterNapi *filter;
+    auto ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&filter),
             EventFilterNapi::Constructor(env));
     };
-    ctxt->GetCbInfo(env, info, input);
-    auto execute = [ctxt]() {
-        CHECK_RETURN_VOID(ctxt->filter != nullptr, "filter is null!");
-        auto nativeFilter = Native::FilterById(ctxt->ids);
-        ctxt->status = (nativeFilter != nullptr) ? napi_ok : napi_generic_failure;
-        CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
-        ctxt->filter->SetNative(nativeFilter);
-    };
-    auto output = [env, ctxt](napi_value& result) {
-        ctxt->status = napi_get_reference_value(env, ctxt->ref, &result);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output get ref value failed");
-        ctxt->status = napi_delete_reference(env, ctxt->ref);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output del ref failed");
-    };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
+    CHECK_RETURN(filter != nullptr, "filter is null!", result);
+    auto nativeFilter = Native::FilterById(ids);
+    CHECK_RETURN(nativeFilter != nullptr, "Native::FilterById failed!", result);
+    filter->SetNative(nativeFilter);
+    status = napi_get_reference_value(env, ref, &result);
+    CHECK_RETURN(status != napi_ok, "output get ref value failed", result);
+    status = napi_delete_reference(env, ref);
+    CHECK_RETURN(status != napi_ok, "output del ref failed", result);
+    return result;
 }
 
 
 napi_value EventFilterNapi::FilterByTime(napi_env env, napi_callback_info info)
 {
     LOG_INFO("FilterByTime");
-    struct EventFilterByTimeContext : public ContextBase {
-        EventFilterNapi *filter;
-        int64_t start;
-        int64_t end;
-        napi_ref ref = nullptr;
-    };
-    auto ctxt = std::make_shared<EventFilterByTimeContext>();
-    auto input = [env, ctxt](size_t argc, napi_value* argv) {
-        // required at 2 arguments :: <number start number end>
-        CHECK_ARGS_RETURN_VOID(ctxt, argc == 2, "invalid arguments!");
-        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->start);
-        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
-        ctxt->status = NapiUtil::GetValue(env, argv[1], ctxt->end);
-        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[1], i.e. invalid keys!");
-        ctxt->ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&ctxt->filter),
-            EventFilterNapi::Constructor(env));
-    };
-    ctxt->GetCbInfo(env, info, input);
-    auto execute = [ctxt]() {
-        CHECK_RETURN_VOID(ctxt->filter != nullptr, "filter is null!");
-        auto nativeFilter = Native::FilterByTime(ctxt->start, ctxt->end);
-        LOG_DEBUG("nativeFilter %{public}p", nativeFilter.get());
-        CHECK_RETURN_VOID(nativeFilter, "nativeFilter is null!");
-        ctxt->status = (nativeFilter != nullptr) ? napi_ok : napi_generic_failure;
-        CHECK_STATUS_RETURN_VOID(ctxt, "FilterByTime failed!");
-        ctxt->filter->SetNative(nativeFilter);
-        LOG_DEBUG("execute end");
-    };
-    auto output = [env, ctxt](napi_value& result) {
-        LOG_DEBUG("output start");
-        ctxt->status = napi_get_reference_value(env, ctxt->ref, &result);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output get ref value failed");
-        ctxt->status = napi_delete_reference(env, ctxt->ref);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output del ref failed");
-        LOG_DEBUG("output end");
-    };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
+    const int paramNumber = 2;
+    napi_value result = nullptr;
+    napi_value thisVar = nullptr;
+    size_t argc = paramNumber;
+    napi_value argv[paramNumber] = { 0 };
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr);
+    NAPI_ASSERT(env, argc == paramNumber, "requires 2 parameter");
+    int64_t start;
+    int64_t end;
+    napi_status status = NapiUtil::GetValue(env, argv[0], start);
+    NAPI_ASSERT(env, status == napi_ok, "GetValue start failed");
+    status = NapiUtil::GetValue(env, argv[1], end);
+    NAPI_ASSERT(env, status == napi_ok, "GetValue end failed");
+    EventFilterNapi *filter;
+    status = napi_new_instance(env, EventFilterNapi::Constructor(env), argc, argv, &result);
+    CHECK_RETURN(status == napi_ok, "napi_new_instance failed", result);
+    CHECK_RETURN(result != nullptr, "napi_new_instance failed", result);
+    status = napi_unwrap(env, result, reinterpret_cast<void**>(&filter));
+    CHECK_RETURN(status == napi_ok, "napi_unwrap failed", nullptr);
+    CHECK_RETURN(filter != nullptr, "filter is null!", result);
+    auto nativeFilter = Native::FilterByTime(start, end);
+    CHECK_RETURN(nativeFilter != nullptr, "Native::FilterById failed!", result);
+    filter->SetNative(nativeFilter);
+    return result;
 }
 
 napi_value EventFilterNapi::FilterByTitle(napi_env env, napi_callback_info info)
 {
     LOG_INFO("FilterByTitle");
-    struct EventFilterByTitleContext : public ContextBase {
-        EventFilterNapi *filter;
-        string title;
-        napi_ref ref = nullptr;
-    };
-    auto ctxt = std::make_shared<EventFilterByTitleContext>();
-    auto input = [env, ctxt](size_t argc, napi_value* argv) {
-        // required at 2 arguments :: <title string>
-        CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, "invalid arguments!");
-        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->title);
-        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
-        ctxt->ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&ctxt->filter),
-            EventFilterNapi::Constructor(env));
-    };
-    ctxt->GetCbInfo(env, info, input);
-    auto execute = [ctxt]() {
-        CHECK_RETURN_VOID(ctxt->filter != nullptr, "filter is null!");
-        auto nativeFilter = Native::FilterByTitle(ctxt->title);
-        ctxt->status = (nativeFilter != nullptr) ? napi_ok : napi_generic_failure;
-        CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
-        ctxt->filter->SetNative(nativeFilter);
-    };
-    auto output = [env, ctxt](napi_value& result) {
-        ctxt->status = napi_get_reference_value(env, ctxt->ref, &result);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output get ref value failed");
-        ctxt->status = napi_delete_reference(env, ctxt->ref);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output del ref failed");
-    };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
+    napi_value result = nullptr;
+    napi_value thisVar = nullptr;
+    size_t argc = 1;
+    napi_value argv[1] = { 0 };
+    napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr);
+    NAPI_ASSERT(env, argc == 1, "requires 1 parameter");
+    string title;
+    napi_status status = NapiUtil::GetValue(env, argv[0], title);
+    NAPI_ASSERT(env, status == napi_ok, "GetValue failed");
+    EventFilterNapi *filter;
+    status = napi_new_instance(env, EventFilterNapi::Constructor(env), argc, argv, &result);
+    CHECK_RETURN(status == napi_ok, "napi_new_instance failed", result);
+    CHECK_RETURN(result != nullptr, "napi_new_instance failed", result);
+    status = napi_unwrap(env, result, reinterpret_cast<void**>(&filter));
+    CHECK_RETURN(status == napi_ok, "napi_unwrap failed", nullptr);
+    CHECK_RETURN(filter != nullptr, "filter is null!", result);
+    auto nativeFilter = Native::FilterByTitle(title);
+    CHECK_RETURN(nativeFilter != nullptr, "Native::FilterById failed!", result);
+    filter->SetNative(nativeFilter);
+    return result;
 }
 
 napi_value EventFilterNapi::Init(napi_env env, napi_value exports)
