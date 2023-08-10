@@ -327,7 +327,7 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->events, result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
     };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value CalendarNapi::GetConfig(napi_env env, napi_callback_info info)
