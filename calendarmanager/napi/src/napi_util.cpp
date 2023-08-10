@@ -530,17 +530,40 @@ napi_status SetValue(napi_env env, const std::vector<Attendee>& in, napi_value& 
     return SetValueArray(env, in, out);
 }
 
-
-/* napi_value <-> EventService */
 napi_status GetValue(napi_env env, napi_value in, EventService& out)
 {
-    LOG_DEBUG("EventService -> napi_value ");
-    return napi_ok;
+    LOG_DEBUG("napi_value -> EventService");
+    NapiUtil::GetNamedPropertyOptional(env, in, "description", out.description);
+    NapiUtil::GetNamedProperty(env, in, "type", out.type);
+    return NapiUtil::GetNamedProperty(env, in, "uri", out.uri);
 }
+
 napi_status SetValue(napi_env env, const EventService& in, napi_value& out)
 {
-    LOG_DEBUG("napi_value -> EventService ");
-    return napi_ok;
+    LOG_DEBUG("EventService -> napi_value");
+    napi_status status = napi_create_object(env, &out);
+    CHECK_RETURN((status == napi_ok), "invalid entry object", status);
+
+    napi_value typeValue = nullptr;
+    status = SetValue(env, in.type, typeValue);
+    CHECK_RETURN((status == napi_ok), "invalid typeValue", status);
+    status = napi_set_named_property(env, out, "type", typeValue);
+    CHECK_RETURN((status == napi_ok), "set type failed", status);
+
+    napi_value uriValue = nullptr;
+    status = SetValue(env, in.uri, uriValue);
+    CHECK_RETURN((status == napi_ok), "invalid entry type", status);
+    status = napi_set_named_property(env, out, "uri", uriValue);
+    CHECK_RETURN((status == napi_ok), "set uri failed", status);
+
+    if (in.description) {
+        napi_value descriptionValue = nullptr;
+        status = SetValue(env, in.description.value(), descriptionValue);
+        CHECK_RETURN((status == napi_ok), "invalid description", status);
+        status = napi_set_named_property(env, out, "description", descriptionValue);
+        CHECK_RETURN((status == napi_ok), "set description failed", status);
+    }
+    return status;
 }
 
 /* napi_value <-> EventFilter */
@@ -619,6 +642,12 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
         status = SetValue(env, in.location.value(), value);
         CHECK_RETURN((status == napi_ok), "invalid location", status);
         napi_set_named_property(env, out, "location", value);
+    }
+    if (in.service) {
+        napi_value value = nullptr;
+        status = SetValue(env, in.service.value(), value);
+        CHECK_RETURN((status == napi_ok), "invalid service", status);
+        napi_set_named_property(env, out, "service", value);
     }
     return status;
 }
