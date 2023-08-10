@@ -110,7 +110,7 @@ napi_value EventFilterNapi::FilterById(napi_env env, napi_callback_info info)
         napi_typeof(env, element, &valueType);
         if (valueType != napi_number) {
             LOG_ERROR("ParseBytesVector, not number!");
-            return result;;
+            return result;
         }
 
         uint32_t byteValue = 0x0;
@@ -120,17 +120,15 @@ napi_value EventFilterNapi::FilterById(napi_env env, napi_callback_info info)
 
 
     EventFilterNapi *filter;
-    auto ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&filter),
-            EventFilterNapi::Constructor(env));
-    };
+    status = napi_new_instance(env, EventFilterNapi::Constructor(env), argc, argv, &result);
+        CHECK_RETURN(status == napi_ok, "napi_new_instance failed", result);
+    CHECK_RETURN(result != nullptr, "napi_new_instance failed", result);
+    status = napi_unwrap(env, result, reinterpret_cast<void**>(&filter));
+    CHECK_RETURN(status == napi_ok, "napi_unwrap failed", nullptr);
     CHECK_RETURN(filter != nullptr, "filter is null!", result);
     auto nativeFilter = Native::FilterById(ids);
     CHECK_RETURN(nativeFilter != nullptr, "Native::FilterById failed!", result);
     filter->SetNative(nativeFilter);
-    status = napi_get_reference_value(env, ref, &result);
-    CHECK_RETURN(status != napi_ok, "output get ref value failed", result);
-    status = napi_delete_reference(env, ref);
-    CHECK_RETURN(status != napi_ok, "output del ref failed", result);
     return result;
 }
 
