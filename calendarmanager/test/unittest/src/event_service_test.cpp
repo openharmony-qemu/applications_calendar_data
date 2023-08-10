@@ -50,14 +50,14 @@ std::shared_ptr<Calendar> EventServiceTest::calendar = nullptr;
 HWTEST_F(EventServiceTest, AddEventWithService, testing::ext::TestSize.Level1)
 {
     Event event;
-    const string title = "AddEventWithLocation";
+    const string title = "AddEventWithService";
     event.title = title;
     EventService testService {
         "test",
-        "//testuri"
+        "//testuri",
         "test_discription"
     };
-    event.service = std::make_optional<Location>(testService);
+    event.service = std::make_optional<EventService>(testService);
     auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
     auto events = calendar->GetEvents(FilterByTitle(title), {});
@@ -68,7 +68,7 @@ HWTEST_F(EventServiceTest, AddEventWithService, testing::ext::TestSize.Level1)
     auto result = resultEvent.service.value();
     EXPECT_EQ(result.type, testService.type);
     EXPECT_EQ(result.uri, testService.uri);
-    EXPECT_EQ(result.discription.value(), testService.discription.value());
+    EXPECT_EQ(result.description.value(), testService.description.value());
 }
 
 HWTEST_F(EventServiceTest, AddEventWithNoService, testing::ext::TestSize.Level1)
