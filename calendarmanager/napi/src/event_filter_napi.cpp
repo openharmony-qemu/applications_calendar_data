@@ -118,7 +118,6 @@ napi_value EventFilterNapi::FilterById(napi_env env, napi_callback_info info)
         ids.push_back(static_cast<int>(byteValue));
     }
 
-
     EventFilterNapi *filter;
     status = napi_new_instance(env, EventFilterNapi::Constructor(env), argc, argv, &result);
         CHECK_RETURN(status == napi_ok, "napi_new_instance failed", result);

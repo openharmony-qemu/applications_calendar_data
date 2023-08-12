@@ -300,7 +300,7 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
             napi_typeof(env, argv[0], &type);
             CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, "type error!");
             ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->eventFilter);
-            CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");            
+            CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
         }
         if (argc == 2) {
             // required atleast 2 arguments :: <eventKey>

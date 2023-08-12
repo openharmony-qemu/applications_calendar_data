@@ -115,7 +115,7 @@ bool Calendar::DeleteEvent(int id)
 void Calendar::DeleteAllEvents()
 {
     DataShare::DataSharePredicates predicates;
-    predicates.EqualTo("_id", id);
+    predicates.EqualTo("_id", GetId());
     auto ret = DataShareHelperManager::GetInstance().Delete(*(m_eventUri.get()), predicates);
     LOG_INFO("DeleteEvent number %{public}d", ret);
     return;
