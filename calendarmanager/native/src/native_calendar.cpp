@@ -112,6 +112,15 @@ bool Calendar::DeleteEvent(int id)
     return ret == 1;
 }
 
+void Calendar::DeleteAllEvents()
+{
+    DataShare::DataSharePredicates predicates;
+    predicates.EqualTo("_id", id);
+    auto ret = DataShareHelperManager::GetInstance().Delete(*(m_eventUri.get()), predicates);
+    LOG_INFO("DeleteEvent number %{public}d", ret);
+    return;
+}
+
 int Calendar::DeleteEvents(const std::vector<int>& ids)
 {
     int count = 0;
@@ -166,18 +175,20 @@ std::vector<Attendee> Calendar::GetAttendeesByEventId(int id)
 std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, const std::vector<string>& eventKey)
 {
     std::vector<Event> events;
-    if (!filter) {
-        LOG_ERROR("filter null");
-        return events;
-    }
-    auto predicates = filter->GetFilterPrediacates();
-    if (!predicates) {
-        LOG_ERROR("predicates null");
-        return events;
+    std::shared_ptr<DataShare::DataSharePredicates> predicates = nullptr;
+    if (filter) {
+        predicates = filter->GetFilterPrediacates();
+        if (!predicates) {
+            LOG_ERROR("predicates null");
+            return events;
+        }
+    } else {
+        predicates = std::make_shared<DataShare::DataSharePredicates>();
     }
     predicates->EqualTo("calendar_id", GetId());
-    std::vector<std::string> columns = {"_id", "title", "dtstart", "dtend", "eventLocation",
-        "location_longitude", "location_latitude",
+    std::vector<std::string> columns = {"_id", "title", "event_calendar_type",
+        "dtstart", "dtend",
+        "eventLocation", "location_longitude", "location_latitude",
         "service_type", "service_cp_bz_uri", "service_description"};
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),

@@ -34,7 +34,7 @@ struct CalendarAccount {
 };
 
 
-enum EventType : uint32_t {
+enum EventType {
     Normal = 0,
     Important = 1
 };

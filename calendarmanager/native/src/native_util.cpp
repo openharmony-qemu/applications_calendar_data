@@ -98,6 +98,7 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
 
     LOG_DEBUG("title %{public}s", event.title.value_or("").c_str());
     valuesBucket.Put("title", event.title.value_or(""));
+    valuesBucket.Put("event_calendar_type", event.type);
     valuesBucket.Put("dtstart", event.startTime);
     valuesBucket.Put("dtend", event.endTime);
 
@@ -141,6 +142,11 @@ int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, std::string
 int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int& out)
 {
     return resultSet->GetInt(index, out);
+}
+
+int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int64_t& out)
+{
+    return resultSet->GetLong(index, out);
 }
 
 int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, std::string& out)
@@ -273,7 +279,10 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
     do {
         Event event;
         GetValueOptional(resultSet, "_id", event.id);
+        GetValue(resultSet, "event_calendar_type", event.type);
         GetValueOptional(resultSet, "title", event.title);
+        GetValue(resultSet, "dtstart", event.startTime);
+        GetValue(resultSet, "dtend", event.endTime);
         GetValueOptional(resultSet, "description", event.description);
         GetValueOptional(resultSet, "eventTimezone", event.timeZone);
         event.location = ResultSetToLocation(resultSet);

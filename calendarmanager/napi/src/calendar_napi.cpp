@@ -133,7 +133,7 @@ napi_value CalendarNapi::AddEvent(napi_env env, napi_callback_info info)
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->eventId, result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
     };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value CalendarNapi::AddEvents(napi_env env, napi_callback_info info)
@@ -165,7 +165,7 @@ napi_value CalendarNapi::AddEvents(napi_env env, napi_callback_info info)
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->count, result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
     };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value CalendarNapi::DeleteEvent(napi_env env, napi_callback_info info)
@@ -194,7 +194,7 @@ napi_value CalendarNapi::DeleteEvent(napi_env env, napi_callback_info info)
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->result, result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
     };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value CalendarNapi::DeleteEvents(napi_env env, napi_callback_info info)
@@ -223,7 +223,7 @@ napi_value CalendarNapi::DeleteEvents(napi_env env, napi_callback_info info)
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->result, result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
     };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value CalendarNapi::UpdateEvent(napi_env env, napi_callback_info info)
@@ -252,7 +252,7 @@ napi_value CalendarNapi::UpdateEvent(napi_env env, napi_callback_info info)
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->result, result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
     };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value CalendarNapi::UpdateEvents(napi_env env, napi_callback_info info)
@@ -282,7 +282,7 @@ napi_value CalendarNapi::UpdateEvents(napi_env env, napi_callback_info info)
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->result, result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
     };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
@@ -294,13 +294,14 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
     };
     auto ctxt = std::make_shared<GetEventsContext>();
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
-        // required atleast 1 arguments :: <eventFilter>
-        CHECK_ARGS_RETURN_VOID(ctxt, argc == 1 || argc == 2, "invalid arguments!");
-        napi_valuetype type = napi_undefined;
-        napi_typeof(env, argv[0], &type);
-        CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, "type error!");
-        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->eventFilter);
-        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
+        CHECK_ARGS_RETURN_VOID(ctxt, argc <= 2, "invalid arguments!");
+        if (argc >= 1) {
+            napi_valuetype type = napi_undefined;
+            napi_typeof(env, argv[0], &type);
+            CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, "type error!");
+            ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->eventFilter);
+            CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");            
+        }
         if (argc == 2) {
             // required atleast 2 arguments :: <eventKey>
             napi_valuetype type = napi_undefined;
@@ -312,9 +313,10 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
     ctxt->GetCbInfo(env, info, input);
 
     auto execute = [ctxt]() {
-        CHECK_RETURN_VOID(ctxt->eventFilter != nullptr, "eventFilter nullptr");
-        auto nativeFilter = ctxt->eventFilter->GetNative();
-        CHECK_RETURN_VOID(nativeFilter != nullptr, "nativeFilter nullptr");
+        std::shared_ptr<Native::EvenrFilter> nativeFilter = nullptr;
+        if (ctxt->eventFilter != nullptr) {
+            nativeFilter = ctxt->eventFilter->GetNative();
+        }
         auto calendar = reinterpret_cast<CalendarNapi*>(ctxt->native);
         CHECK_RETURN_VOID(calendar != nullptr, "CalendarNapi nullptr");
         auto nativeCalendar = calendar->GetNative();

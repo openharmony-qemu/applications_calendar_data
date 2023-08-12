@@ -631,6 +631,23 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     napi_set_named_property(env, out, "type", type);
 
+    napi_value startTime = nullptr;
+    status = SetValue(env, in.startTime, startTime);
+    CHECK_RETURN((status == napi_ok), "invalid entry startTime", status);
+    napi_set_named_property(env, out, "startTime", startTime);
+
+    napi_value endTime = nullptr;
+    status = SetValue(env, in.endTime, endTime);
+    CHECK_RETURN((status == napi_ok), "invalid entry endTime", status);
+    napi_set_named_property(env, out, "endTime", endTime);
+
+    if (!in.attendees.empty()) {
+        napi_value attendees = nullptr;
+        status = SetValue(env, in.attendees, attendees);
+        CHECK_RETURN((status == napi_ok), "invalid entry attendees", status);
+        napi_set_named_property(env, out, "attendees", attendees);
+    }
+
     if (in.title) {
         napi_value titleValue = nullptr;
         status = SetValue(env, in.title.value(), titleValue);

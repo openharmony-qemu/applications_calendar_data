@@ -34,6 +34,7 @@ namespace OHOS::CalendarApi::Native {
     DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, int eventId);
     int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int& out);
     int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, std::string& out);
+    int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int64_t& out);
 
     std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPtr &resultSet);
     int ResultSetToEvents(std::vector<Event> &events,

@@ -38,6 +38,7 @@ public:
     int AddEvents(const std::vector<Event>& events);
     bool DeleteEvent(int id);
     int DeleteEvents(const std::vector<int>& id);
+    void DeleteAllEvents();
     bool UpdateEvent(const Event& event);
     int UpdateEvents(const std::vector<Event>& events);
     CalendarConfig GetConfig();
