@@ -482,7 +482,7 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
     GetNamedPropertyOptional(env, in, "id", out.id);
     int type = -1;
     napi_status status = GetNamedProperty(env, in, "type", type);
-    out.type = static_cast<EventType>(type)
+    out.type = static_cast<EventType>(type);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     GetNamedPropertyOptional(env, in, "title", out.title);
     GetNamedPropertyOptional(env, in, "location", out.location);
