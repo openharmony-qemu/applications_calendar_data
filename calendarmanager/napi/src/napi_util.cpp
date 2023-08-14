@@ -531,7 +531,7 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
         napi_value attendees = nullptr;
         status = SetValue(env, in.attendees, attendees);
         CHECK_RETURN((status == napi_ok), "invalid entry attendees", status);
-        napi_set_named_property(env, out, "attendees", attendees);
+        napi_set_named_property(env, out, "attendee", attendees);
     }
 
     if (in.title) {
