@@ -313,7 +313,7 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
     ctxt->GetCbInfo(env, info, input);
 
     auto execute = [ctxt]() {
-        std::shared_ptr<Native::EvenrFilter> nativeFilter = nullptr;
+        std::shared_ptr<Native::EventFilter> nativeFilter = nullptr;
         if (ctxt->eventFilter != nullptr) {
             nativeFilter = ctxt->eventFilter->GetNative();
         }
