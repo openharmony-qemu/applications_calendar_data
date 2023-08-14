@@ -205,20 +205,7 @@ napi_status GetValue(napi_env env, napi_value in, std::vector<int32_t>& out)
 napi_status SetValue(napi_env env, const std::vector<int32_t>& in, napi_value& out)
 {
     LOG_DEBUG("napi_value <- std::vector<int32_t> ");
-    size_t bytes = in.size() * sizeof(int32_t);
-    CHECK_RETURN(bytes > 0, "invalid std::vector<int32_t>", napi_invalid_arg);
-    void* data = nullptr;
-    napi_value buffer = nullptr;
-    napi_status status = napi_create_arraybuffer(env, bytes, &data, &buffer);
-    CHECK_RETURN((status == napi_ok), "invalid buffer", status);
-
-    if (memcpy_s(data, bytes, in.data(), bytes) != EOK) {
-        LOG_ERROR("memcpy_s not EOK");
-        return napi_invalid_arg;
-    }
-    status = napi_create_typedarray(env, napi_int32_array, in.size(), buffer, 0, &out);
-    CHECK_RETURN((status == napi_ok), "invalid buffer", status);
-    return status;
+    return SetValueArray(env, in, out);
 }
 
 /* napi_value <-> std::vector<uint32_t> */
@@ -493,7 +480,9 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
 {
     LOG_DEBUG("napi_value -> Event ");
     GetNamedPropertyOptional(env, in, "id", out.id);
-    napi_status status = GetNamedProperty(env, in, "type", out.type);
+    int type = -1;
+    napi_status status = GetNamedProperty(env, in, "type", type);
+    out.type = static_cast<EventType>(type)
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     GetNamedPropertyOptional(env, in, "title", out.title);
     GetNamedPropertyOptional(env, in, "location", out.location);
@@ -508,6 +497,7 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
     GetNamedPropertyOptional(env, in, "recurrenceRule", out.recurrenceRule);
     GetNamedPropertyOptional(env, in, "description", out.description);
     GetNamedPropertyOptional(env, in, "service", out.service);
+    Native::DumpEvent(out);
     return status;
 }
 

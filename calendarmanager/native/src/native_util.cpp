@@ -290,7 +290,6 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
         event.location = ResultSetToLocation(resultSet);
         event.service = ResultSetToEventService(resultSet);
         events.emplace_back(event);
-        DumpEvent(event);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
 }

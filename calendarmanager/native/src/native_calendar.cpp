@@ -236,7 +236,7 @@ std::optional<std::vector<int>> Calendar::GetRemindersByEventId(int id)
     if (ret != DataShare::E_OK) {
         return std::nullopt;
     }
-    LOG_INFO("query attendee finished");
+    LOG_INFO("query reminder finished");
     return reminders;
 }
 
@@ -271,6 +271,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
         auto attendees = GetAttendeesByEventId(eventId); // exist bug id must exist
         event.attendees = std::move(attendees);
         event.reminderTime = GetRemindersByEventId(eventId);
+        DumpEvent(event);
     }
     LOG_INFO("query finished");
     return events;
