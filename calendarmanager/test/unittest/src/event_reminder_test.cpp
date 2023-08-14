@@ -66,7 +66,7 @@ HWTEST_F(EventReminderTest, AddEventWithReminder, testing::ext::TestSize.Level1)
     event.reminderTime = reminderTime;
     auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto events = calendar->GetEvents(FilterById({eventId}), { });
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_NE(resultEvent.reminderTime, std::nullopt);
@@ -82,7 +82,7 @@ HWTEST_F(EventReminderTest, DelEventWithReminder, testing::ext::TestSize.Level1)
     event.reminderTime = reminderTime;
     auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({ eventId }), {});
+    auto events = calendar->GetEvents(FilterById({eventId}), { });
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_NE(resultEvent.reminderTime, std::nullopt);
@@ -102,7 +102,7 @@ HWTEST_F(EventReminderTest, UpdateEventWithReminder, testing::ext::TestSize.Leve
     event.reminderTime = reminderTime;
     auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({ eventId }), {});
+    auto events = calendar->GetEvents(FilterById({eventId}), { });
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_NE(resultEvent.reminderTime, std::nullopt);
@@ -111,7 +111,7 @@ HWTEST_F(EventReminderTest, UpdateEventWithReminder, testing::ext::TestSize.Leve
     resultEvent.reminderTime = newReminderTime;
     auto ret = calendar->UpdateEvent(resultEvent);
     ASSERT_EQ(ret, 1);
-    events = calendar->GetEvents(FilterById({ eventId }), {});
+    events = calendar->GetEvents(FilterById({eventId}), { });
     ASSERT_EQ(events.size(), 1);
     auto newResultEvent = events.at(0);
     EXPECT_NE(newResultEvent.reminderTime, std::nullopt);
