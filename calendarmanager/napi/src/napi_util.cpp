@@ -140,7 +140,7 @@ napi_status SetValue(napi_env env, const std::string& in, napi_value& out)
 napi_status GetValue(napi_env env, napi_value in, std::vector<std::string>& out)
 {
     LOG_DEBUG("napi_value -> std::vector<std::string>");
-    return GetValueArray(env, in, out);;
+    return GetValueArray(env, in, out);
 }
 
 napi_status SetValue(napi_env env, const std::vector<std::string>& in, napi_value& out)

@@ -193,7 +193,7 @@ bool Calendar::UpdateEvent(const Event& event)
             valuesBucket.Put("minutes", reminder);
             auto index = DataShareHelperManager::GetInstance().Insert(*(m_reminderUrl.get()), valuesBucket);
             LOG_INFO("Insert reminder index %{public}d", index);
-        }      
+        }
     }
 
     return ret == 1;
