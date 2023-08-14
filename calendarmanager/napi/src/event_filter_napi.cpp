@@ -87,40 +87,12 @@ napi_value EventFilterNapi::FilterById(napi_env env, napi_callback_info info)
     napi_value argv[1] = { 0 };
     napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr);
     NAPI_ASSERT(env, argc == 1, "requires 1 parameter");
-    napi_valuetype valueType = napi_null;
-    napi_typeof(env, argv[0], &valueType);
-    if (valueType != napi_object) {
-        LOG_ERROR("type mismatch for parameter 1");
-        return result;
-    }
     std::vector<int> ids;
-    bool isArray = false;
-    napi_status status = napi_is_array(env, argv[0], &isArray);
-    if (status != napi_ok || !isArray) {
-        LOG_ERROR("ParseBytesVector, not array");
-        return result;
-    }
-    uint32_t arrayLength = 0;
-    napi_get_array_length(env, argv[0], &arrayLength);
-    for (uint32_t i = 0; i < arrayLength; i++) {
-        napi_value element = nullptr;
-        napi_get_element(env, argv[0], i, &element);
-
-        napi_valuetype valueType = napi_undefined;
-        napi_typeof(env, element, &valueType);
-        if (valueType != napi_number) {
-            LOG_ERROR("ParseBytesVector, not number!");
-            return result;
-        }
-
-        uint32_t byteValue = 0x0;
-        napi_get_value_uint32(env, element, &byteValue);
-        ids.push_back(static_cast<int>(byteValue));
-    }
-
+    auto status = NapiUtil::GetValueArray(env, argv[0], ids);
+    CHECK_RETURN(status == napi_ok, "GetValueArray failed", nullptr);
     EventFilterNapi *filter;
     status = napi_new_instance(env, EventFilterNapi::Constructor(env), argc, argv, &result);
-        CHECK_RETURN(status == napi_ok, "napi_new_instance failed", result);
+    CHECK_RETURN(status == napi_ok, "napi_new_instance failed", result);
     CHECK_RETURN(result != nullptr, "napi_new_instance failed", result);
     status = napi_unwrap(env, result, reinterpret_cast<void**>(&filter));
     CHECK_RETURN(status == napi_ok, "napi_unwrap failed", nullptr);

@@ -95,7 +95,7 @@ HWTEST_F(EventFilterTest, FilterByTitle_test_partialMatch, testing::ext::TestSiz
     event.title = title;
     auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterByTitle("test"), {});
+    auto events = calendar->GetEvents(FilterByTitle("partialMatch"), {});
     ASSERT_FALSE(events.empty());
     EXPECT_EQ(events.at(0).title.value(), title);
 }

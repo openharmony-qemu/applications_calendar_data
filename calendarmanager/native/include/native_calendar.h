@@ -45,6 +45,7 @@ public:
     bool SetConfig(const CalendarConfig& config);
     std::vector<Event> GetEvents(std::shared_ptr<EventFilter> filter, const std::vector<string>& eventKey);
     std::vector<Attendee> GetAttendeesByEventId(int id);
+    std::optional<std::vector<int>> GetRemindersByEventId(int id);
     CalendarAccount GetAccount() const
     {
         return m_account;
@@ -60,6 +61,7 @@ private:
     std::unique_ptr<Uri> m_eventUri;
     std::unique_ptr<Uri> m_attendeeUri;
     std::unique_ptr<Uri> m_calendarUri;
+    std::unique_ptr<Uri> m_reminderUrl;
 };
 }  // namespace OHOS::Calendar
 #endif  //  NATIVE_CALENDAR_H

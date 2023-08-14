@@ -139,7 +139,7 @@ HWTEST_F(EventAttendeeTest, UpdateEventWithAttendee, testing::ext::TestSize.Leve
     events = calendar->GetEvents(FilterById({eventId}), {});
     ASSERT_EQ(events.size(), 1);
     resultEvent = events.at(0);
-    CompareAttendeeVec(resultEvent.attendees, testAttendees);
+    CompareAttendeeVec(resultEvent.attendees, newTestAttendees);
 }
 
 }
