@@ -55,7 +55,10 @@ public:
     void SetUp() {};
 
     /* TearDown:Execute after each test case */
-    void TearDown() {};
+    void TearDown()
+    {
+        calendar->DeleteAllEvents();
+    };
     static std::shared_ptr<Calendar> calendar;
 };
 
@@ -83,6 +86,30 @@ HWTEST_F(EventFilterTest, FilterByTitle_test_noexist, testing::ext::TestSize.Lev
     ASSERT_NE(eventId, 0);
     auto events = calendar->GetEvents(FilterByTitle(title + "event"), {});
     ASSERT_TRUE(events.empty());
+}
+
+HWTEST_F(EventFilterTest, FilterByTitle_test_partialMatch, testing::ext::TestSize.Level1)
+{
+    const string title = "FilterByTitle_test_partialMatch";
+    Event event;
+    event.title = title;
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle("partialMatch"), {});
+    ASSERT_FALSE(events.empty());
+    EXPECT_EQ(events.at(0).title.value(), title);
+}
+
+HWTEST_F(EventFilterTest, FilterByTitle_test_chinese, testing::ext::TestSize.Level1)
+{
+    const string title = "FilterByTitle_test_中文测试_0302";
+    Event event;
+    event.title = title;
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle("中文测试"), {});
+    ASSERT_FALSE(events.empty());
+    EXPECT_EQ(events.at(0).title.value(), title);
 }
 
 HWTEST_F(EventFilterTest, FilterById_test_normal, testing::ext::TestSize.Level1)
@@ -159,6 +186,8 @@ HWTEST_F(EventFilterTest, FilterByTime_test_001, testing::ext::TestSize.Level1)
     auto events = calendar->GetEvents(FilterByTime(event.startTime, event.endTime), {});
     ASSERT_EQ(1, events.size());
     EXPECT_EQ(events.at(0).title.value(), title);
+    EXPECT_EQ(events.at(0).startTime, event.startTime);
+    EXPECT_EQ(events.at(0).endTime, event.endTime);
 }
 
 HWTEST_F(EventFilterTest, FilterByTime_test_002, testing::ext::TestSize.Level1)
@@ -197,6 +226,10 @@ HWTEST_F(EventFilterTest, FilterByTime_test_003, testing::ext::TestSize.Level1)
     auto events = calendar->GetEvents(FilterByTime(timeNow, event2.endTime), {});
     ASSERT_EQ(2, events.size());
     EXPECT_EQ(events.at(0).title.value(), title1);
+    EXPECT_EQ(events.at(0).startTime, event1.startTime);
+    EXPECT_EQ(events.at(0).endTime, event1.endTime);
     EXPECT_EQ(events.at(1).title.value(), title2);
+    EXPECT_EQ(events.at(1).startTime, event2.startTime);
+    EXPECT_EQ(events.at(1).endTime, event2.endTime);
 }
 }

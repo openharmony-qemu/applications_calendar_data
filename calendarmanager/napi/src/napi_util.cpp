@@ -140,24 +140,7 @@ napi_status SetValue(napi_env env, const std::string& in, napi_value& out)
 napi_status GetValue(napi_env env, napi_value in, std::vector<std::string>& out)
 {
     LOG_DEBUG("napi_value -> std::vector<std::string>");
-    out.clear();
-    bool isArray = false;
-    napi_is_array(env, in, &isArray);
-    CHECK_RETURN(isArray, "not an array", napi_invalid_arg);
-
-    uint32_t length = 0;
-    napi_status status = napi_get_array_length(env, in, &length);
-    CHECK_RETURN((status == napi_ok) && (length > 0), "get_array failed!", napi_invalid_arg);
-    for (uint32_t i = 0; i < length; ++i) {
-        napi_value item = nullptr;
-        status = napi_get_element(env, in, i, &item);
-        CHECK_RETURN((item != nullptr) && (status == napi_ok), "no element", napi_invalid_arg);
-        std::string value;
-        status = GetValue(env, item, value);
-        CHECK_RETURN(status == napi_ok, "not a string", napi_invalid_arg);
-        out.push_back(value);
-    }
-    return status;
+    return GetValueArray(env, in, out);
 }
 
 napi_status SetValue(napi_env env, const std::vector<std::string>& in, napi_value& out)
@@ -212,111 +195,24 @@ napi_status SetValue(napi_env env, const std::vector<uint8_t>& in, napi_value& o
     return status;
 }
 
-template <typename T>
-void TypedArray2Vector(uint8_t* data, size_t length, napi_typedarray_type type, std::vector<T>& out)
-{
-    auto convert = [&out](auto* data, size_t elements) {
-        for (size_t index = 0; index < elements; index++) {
-            out.push_back(static_cast<T>(data[index]));
-        }
-    };
-
-    switch (type) {
-        case napi_int8_array:
-            convert(reinterpret_cast<int8_t*>(data), length);
-            break;
-        case napi_uint8_array:
-            convert(data, length);
-            break;
-        case napi_uint8_clamped_array:
-            convert(data, length);
-            break;
-        case napi_int16_array:
-            convert(reinterpret_cast<int16_t*>(data), length / sizeof(int16_t));
-            break;
-        case napi_uint16_array:
-            convert(reinterpret_cast<uint16_t*>(data), length / sizeof(uint16_t));
-            break;
-        case napi_int32_array:
-            convert(reinterpret_cast<int32_t*>(data), length / sizeof(int32_t));
-            break;
-        case napi_uint32_array:
-            convert(reinterpret_cast<uint32_t*>(data), length / sizeof(uint32_t));
-            break;
-        case napi_float32_array:
-            convert(reinterpret_cast<float*>(data), length / sizeof(float));
-            break;
-        case napi_float64_array:
-            convert(reinterpret_cast<double*>(data), length / sizeof(double));
-            break;
-        case napi_bigint64_array:
-            convert(reinterpret_cast<int64_t*>(data), length / sizeof(int64_t));
-            break;
-        case napi_biguint64_array:
-            convert(reinterpret_cast<uint64_t*>(data), length / sizeof(uint64_t));
-            break;
-        default:
-            CHECK_RETURN_VOID(false, "[FATAL] invalid napi_typedarray_type!");
-    }
-}
-
 /* napi_value <-> std::vector<int32_t> */
 napi_status GetValue(napi_env env, napi_value in, std::vector<int32_t>& out)
 {
-    out.clear();
     LOG_DEBUG("napi_value -> std::vector<int32_t> ");
-    napi_typedarray_type type = napi_biguint64_array;
-    size_t length = 0;
-    napi_value buffer = nullptr;
-    size_t offset = 0;
-    uint8_t* data = nullptr;
-    napi_status status = napi_get_typedarray_info(env, in, &type, &length,
-                                                  reinterpret_cast<void**>(&data), &buffer, &offset);
-    LOG_DEBUG("array type=%{public}d length=%{public}d offset=%{public}d", (int)type, (int)length, (int)offset);
-    CHECK_RETURN(status == napi_ok, "napi_get_typedarray_info failed!", napi_invalid_arg);
-    CHECK_RETURN(type <= napi_int32_array, "is not int32 supported typed array!", napi_invalid_arg);
-    CHECK_RETURN((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
-    TypedArray2Vector<int32_t>(data, length, type, out);
-    return status;
+    return GetValueArray(env, in, out);
 }
 
 napi_status SetValue(napi_env env, const std::vector<int32_t>& in, napi_value& out)
 {
     LOG_DEBUG("napi_value <- std::vector<int32_t> ");
-    size_t bytes = in.size() * sizeof(int32_t);
-    CHECK_RETURN(bytes > 0, "invalid std::vector<int32_t>", napi_invalid_arg);
-    void* data = nullptr;
-    napi_value buffer = nullptr;
-    napi_status status = napi_create_arraybuffer(env, bytes, &data, &buffer);
-    CHECK_RETURN((status == napi_ok), "invalid buffer", status);
-
-    if (memcpy_s(data, bytes, in.data(), bytes) != EOK) {
-        LOG_ERROR("memcpy_s not EOK");
-        return napi_invalid_arg;
-    }
-    status = napi_create_typedarray(env, napi_int32_array, in.size(), buffer, 0, &out);
-    CHECK_RETURN((status == napi_ok), "invalid buffer", status);
-    return status;
+    return SetValueArray(env, in, out);
 }
 
 /* napi_value <-> std::vector<uint32_t> */
 napi_status GetValue(napi_env env, napi_value in, std::vector<uint32_t>& out)
 {
-    out.clear();
     LOG_DEBUG("napi_value -> std::vector<uint32_t> ");
-    napi_typedarray_type type = napi_biguint64_array;
-    size_t length = 0;
-    napi_value buffer = nullptr;
-    size_t offset = 0;
-    uint8_t* data = nullptr;
-    napi_status status = napi_get_typedarray_info(env, in, &type, &length,
-                                                  reinterpret_cast<void**>(&data), &buffer, &offset);
-    LOG_DEBUG("napi_get_typedarray_info type=%{public}d", (int)type);
-    CHECK_RETURN(status == napi_ok, "napi_get_typedarray_info failed!", napi_invalid_arg);
-    CHECK_RETURN((type <= napi_uint16_array) || (type == napi_uint32_array), "invalid type!", napi_invalid_arg);
-    CHECK_RETURN((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
-    TypedArray2Vector<uint32_t>(data, length, type, out);
-    return status;
+    return GetValueArray(env, in, out);
 }
 
 napi_status SetValue(napi_env env, const std::vector<uint32_t>& in, napi_value& out)
@@ -341,21 +237,8 @@ napi_status SetValue(napi_env env, const std::vector<uint32_t>& in, napi_value& 
 /* napi_value <-> std::vector<int64_t> */
 napi_status GetValue(napi_env env, napi_value in, std::vector<int64_t>& out)
 {
-    out.clear();
     LOG_DEBUG("napi_value -> std::vector<int64_t> ");
-    napi_typedarray_type type = napi_biguint64_array;
-    size_t length = 0;
-    napi_value buffer = nullptr;
-    size_t offset = 0;
-    uint8_t* data = nullptr;
-    napi_status status = napi_get_typedarray_info(env, in, &type, &length,
-                                                  reinterpret_cast<void**>(&data), &buffer, &offset);
-    LOG_DEBUG("array type=%{public}d length=%{public}d offset=%{public}d", (int)type, (int)length, (int)offset);
-    CHECK_RETURN(status == napi_ok, "napi_get_typedarray_info failed!", napi_invalid_arg);
-    CHECK_RETURN((type <= napi_uint32_array) || (type == napi_bigint64_array), "invalid type!", napi_invalid_arg);
-    CHECK_RETURN((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
-    TypedArray2Vector<int64_t>(data, length, type, out);
-    return status;
+    return GetValueArray(env, in, out);
 }
 
 napi_status SetValue(napi_env env, const std::vector<int64_t>& in, napi_value& out)
@@ -597,7 +480,9 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
 {
     LOG_DEBUG("napi_value -> Event ");
     GetNamedPropertyOptional(env, in, "id", out.id);
-    napi_status status = GetNamedProperty(env, in, "type", out.type);
+    int type = -1;
+    napi_status status = GetNamedProperty(env, in, "type", type);
+    out.type = static_cast<EventType>(type);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     GetNamedPropertyOptional(env, in, "title", out.title);
     GetNamedPropertyOptional(env, in, "location", out.location);
@@ -612,6 +497,7 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
     GetNamedPropertyOptional(env, in, "recurrenceRule", out.recurrenceRule);
     GetNamedPropertyOptional(env, in, "description", out.description);
     GetNamedPropertyOptional(env, in, "service", out.service);
+    Native::DumpEvent(out);
     return status;
 }
 
@@ -627,9 +513,26 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
     napi_set_named_property(env, out, "id", id);
 
     napi_value type = nullptr;
-    status = SetValue(env, in.type, type);
+    status = SetValue(env, static_cast<int>(in.type), type);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     napi_set_named_property(env, out, "type", type);
+
+    napi_value startTime = nullptr;
+    status = SetValue(env, in.startTime, startTime);
+    CHECK_RETURN((status == napi_ok), "invalid entry startTime", status);
+    napi_set_named_property(env, out, "startTime", startTime);
+
+    napi_value endTime = nullptr;
+    status = SetValue(env, in.endTime, endTime);
+    CHECK_RETURN((status == napi_ok), "invalid entry endTime", status);
+    napi_set_named_property(env, out, "endTime", endTime);
+
+    if (!in.attendees.empty()) {
+        napi_value attendees = nullptr;
+        status = SetValue(env, in.attendees, attendees);
+        CHECK_RETURN((status == napi_ok), "invalid entry attendees", status);
+        napi_set_named_property(env, out, "attendee", attendees);
+    }
 
     if (in.title) {
         napi_value titleValue = nullptr;
@@ -648,6 +551,13 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
         status = SetValue(env, in.service.value(), value);
         CHECK_RETURN((status == napi_ok), "invalid service", status);
         napi_set_named_property(env, out, "service", value);
+    }
+
+    if (in.reminderTime) {
+        napi_value value = nullptr;
+        status = SetValue(env, in.reminderTime.value(), value);
+        CHECK_RETURN((status == napi_ok), "invalid entry reminderTime", status);
+        napi_set_named_property(env, out, "reminderTime", value);
     }
     return status;
 }

@@ -24,6 +24,7 @@ namespace {
     const string eventUrl = "datashare:///calendardata/Events";
     const string attendeeUrl = "datashare:///calendardata/Attendees";
     const string calendarUrl = "datashare:///calendardata/Calendars";
+    const string reminderUrl = "datashare:///calendardata/Reminders";
 }
 namespace OHOS::CalendarApi::Native {
 Calendar::Calendar(int id)
@@ -48,6 +49,7 @@ Calendar::Calendar(CalendarAccount account, int id)
     m_eventUri = std::make_unique<Uri>(eventUrl + bundleName_tokeId);
     m_attendeeUri = std::make_unique<Uri>(attendeeUrl + bundleName_tokeId);
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
+    m_reminderUrl = std::make_unique<Uri>(reminderUrl + bundleName_tokeId);
 }
 
 int Calendar::AddEvent(const Event& event)
@@ -64,6 +66,17 @@ int Calendar::AddEvent(const Event& event)
         auto index = DataShareHelperManager::GetInstance().Insert(*(m_attendeeUri.get()), valueAttendee);
         LOG_INFO("Insert attendee index %{public}d", index);
     }
+    // insert reminder
+    if (event.reminderTime) {
+        for (const auto &reminder : event.reminderTime.value()) {
+            DataShare::DataShareValuesBucket valuesBucket;
+            valuesBucket.Put("event_id", eventId);
+            valuesBucket.Put("minutes", reminder);
+            auto index = DataShareHelperManager::GetInstance().Insert(*(m_reminderUrl.get()), valuesBucket);
+            LOG_INFO("Insert reminder index %{public}d", index);
+        }
+    }
+
     return eventId;
 }
 #define SUPPORT_BATCH_INSERT 0
@@ -95,6 +108,7 @@ int Calendar::AddEvents(const std::vector<Event>& events)
 }
 #endif
 
+
 bool Calendar::DeleteEvent(int id)
 {
     DataShare::DataSharePredicates predicates;
@@ -109,7 +123,23 @@ bool Calendar::DeleteEvent(int id)
         auto ret = DataShareHelperManager::GetInstance().Delete(*(m_attendeeUri.get()), predicates);
         LOG_INFO("Delete attendee num %{public}d", ret);
     }
+    {
+        // delete reminder
+        DataShare::DataSharePredicates predicates;
+        predicates.EqualTo("event_id", id);
+        auto ret = DataShareHelperManager::GetInstance().Delete(*(m_reminderUrl.get()), predicates);
+        LOG_INFO("Delete reminder num %{public}d", ret);
+    }
     return ret == 1;
+}
+
+void Calendar::DeleteAllEvents()
+{
+    DataShare::DataSharePredicates predicates;
+    predicates.EqualTo("_id", GetId());
+    auto ret = DataShareHelperManager::GetInstance().Delete(*(m_eventUri.get()), predicates);
+    LOG_INFO("DeleteEvent number %{public}d", ret);
+    return;
 }
 
 int Calendar::DeleteEvents(const std::vector<int>& ids)
@@ -130,11 +160,42 @@ bool Calendar::UpdateEvent(const Event& event)
         LOG_ERROR("event id not exist");
         return false;
     }
+    const auto eventId = event.id.value();
     DataShare::DataSharePredicates m_predicates;
-    m_predicates.EqualTo("_id", event.id.value());
+    m_predicates.EqualTo("_id", eventId);
     auto valueEvent = BuildValueEvent(event, m_id);
     auto ret = DataShareHelperManager::GetInstance().Update(*(m_eventUri.get()), m_predicates, valueEvent);
     LOG_INFO(" Update code %{public}d", ret);
+    {
+        // delete attendee
+        DataShare::DataSharePredicates predicates;
+        predicates.EqualTo("event_id", eventId);
+        auto ret = DataShareHelperManager::GetInstance().Delete(*(m_attendeeUri.get()), predicates);
+        LOG_INFO("Delete attendee num %{public}d", ret);
+    }
+    for (const auto &attendee : event.attendees) {
+        auto valueAttendee = BuildAttendeeValue(attendee, eventId);
+        auto index = DataShareHelperManager::GetInstance().Insert(*(m_attendeeUri.get()), valueAttendee);
+        LOG_INFO("Update attendee index %{public}d", index);
+    }
+
+    {
+        // delete reminder
+        DataShare::DataSharePredicates predicates;
+        predicates.EqualTo("event_id", eventId);
+        auto ret = DataShareHelperManager::GetInstance().Delete(*(m_reminderUrl.get()), predicates);
+        LOG_INFO("Delete reminder num %{public}d", ret);
+    }
+    if (event.reminderTime) {
+        for (const auto &reminder : event.reminderTime.value()) {
+            DataShare::DataShareValuesBucket valuesBucket;
+            valuesBucket.Put("event_id", eventId);
+            valuesBucket.Put("minutes", reminder);
+            auto index = DataShareHelperManager::GetInstance().Insert(*(m_reminderUrl.get()), valuesBucket);
+            LOG_INFO("Insert reminder index %{public}d", index);
+        }
+    }
+
     return ret == 1;
 }
 
@@ -163,21 +224,39 @@ std::vector<Attendee> Calendar::GetAttendeesByEventId(int id)
     return attendees;
 }
 
+std::optional<std::vector<int>> Calendar::GetRemindersByEventId(int id)
+{
+    DataShare::DataSharePredicates predicates;
+    predicates.EqualTo("event_id", id);
+    std::vector<std::string> columns = {"event_id", "minutes"};
+    DataShare::DatashareBusinessError error;
+    auto result = DataShareHelperManager::GetInstance().Query(*(m_reminderUrl.get()), predicates, columns, &error);
+    std::vector<int> reminders;
+    auto ret = ResultSetToReminders(reminders, result);
+    if (ret != DataShare::E_OK) {
+        return std::nullopt;
+    }
+    LOG_INFO("query reminder finished");
+    return reminders;
+}
+
 std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, const std::vector<string>& eventKey)
 {
     std::vector<Event> events;
-    if (!filter) {
-        LOG_ERROR("filter null");
-        return events;
-    }
-    auto predicates = filter->GetFilterPrediacates();
-    if (!predicates) {
-        LOG_ERROR("predicates null");
-        return events;
+    std::shared_ptr<DataShare::DataSharePredicates> predicates = nullptr;
+    if (filter) {
+        predicates = filter->GetFilterPrediacates();
+        if (!predicates) {
+            LOG_ERROR("predicates null");
+            return events;
+        }
+    } else {
+        predicates = std::make_shared<DataShare::DataSharePredicates>();
     }
     predicates->EqualTo("calendar_id", GetId());
-    std::vector<std::string> columns = {"_id", "title", "dtstart", "dtend", "eventLocation",
-        "location_longitude", "location_latitude",
+    std::vector<std::string> columns = {"_id", "title", "event_calendar_type",
+        "dtstart", "dtend",
+        "eventLocation", "location_longitude", "location_latitude",
         "service_type", "service_cp_bz_uri", "service_description"};
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),
@@ -188,8 +267,11 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     }
     ResultSetToEvents(events, result, columns);
     for (auto &event : events) {
-        auto attendees = GetAttendeesByEventId(event.id.value()); // exist bug id must exist
+        const auto eventId = event.id.value();
+        auto attendees = GetAttendeesByEventId(eventId); // exist bug id must exist
         event.attendees = std::move(attendees);
+        event.reminderTime = GetRemindersByEventId(eventId);
+        DumpEvent(event);
     }
     LOG_INFO("query finished");
     return events;

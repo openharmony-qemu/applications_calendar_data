@@ -78,7 +78,7 @@ std::shared_ptr<EventFilter> FilterByTitle(std::string_view title)
 {
     LOG_DEBUG("FilterByTitle %{public}s", std::string(title).c_str());
     auto predicates = std::make_shared<DataShare::DataSharePredicates>();
-    predicates->EqualTo("title", std::string(title));
+    predicates->Like("title", "%" + std::string(title) + "%");
     return std::make_shared<EventFilter>(predicates);
 }
 }

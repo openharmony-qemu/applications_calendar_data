@@ -98,6 +98,7 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
 
     LOG_DEBUG("title %{public}s", event.title.value_or("").c_str());
     valuesBucket.Put("title", event.title.value_or(""));
+    valuesBucket.Put("event_calendar_type", event.type);
     valuesBucket.Put("dtstart", event.startTime);
     valuesBucket.Put("dtend", event.endTime);
 
@@ -141,6 +142,11 @@ int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, std::string
 int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int& out)
 {
     return resultSet->GetInt(index, out);
+}
+
+int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int64_t& out)
+{
+    return resultSet->GetLong(index, out);
 }
 
 int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, std::string& out)
@@ -273,13 +279,17 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
     do {
         Event event;
         GetValueOptional(resultSet, "_id", event.id);
+        int type = 0;
+        GetValue(resultSet, "event_calendar_type", type);
+        event.type = static_cast<EventType>(type);
         GetValueOptional(resultSet, "title", event.title);
+        GetValue(resultSet, "dtstart", event.startTime);
+        GetValue(resultSet, "dtend", event.endTime);
         GetValueOptional(resultSet, "description", event.description);
         GetValueOptional(resultSet, "eventTimezone", event.timeZone);
         event.location = ResultSetToLocation(resultSet);
         event.service = ResultSetToEventService(resultSet);
         events.emplace_back(event);
-        DumpEvent(event);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
 }
@@ -302,6 +312,27 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         GetValue(resultSet, "attendeeName", attendee.name);
         GetValue(resultSet, "attendeeEmail", attendee.email);
         attendees.emplace_back(attendee);
+    } while (resultSet->GoToNextRow() == DataShare::E_OK);
+    return 0;
+}
+
+int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet)
+{
+    int rowCount = 0;
+    resultSet->GetRowCount(rowCount);
+    LOG_INFO("GetRowCount is %{public}d", rowCount);
+    if (rowCount <= 0) {
+        return -1;
+    }
+    auto err = resultSet->GoToFirstRow();
+    if (err != DataShare::E_OK) {
+        LOG_ERROR("Failed GoToFirstRow %{public}d", err);
+        return -1;
+    }
+    do {
+        int minutes;
+        GetValue(resultSet, "minutes", minutes);
+        reminders.emplace_back(minutes);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
 }

@@ -34,11 +34,13 @@ namespace OHOS::CalendarApi::Native {
     DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, int eventId);
     int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int& out);
     int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, std::string& out);
+    int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int64_t& out);
 
     std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPtr &resultSet);
     int ResultSetToEvents(std::vector<Event> &events,
         DataShareResultSetPtr &resultSet, const std::vector<std::string>& columns);
     int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet);
+    int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet);
 
     bool ColorParse(const std::string& colorStr, uint32_t& colorValue);
 
