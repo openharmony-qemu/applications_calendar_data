@@ -369,7 +369,31 @@ napi_value CalendarNapi::GetConfig(napi_env env, napi_callback_info info)
 napi_value CalendarNapi::SetConfig(napi_env env, napi_callback_info info)
 {
     LOG_INFO("SetConfig");
-    return napi_value();
+    struct SetConfigContext : public ContextBase {
+        int result;
+        CalendarConfig config;
+        CalendarNapi *calendar;
+    };
+    auto ctxt = std::make_shared<SetConfigContext>();
+    auto input = [env, ctxt](size_t argc, napi_value* argv) {
+        // required atleast 1 arguments :: <CalendarConfig>
+        CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, "invalid arguments!");
+        NapiUtil::GetValue(env, argv[0], ctxt->config);
+        CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid config!");
+    };
+    ctxt->GetCbInfo(env, info, input);
+    auto execute = [ctxt]() {
+        auto calendar = reinterpret_cast<CalendarNapi*>(ctxt->native);
+        CHECK_RETURN_VOID(calendar != nullptr, "CalendarNapi nullptr");
+        auto nativeCalendar = calendar->GetNative();
+        CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
+        ctxt->result = nativeCalendar->SetConfig(ctxt->config);
+    };
+    auto output = [env, ctxt](napi_value& result) {
+        ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->result, result);
+        CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
+    };
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
 napi_value CalendarNapi::GetAccount(napi_env env, napi_callback_info info)
