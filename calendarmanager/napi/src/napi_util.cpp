@@ -396,7 +396,7 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     napi_value emailValue = nullptr;
     status = SetValue(env, in.email, emailValue);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
-    napi_set_named_property(env, out, "name", emailValue);
+    napi_set_named_property(env, out, "email", emailValue);
     return napi_ok;
 }
 
@@ -507,58 +507,27 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
     napi_status status = napi_create_object(env, &out);
     CHECK_RETURN((status == napi_ok), "invalid entry object", status);
 
-    napi_value id = nullptr;
-    status = SetValue(env, in.id.value(), id);
+    status = SetNamedProperty(env, "id", in.id.value(), out);
     CHECK_RETURN((status == napi_ok), "invalid entry id", status);
-    napi_set_named_property(env, out, "id", id);
 
-    napi_value type = nullptr;
-    status = SetValue(env, static_cast<int>(in.type), type);
+    status = SetNamedProperty(env, "type", static_cast<int>(in.type), out);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
-    napi_set_named_property(env, out, "type", type);
 
-    napi_value startTime = nullptr;
-    status = SetValue(env, in.startTime, startTime);
+    SetNamedPropertyOptional(env, "location", in.location, out);
+    SetNamedPropertyOptional(env, "title", in.title, out);
+
+    status = SetNamedProperty(env, "startTime", in.startTime, out);
     CHECK_RETURN((status == napi_ok), "invalid entry startTime", status);
-    napi_set_named_property(env, out, "startTime", startTime);
 
-    napi_value endTime = nullptr;
-    status = SetValue(env, in.endTime, endTime);
+    status = SetNamedProperty(env, "endTime", in.endTime, out);
     CHECK_RETURN((status == napi_ok), "invalid entry endTime", status);
-    napi_set_named_property(env, out, "endTime", endTime);
 
-    if (!in.attendees.empty()) {
-        napi_value attendees = nullptr;
-        status = SetValue(env, in.attendees, attendees);
-        CHECK_RETURN((status == napi_ok), "invalid entry attendees", status);
-        napi_set_named_property(env, out, "attendee", attendees);
-    }
-
-    if (in.title) {
-        napi_value titleValue = nullptr;
-        status = SetValue(env, in.title.value(), titleValue);
-        CHECK_RETURN((status == napi_ok), "invalid entry title", status);
-        napi_set_named_property(env, out, "title", titleValue);
-    }
-    if (in.location) {
-        napi_value value = nullptr;
-        status = SetValue(env, in.location.value(), value);
-        CHECK_RETURN((status == napi_ok), "invalid location", status);
-        napi_set_named_property(env, out, "location", value);
-    }
-    if (in.service) {
-        napi_value value = nullptr;
-        status = SetValue(env, in.service.value(), value);
-        CHECK_RETURN((status == napi_ok), "invalid service", status);
-        napi_set_named_property(env, out, "service", value);
-    }
-
-    if (in.reminderTime) {
-        napi_value value = nullptr;
-        status = SetValue(env, in.reminderTime.value(), value);
-        CHECK_RETURN((status == napi_ok), "invalid entry reminderTime", status);
-        napi_set_named_property(env, out, "reminderTime", value);
-    }
+    SetNamedPropertyOptional(env, "isAllDay", in.isAllDay, out);
+    SetNamedPropertyOptional(env, "attendee", in.attendees, out);
+    SetNamedPropertyOptional(env, "timeZone", in.timeZone, out);
+    SetNamedPropertyOptional(env, "reminderTime", in.reminderTime, out);
+    SetNamedPropertyOptional(env, "description", in.description, out);
+    SetNamedPropertyOptional(env, "service", in.service, out);
     return status;
 }
 
