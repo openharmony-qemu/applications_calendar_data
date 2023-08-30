@@ -146,7 +146,7 @@ namespace OHOS::CalendarApi::NapiUtil {
         if (status != napi_ok) {
             return status;
         }
-        return napi_set_named_property(env, out, prop, value);
+        return napi_set_named_property(env, out, prop.c_str(), value);
     }
 
     template <typename T>
@@ -160,7 +160,7 @@ namespace OHOS::CalendarApi::NapiUtil {
         if (status != napi_ok) {
             return;
         }
-        napi_set_named_property(env, out, prop, value);
+        napi_set_named_property(env, out, prop.c_str(), value);
     }
 
     /* napi_get_named_property wrapper */

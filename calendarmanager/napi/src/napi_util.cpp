@@ -523,7 +523,10 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
     CHECK_RETURN((status == napi_ok), "invalid entry endTime", status);
 
     SetNamedPropertyOptional(env, "isAllDay", in.isAllDay, out);
-    SetNamedPropertyOptional(env, "attendee", in.attendees, out);
+    if (!in.attendees.empty()) {
+        status = SetNamedProperty(env, "attendee", in.attendees, out);
+        CHECK_RETURN((status == napi_ok), "invalid entry attendee", status);
+    }
     SetNamedPropertyOptional(env, "timeZone", in.timeZone, out);
     SetNamedPropertyOptional(env, "reminderTime", in.reminderTime, out);
     SetNamedPropertyOptional(env, "description", in.description, out);

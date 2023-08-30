@@ -254,8 +254,8 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
         predicates = std::make_shared<DataShare::DataSharePredicates>();
     }
     predicates->EqualTo("calendar_id", GetId());
-    std::vector<std::string> columns = {"_id", "title", "event_calendar_type",
-        "dtstart", "dtend",
+    std::vector<std::string> columns = {"_id", "title", "description",  "event_calendar_type",
+        "dtstart", "dtend", "allDay", "eventTimezone",
         "eventLocation", "location_longitude", "location_latitude",
         "service_type", "service_cp_bz_uri", "service_description"};
     DataShare::DatashareBusinessError error;

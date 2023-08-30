@@ -123,6 +123,44 @@ HWTEST_F(CalendarTest, AddEvents_input_empty, testing::ext::TestSize.Level1)
     ASSERT_EQ(count, 0);
 }
 
+HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
+{
+    Event event;
+    const string title = "GetEvent_test_1";
+    event.title = title;
+    event.type = EventType::Important;
+    Location testLocation { "test", 123, 456 };
+    event.location = std::make_optional<Location>(testLocation);
+    const int startTime = 12;
+    event.startTime = startTime;
+    const int endTime = 100;
+    event.endTime =  endTime;
+    event.isAllDay = true;
+    event.attendees =  {
+        {"xiaoming", "xiaoming@abc.com"},
+        {"xiaoqiang", "test_attendee1@abc.com"},
+        {"abc", "test_attendee2@abc.com"}
+    };
+    event.timeZone = "shanghai";
+    event.reminderTime = {0, 1, 2};
+    event.description = "UpdateEvent_test_2_disp";
+    const auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    const auto events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    const auto newEvent = events.at(0);
+    EXPECT_EQ(newEvent.title, event.title);
+    EXPECT_EQ(newEvent.type, event.type);
+    EXPECT_EQ(newEvent.location, event.location);
+    EXPECT_EQ(newEvent.startTime, event.startTime);
+    EXPECT_EQ(newEvent.endTime, event.endTime);
+    EXPECT_EQ(newEvent.isAllDay, event.isAllDay);
+    EXPECT_EQ(newEvent.attendees, event.attendees);
+    EXPECT_EQ(newEvent.timeZone, event.timeZone);
+    EXPECT_EQ(newEvent.reminderTime, event.reminderTime);
+    EXPECT_EQ(newEvent.description, event.description);
+}
+
 HWTEST_F(CalendarTest, UpdateEvent_test_1, testing::ext::TestSize.Level1)
 {
     Event event;

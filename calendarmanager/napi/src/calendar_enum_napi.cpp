@@ -38,7 +38,7 @@ static const std::vector<struct JsEnumInt> g_eventType = {
     { "NORMAL", EventType::Normal },
 };
 
-static const std::vector<struct JsEnumInt> g_recurrenceType = {
+static const std::vector<struct JsEnumInt> g_recurrenceFrequency = {
     { "YEARLY", RecurrenceType::YEARLY },
     { "MONTHLY", RecurrenceType::MONTHLY },
     { "WEEKLY", RecurrenceType::WEEKLY },
@@ -48,6 +48,7 @@ static const std::vector<struct JsEnumInt> g_recurrenceType = {
 static const std::vector<struct JsEnumString> g_calendarTypeKey = {
     { "LOCAL", "local" },
     { "EMAIL", "email" },
+    { "BIRTHDAY", "birthday" },
     { "CALDAV", "caldav" },
     { "SUBSCRIBED", "subscribed" },
 };
@@ -66,7 +67,7 @@ static const std::vector<struct JsEnumString> g_serviceType = {
 
 static const std::map<std::string_view, const std::vector<struct JsEnumInt>&> g_intEnumClassMap = {
     { "EventType", g_eventType},
-    { "RecurrenceType", g_recurrenceType},
+    { "RecurrenceFrequency", g_recurrenceFrequency},
 };
 
 static const std::map<std::string_view, const std::vector<struct JsEnumString>&> g_stringEnumClassMap = {
