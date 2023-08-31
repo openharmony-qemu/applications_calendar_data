@@ -146,7 +146,7 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     event.description = "UpdateEvent_test_2_disp";
     const auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
-    const auto events = calendar->GetEvents(FilterById({eventId}), {});
+    const auto events = calendar->GetEvents(FilterByTitle(title), {});
     ASSERT_EQ(1, events.size());
     const auto newEvent = events.at(0);
     EXPECT_EQ(newEvent.title, event.title);
