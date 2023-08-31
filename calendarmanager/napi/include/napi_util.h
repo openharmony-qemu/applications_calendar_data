@@ -138,6 +138,31 @@ namespace OHOS::CalendarApi::NapiUtil {
         return napi_invalid_arg;
     };
 
+    template <typename T>
+    napi_status SetNamedProperty(napi_env env, const string& prop, const T&nativeValue, napi_value& out)
+    {
+        napi_value value = nullptr;
+        auto status = SetValue(env, nativeValue, value);
+        if (status != napi_ok) {
+            return status;
+        }
+        return napi_set_named_property(env, out, prop.c_str(), value);
+    }
+
+    template <typename T>
+    void SetNamedPropertyOptional(napi_env env, const string& prop, const std::optional<T>&nativeValue, napi_value& out)
+    {
+        if (!nativeValue) {
+            return;
+        }
+        napi_value value = nullptr;
+        auto status = SetValue(env, nativeValue.value(), value);
+        if (status != napi_ok) {
+            return;
+        }
+        napi_set_named_property(env, out, prop.c_str(), value);
+    }
+
     /* napi_get_named_property wrapper */
     template <typename T>
     void GetNamedPropertyOptional(napi_env env, napi_value in, const std::string& prop, std::optional<T>& out)
