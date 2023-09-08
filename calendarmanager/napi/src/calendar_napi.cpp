@@ -38,7 +38,6 @@ napi_value CalendarNapi::Constructor(napi_env env)
         DECLARE_NAPI_FUNCTION("getConfig", GetConfig),
         DECLARE_NAPI_FUNCTION("setConfig", SetConfig),
         DECLARE_NAPI_FUNCTION("getAccount", GetAccount),
-        DECLARE_NAPI_GETTER("id", GetId)
     };
     size_t count = sizeof(properties) / sizeof(properties[0]);
     return NapiUtil::DefineClass(env, "Calendar", properties, count, CalendarNapi::New);
