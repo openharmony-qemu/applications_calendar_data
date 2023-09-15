@@ -38,7 +38,6 @@ napi_value CalendarNapi::Constructor(napi_env env)
         DECLARE_NAPI_FUNCTION("getConfig", GetConfig),
         DECLARE_NAPI_FUNCTION("setConfig", SetConfig),
         DECLARE_NAPI_FUNCTION("getAccount", GetAccount),
-        DECLARE_NAPI_GETTER("id", GetId)
     };
     size_t count = sizeof(properties) / sizeof(properties[0]);
     return NapiUtil::DefineClass(env, "Calendar", properties, count, CalendarNapi::New);
@@ -87,20 +86,6 @@ void CalendarNapi::SetNative(std::shared_ptr<Native::Calendar>& calendar)
 std::shared_ptr<Native::Calendar>& CalendarNapi::GetNative()
 {
     return calendar_;
-}
-
-napi_value CalendarNapi::GetId(napi_env env, napi_callback_info info)
-{
-    LOG_INFO("GetId");
-    napi_value thisVar = nullptr;
-    NAPI_CALL(env, napi_get_cb_info(env, info, nullptr, nullptr, &thisVar, nullptr));
-
-    CalendarNapi* object = nullptr;
-    NAPI_CALL(env, napi_unwrap(env, thisVar, reinterpret_cast<void**>(&object)));
-    auto id = object->GetNative()->GetId();
-    napi_value result;
-    NapiUtil::SetValue(env, id, result);
-    return result;
 }
 
 napi_value CalendarNapi::AddEvent(napi_env env, napi_callback_info info)

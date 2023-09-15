@@ -35,6 +35,7 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
     struct CreateCalendarContext : public ContextBase {
         CalendarAccount account;
         CalendarNapi *calendar;
+        int id;
         napi_ref ref = nullptr;
     };
     auto ctxt = std::make_shared<CreateCalendarContext>();
@@ -53,10 +54,13 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
         ctxt->status = (nativteCalendar != nullptr) ? napi_ok : napi_generic_failure;
         CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
         ctxt->calendar->SetNative(nativteCalendar);
+        ctxt->id = nativteCalendar->GetId();
     };
     auto output = [env, ctxt](napi_value& result) {
         ctxt->status = napi_get_reference_value(env, ctxt->ref, &result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output get ref value failed");
+        ctxt->status = NapiUtil::SetNamedProperty(env, "id", ctxt->id, result);
+        CHECK_STATUS_RETURN_VOID(ctxt, "SetNamedProperty id failed");
         ctxt->status = napi_delete_reference(env, ctxt->ref);
         CHECK_STATUS_RETURN_VOID(ctxt, "output del ref failed");
     };
@@ -101,6 +105,7 @@ struct GetCalendarContext : public ContextBase {
     std::optional<CalendarAccount> account;
     CalendarNapi *calendar = nullptr;
     napi_ref ref = nullptr;
+    int id = -1;
 
     void GetCbInfo(napi_env env, napi_callback_info info)
     {
@@ -134,10 +139,13 @@ napi_value CalendarManagerNapi::GetCalendar(napi_env env, napi_callback_info inf
         ctxt->status = (nativteCalendar != nullptr) ? napi_ok : napi_generic_failure;
         CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
         ctxt->calendar->SetNative(nativteCalendar);
+        ctxt->id = nativteCalendar->GetId();
     };
     auto output = [env, ctxt](napi_value& result) {
         ctxt->status = napi_get_reference_value(env, ctxt->ref, &result);
         CHECK_STATUS_RETURN_VOID(ctxt, "output get ref value failed");
+        ctxt->status = NapiUtil::SetNamedProperty(env, "id", ctxt->id, result);
+        CHECK_STATUS_RETURN_VOID(ctxt, "SetNamedProperty id failed");
         ctxt->status = napi_delete_reference(env, ctxt->ref);
         CHECK_STATUS_RETURN_VOID(ctxt, "output del ref failed");
     };
@@ -162,6 +170,11 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
                 CalendarNapi::Constructor(env));
             CHECK_RETURN_VOID(calendarNapi != nullptr, "new CalendarNapi failed!");
             calendarNapi->SetNative(calendar);
+            napi_value value;
+            ctxt->status = napi_get_reference_value(env, ref, &value);
+            CHECK_STATUS_RETURN_VOID(ctxt, "napi_get_reference_value failed");
+            ctxt->status = NapiUtil::SetNamedProperty(env, "id", calendar->GetId(), value);
+            CHECK_STATUS_RETURN_VOID(ctxt, "SetNamedProperty id failed");
             ctxt->refs.emplace_back(ref);
         }
     };
