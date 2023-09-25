@@ -31,5 +31,5 @@ private:
     std::shared_ptr<OHOS::AbilityRuntime::Context> m_context;
     bool hasInited = false;
 };
-
+} // namespace Calendar::CalendarApi
 #endif
