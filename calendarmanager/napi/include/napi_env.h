@@ -25,12 +25,11 @@
 namespace OHOS::CalendarApi {
 class CalendarEnvNapi : public OHOS::Singleton<CalendarEnvNapi> {
 public:
-    void Init(napi_env env);
+    void Init(napi_env env, napi_value value);
 private:
-    napi_status GetContext(napi_env env);
+    napi_status GetContext(napi_env env, napi_value value);
     std::shared_ptr<OHOS::AbilityRuntime::Context> m_context;
     bool hasInited = false;
 };
-}
 
 #endif

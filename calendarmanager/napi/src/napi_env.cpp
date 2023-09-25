@@ -29,63 +29,30 @@
 
 namespace OHOS::CalendarApi {
 
-bool IsStageMode(napi_env env, napi_value value)
+napi_status CalendarEnvNapi::GetContext(napi_env env, napi_value value)
 {
-    bool stageMode = true;
-    napi_status status = OHOS::AbilityRuntime::IsStageContext(env, value, stageMode);
-    if (status != napi_ok) {
-        LOG_ERROR("IsStageContext call failed %{public}d.", status);
+    bool isStageMode = false;
+    auto status = AbilityRuntime::IsStageContext(env, value, isStageMode);
+    if (status != napi_ok || !isStageMode) {
+        LOG_ERROR("No support FA Model");
+        return napi_generic_failure;
     }
-    return stageMode;
-}
-
-napi_status CalendarEnvNapi::GetContext(napi_env env)
-{
-    napi_value global;
-    LOG_DEBUG("napi_get_global");
-    napi_status status = napi_get_global(env, &global);
-    if (status != napi_ok) {
-        LOG_ERROR("GetDataShareHelper napi_get_global != napi_ok");
-    }
-    napi_value globalThis;
-    status = napi_get_named_property(env, global, "globalThis", &globalThis);
-    if (status != napi_ok) {
-        LOG_ERROR("GetDataShareHelper napi_get_globalThis != napi_ok");
-    }
-    napi_value abilityContext = nullptr;
-    status = napi_get_named_property(env, globalThis, "abilityContext", &abilityContext);
-    if (status != napi_ok) {
-        LOG_ERROR("GetDataShareHelper napi_get_abilityContext != napi_ok");
-    }
-    if (!IsStageMode(env, abilityContext)) {
-        auto ability = OHOS::AbilityRuntime::GetCurrentAbility(env);
-        if (ability == nullptr) {
-            LOG_ERROR("GetCurrentAbility ability == nullptr.");
-            return napi_generic_failure;
-        }
-        m_context = ability->GetAbilityContext();
-    } else {
-        m_context = OHOS::AbilityRuntime::GetStageModeContext(env, abilityContext);
-        if (m_context == nullptr) {
-            LOG_ERROR("GetStageModeContext contextRtm == nullptr.");
-            return napi_generic_failure;
-        }
-    }
+    m_context = OHOS::AbilityRuntime::GetStageModeContext(env, value);
     if (m_context == nullptr) {
-        LOG_ERROR("GetContext failed. context is nullptr.");
+        LOG_ERROR("GetStageModeContext contextRtm == nullptr.");
         return napi_generic_failure;
     }
     return napi_ok;
 }
 
-void CalendarEnvNapi::Init(napi_env env)
+void CalendarEnvNapi::Init(napi_env env, napi_value value)
 {
     const std::string CALENDAR_DATA_URI = "datashare:///calendardata";
     if (hasInited) {
         return;
     }
     LOG_INFO("CalendarEnvNapi Init.");
-    auto status = GetContext(env);
+    auto status = GetContext(env, value);
     if (status != napi_ok) {
         return;
     }

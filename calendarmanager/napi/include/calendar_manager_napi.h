@@ -32,6 +32,7 @@ public:
     static napi_value Init(napi_env env, napi_value exports);
 };
 
+napi_value GetCalendarManager(napi_env env, napi_callback_info info);
 
 }  // namespace Calendar::CalendarApi
 #endif  //  CALENDAR_MANAGER_NAPI_H

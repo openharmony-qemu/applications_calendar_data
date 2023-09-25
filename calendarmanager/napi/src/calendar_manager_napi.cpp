@@ -20,6 +20,7 @@
 #include "napi_queue.h"
 #include "calendar_napi.h"
 #include "native_calendar_manager.h"
+#include "napi_env.h"
 
 #include "abs_shared_result_set.h"
 #include "data_ability_helper.h"
@@ -29,6 +30,11 @@
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::DataShare;
 
+namespace {
+    const std::string CALENDAR_MANAGER_CLASS_NAME = "CalendarManager";
+    static napi_ref g_constructorRef = nullptr;
+    constexpr uint32_t INITIAL_REFCOUNT = 1;
+}
 namespace OHOS::CalendarApi {
 napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info info)
 {
@@ -200,14 +206,58 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 
-napi_value CalendarManagerNapi::Init(napi_env env, napi_value exports)
+napi_value GetCalendarManager(napi_env env, napi_callback_info info)
 {
-    LOG_INFO("CalendarManagerNapi::Init");
-    napi_property_descriptor descriptor[] = {
+    LOG_INFO("napi GetCalendarManager called");
+    struct GetCalendarManagerContext : public ContextBase {
+        CalendarManagerNapi *calendarManager = nullptr;
+        napi_ref ref = nullptr;
+        
+    };
+
+    auto ctxt = std::make_shared<GetCalendarManagerContext>();
+    auto input = [env, ctxt](size_t argc, napi_value* argv) {
+        // required 1 arguments :: <Context>
+        CHECK_ARGS_RETURN_VOID(ctxt, argc == 0, "invalid arguments!");
+        CalendarEnvNapi::GetInstance().Init(env, argv[0]);
+        ctxt->ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&ctxt->calendarManager),
+            CalendarManagerNapi::Constructor(env));
+    };
+    ctxt->GetCbInfo(env, info, input);
+
+    auto execute = [ctxt]() {
+    };
+    auto output = [env, ctxt](napi_value& result) {
+        ctxt->status = napi_get_reference_value(env, ctxt->ref, &result);
+        CHECK_STATUS_RETURN_VOID(ctxt, "output get ref value failed");
+        ctxt->status = napi_delete_reference(env, ctxt->ref);
+        CHECK_STATUS_RETURN_VOID(ctxt, "output del ref failed");
+    };
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
+}
+
+napi_value CalendarManagerNapi::Constructor(napi_env env)
+{
+    const napi_property_descriptor properties[] = {
         DECLARE_NAPI_FUNCTION("createCalendar", CreateCalendar),
         DECLARE_NAPI_FUNCTION("deleteCalendar", DeleteCalendar),
         DECLARE_NAPI_FUNCTION("getCalendar", GetCalendar),
         DECLARE_NAPI_FUNCTION("getAllCalendars", GetAllCalendars),
+    };
+    size_t count = sizeof(properties) / sizeof(properties[0]);
+    return NapiUtil::DefineClass(env, CALENDAR_MANAGER_CLASS_NAME.c_str(), properties, count, nullptr);
+}
+
+napi_value CalendarManagerNapi::Init(napi_env env, napi_value exports)
+{
+    LOG_INFO("CalendarManagerNapi::Init");
+    napi_value cons = nullptr;
+    NAPI_CALL(env, 
+        napi_set_named_property(env, exports, CALENDAR_MANAGER_CLASS_NAME.c_str(), CalendarNapi::Constructor(env)));
+    NAPI_CALL(env,
+        napi_create_reference(env, cons, INITIAL_REFCOUNT, &g_constructorRef));
+    napi_property_descriptor descriptor[] = {
+        DECLARE_NAPI_STATIC_FUNCTION("getCalendarManager", GetCalendarManager),
     };
     NAPI_CALL(
         env, napi_define_properties(env, exports, sizeof(descriptor) / sizeof(napi_property_descriptor), descriptor));
