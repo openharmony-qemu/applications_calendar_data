@@ -212,7 +212,6 @@ napi_value GetCalendarManager(napi_env env, napi_callback_info info)
     struct GetCalendarManagerContext : public ContextBase {
         CalendarManagerNapi *calendarManager = nullptr;
         napi_ref ref = nullptr;
-        
     };
 
     auto ctxt = std::make_shared<GetCalendarManagerContext>();
@@ -252,7 +251,7 @@ napi_value CalendarManagerNapi::Init(napi_env env, napi_value exports)
 {
     LOG_INFO("CalendarManagerNapi::Init");
     napi_value cons = nullptr;
-    NAPI_CALL(env, 
+    NAPI_CALL(env,
         napi_set_named_property(env, exports, CALENDAR_MANAGER_CLASS_NAME.c_str(), CalendarNapi::Constructor(env)));
     NAPI_CALL(env,
         napi_create_reference(env, cons, INITIAL_REFCOUNT, &g_constructorRef));
