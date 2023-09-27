@@ -25,6 +25,7 @@
 namespace OHOS::CalendarApi {
 class CalendarManagerNapi {
 public:
+    static napi_value New(napi_env env, napi_callback_info info);
     static napi_value CreateCalendar(napi_env env, napi_callback_info info);
     static napi_value DeleteCalendar(napi_env env, napi_callback_info info);
     static napi_value GetCalendar(napi_env env, napi_callback_info info);
@@ -32,6 +33,7 @@ public:
     static napi_value Init(napi_env env, napi_value exports);
 };
 
+napi_value GetCalendarManager(napi_env env, napi_callback_info info);
 
 }  // namespace Calendar::CalendarApi
 #endif  //  CALENDAR_MANAGER_NAPI_H

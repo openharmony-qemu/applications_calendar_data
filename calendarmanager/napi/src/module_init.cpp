@@ -18,7 +18,6 @@
 #include "calendar_manager_napi.h"
 #include "calendar_enum_napi.h"
 #include "event_filter_napi.h"
-#include "napi_env.h"
 #include "calendar_log.h"
 
 namespace OHOS::CalendarApi {
@@ -28,7 +27,6 @@ napi_value ModuleInit(napi_env env, napi_value exports)
     CalendarManagerNapi::Init(env, exports);
     EventFilterNapi::Init(env, exports);
     CalendarEnumNapi::Init(env, exports);
-    CalendarEnvNapi::GetInstance().Init(env);
     LOG_INFO("napi_moudule Init end...");
     return exports;
 }
