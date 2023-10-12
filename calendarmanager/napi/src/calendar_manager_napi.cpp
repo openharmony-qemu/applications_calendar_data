@@ -211,12 +211,12 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
 napi_value GetCalendarManager(napi_env env, napi_callback_info info)
 {
     LOG_INFO("napi GetCalendarManager called");
-    const int ARGS_ONE = 1;
+    const int argsOne = 1;
     napi_value result = nullptr;
     napi_value cons = nullptr;
-    size_t requireArgc = ARGS_ONE;
-    size_t argc = ARGS_ONE;
-    napi_value args[ARGS_ONE] = {nullptr};
+    size_t requireArgc = argsOne;
+    size_t argc = argsOne;
+    napi_value args[argsOne] = {nullptr};
     if (napi_get_cb_info(env, info, &argc, args, nullptr, nullptr) != napi_ok) {
         return nullptr;
     }
@@ -225,7 +225,7 @@ napi_value GetCalendarManager(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    if (napi_new_instance(env, cons, ARGS_ONE, args, &result) != napi_ok) {
+    if (napi_new_instance(env, cons, argsOne, args, &result) != napi_ok) {
         return nullptr;
     }
     CalendarManagerNapi *calendarManager = nullptr;
