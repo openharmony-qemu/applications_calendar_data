@@ -321,7 +321,11 @@ napi_value CalendarNapi::GetConfig(napi_env env, napi_callback_info info)
     CHECK_RETURN(nativeCalendar != nullptr, "nativeCalendar nullptr", nullptr);
     auto config = nativeCalendar->GetConfig();
     LOG_DEBUG("config.enableReminder:%{public}d", config.enableReminder.value_or(-1));
-    LOG_DEBUG("config.color:%{public}s", config.color.value_or("null").c_str());
+    if (config.color.has_value()) {
+        LOG_DEBUG("config.color:%{public}s", std::to_string(config.color.value()).c_str());
+    } else {
+        LOG_DEBUG("config.color is null");
+    }
     napi_value result;
     status = NapiUtil::SetValue(env, config, result);
     if (status != napi_ok) {

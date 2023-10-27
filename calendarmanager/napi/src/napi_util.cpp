@@ -300,8 +300,42 @@ napi_status GetValue(napi_env env, napi_value in, CalendarConfig& out)
 {
     LOG_DEBUG("napi_value -> CalendarConfig ");
     NapiUtil::GetNamedPropertyOptional(env, in, "enableReminder", out.enableReminder);
-    NapiUtil::GetNamedPropertyOptional(env, in, "color", out.color);
-    return napi_ok;
+    bool result = true;
+    napi_status status = napi_has_named_property(env, in, "color", &result);
+    if (status == napi_ok && !result) {
+        LOG_DEBUG("napi_value color is null, use default color 0xFF0A59F7");
+        out.color = 0xFF0A59F7;
+        return napi_ok;
+    }
+    napi_value value = NULL;
+    napi_valuetype valueType = napi_undefined;
+    napi_get_named_property(env, in, "color", &value);
+    napi_typeof(env, value, &valueType);
+    if (valueType == napi_string) {
+        LOG_DEBUG("napi_value color is string");
+        string str = "";
+        NapiUtil::GetValue(env, value, str);
+        LOG_DEBUG("napi_value color: %{public}s", str.c_str());
+        bool ok = Native::ColorParse(str, out.color);
+        if (!ok) {
+            return napi_string_expected;
+        }
+        return napi_ok;
+    } else if (valueType == napi_number) {
+        LOG_DEBUG("napi_value color is number");
+        int64_t colorValue;
+        napi_status status = napi_get_value_int64(env, value, &colorValue);
+        if (status == napi_ok) {
+            out.color = colorValue;
+            LOG_DEBUG("color: %{public}s", std::to_string(out.color.value()).c_str());
+        } else {
+            LOG_DEBUG("color number -> int_64 err");
+        }
+        return status;
+    } else {
+        LOG_DEBUG("napi_value color is error");
+        return napi_object_expected;
+    }
 }
 
 napi_status SetValue(napi_env env, const CalendarConfig& in, napi_value& out)

@@ -223,34 +223,15 @@ HWTEST_F(CalendarTest, SetConfig_empty_param_test, testing::ext::TestSize.Level1
     EXPECT_FALSE(configExpect.color.has_value());
 }
 
-HWTEST_F(CalendarTest, SetConfig_with_invalid_color_test, testing::ext::TestSize.Level1)
-{
-    CalendarConfig config;
-    config.color = "";      // empty
-    EXPECT_FALSE(calendar->SetConfig(config));
-    config.color = "111";   // not start with '#'
-    EXPECT_FALSE(calendar->SetConfig(config));
-    config.color = "#abc"; // size nor 7 or 9
-    EXPECT_FALSE(calendar->SetConfig(config));
-    config.color = "#aabbccd"; // size nor 7 or 9
-    EXPECT_FALSE(calendar->SetConfig(config));
-    config.color = "#aabbccddee"; // size nor 7 or 9
-    EXPECT_FALSE(calendar->SetConfig(config));
-    config.color = "#aabbfg"; // not in a~f
-    EXPECT_FALSE(calendar->SetConfig(config));
-    config.color = "#aabbccdg"; // not in a~f
-    EXPECT_FALSE(calendar->SetConfig(config));
-}
-
 HWTEST_F(CalendarTest, SetConfig_with_color_test, testing::ext::TestSize.Level1)
 {
     CalendarConfig config;
-    config.color = "#aabbcc";
+    config.color = 0xaabbcc;
     config.enableReminder = false;
     ASSERT_TRUE(calendar->SetConfig(config));
     auto configExpect = calendar->GetConfig();
     EXPECT_EQ(config, configExpect);
-    config.color = "#aabbccdd";
+    config.color = 0xaabbccdd;
     config.enableReminder = true;
     ASSERT_TRUE(calendar->SetConfig(config));
     configExpect = calendar->GetConfig();
