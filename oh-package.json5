@@ -1,0 +1,11 @@
+{
+  "license": "ISC",
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  },
+  "name": "CalendarData",
+  "description": "example description should more than 30",
+  "repository": {},
+  "version": "1.0.0",
+  "dependencies": {}
+}
