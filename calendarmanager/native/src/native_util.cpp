@@ -364,29 +364,36 @@ bool IsValidHexString(const std::string& colorStr)
 
 bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue)
 {
+    if (colorStr.empty()) {
+        LOG_ERROR("color string is empty");
+        return false;
+    }
+
     if (colorStr[0] != '#') { // start with '#'
         LOG_ERROR("color string not start with #");
         return false;
     }
+
+    const int rgbLen = 7;
+    const int argbLen = 9;
+    if (colorStr.size() != rgbLen && colorStr.size() != argbLen) {
+        LOG_ERROR("color string length is not 7 or 9");
+        return false;
+    }
+
     std::string colorStrSub = colorStr.substr(1);
     if (!IsValidHexString(colorStrSub)) {
         LOG_DEBUG("color string is not valid hex string");
         return false;
     }
-    int RRGGBB_LEN = 7;
-    int AARRGGBB_LEN = 9;
-    if (colorStr.size() == RRGGBB_LEN || colorStr.size() == AARRGGBB_LEN) { // 7 #RRGGBB: RRGGBB -> AARRGGBB
-        LOG_DEBUG("color string size is 7 or 9");
-        colorValue = std::stoll(colorStrSub, NULL, 16); // 16 is convert hex string to number
-        if (colorValue.has_value()) {
-            LOG_DEBUG("colorStrSub -> colorValue colorValue:%{public}s", std::to_string(colorValue.value()).c_str());
-            return true;
-        } else {
-            LOG_DEBUG("color is null");
-            return false;
-        }
+
+    LOG_DEBUG("color string size is 7 or 9");
+    colorValue = std::stoll(colorStrSub, NULL, 16); // 16 is convert hex string to number
+    if (colorValue.has_value()) {
+        LOG_DEBUG("colorStrSub -> colorValue colorValue:%{public}s", std::to_string(colorValue.value()).c_str());
+        return true;
     }
-    LOG_DEBUG("color string size is err");
+    LOG_DEBUG("color is null");
     return false;
 }
 }
