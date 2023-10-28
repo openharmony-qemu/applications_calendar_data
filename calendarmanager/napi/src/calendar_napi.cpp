@@ -324,7 +324,7 @@ napi_value CalendarNapi::GetConfig(napi_env env, napi_callback_info info)
     if (config.color.has_value()) {
         LOG_DEBUG("config.color:%{public}s", std::to_string(config.color.value()).c_str());
     } else {
-        LOG_DEBUG("config.color is null");
+        LOG_ERROR("config.color is null");
     }
     napi_value result;
     status = NapiUtil::SetValue(env, config, result);
