@@ -288,13 +288,7 @@ bool Calendar::SetConfig(const CalendarConfig& config)
     m_predicates.EqualTo("_id", m_id);
     DataShare::DataShareValuesBucket valuesBucket;
     if (config.color) {
-        uint32_t colorValue = 0;
-        auto ret = ColorParse(config.color.value(), colorValue);
-        if (ret) {
-            valuesBucket.Put("calendar_color", (int64_t)colorValue);
-        } else {
-            return false;
-        }
+        valuesBucket.Put("calendar_color", config.color.value());
     }
     if (config.enableReminder) {
         valuesBucket.Put("canReminder", config.enableReminder.value());

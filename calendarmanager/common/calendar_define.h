@@ -98,7 +98,7 @@ struct Event {
 
 struct CalendarConfig {
     optional<bool> enableReminder;
-    optional<string> color;
+    optional<int64_t> color;
     bool operator==(const CalendarConfig& other) const
     {
         return enableReminder == other.enableReminder && color == other.color;

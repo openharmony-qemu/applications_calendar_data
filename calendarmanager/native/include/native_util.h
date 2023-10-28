@@ -42,7 +42,7 @@ namespace OHOS::CalendarApi::Native {
     int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet);
     int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet);
 
-    bool ColorParse(const std::string& colorStr, uint32_t& colorValue);
+    bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue);
 
     template<typename T>
     int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, T& out)

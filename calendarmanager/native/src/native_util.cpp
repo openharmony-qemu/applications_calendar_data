@@ -208,8 +208,6 @@ std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPt
 
         int colorValue = 0;
         GetValue(resultSet, "calendar_color", colorValue);
-        LOG_DEBUG("calendar_color: %{public}d", colorValue);
-        CalendarConfig config {canReminder, "todo"};
         CalendarAccount curAccount {nameValue, typeValue, displayNameValue};
         result.emplace_back(std::make_shared<Calendar>(curAccount, idValue));
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
@@ -364,7 +362,7 @@ bool IsValidHexString(const std::string& colorStr)
     return true;
 }
 
-bool ColorParse(const std::string& colorStr, uint32_t& colorValue)
+bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue)
 {
     if (colorStr.empty()) {
         LOG_ERROR("color string is empty");
@@ -376,19 +374,26 @@ bool ColorParse(const std::string& colorStr, uint32_t& colorValue)
         return false;
     }
 
-    std::string color = colorStr.substr(1);
-    if (!IsValidHexString(color)) {
+    const int rgbLen = 7;
+    const int argbLen = 9;
+    if (colorStr.size() != rgbLen && colorStr.size() != argbLen) {
+        LOG_ERROR("color string length is not 7 or 9");
         return false;
     }
-    char* ptr;
-    colorValue = std::strtoul(color.c_str(), &ptr, 16); // 16 is convert hex string to number
-    if (colorStr.size() == 7) { // 7 #RRGGBB: RRGGBB -> AARRGGBB
-        colorValue |= 0xff000000;
+
+    std::string colorStrSub = colorStr.substr(1);
+    if (!IsValidHexString(colorStrSub)) {
+        LOG_DEBUG("color string is not valid hex string");
+        return false;
+    }
+
+    LOG_DEBUG("color string size is 7 or 9");
+    colorValue = std::stoll(colorStrSub, NULL, 16); // 16 is convert hex string to number
+    if (colorValue.has_value()) {
+        LOG_DEBUG("colorStrSub -> colorValue colorValue:%{public}s", std::to_string(colorValue.value()).c_str());
         return true;
     }
-    if (colorStr.size() == 9) { // 9 #AARRGGBB
-        return true;
-    }
+    LOG_DEBUG("color is null");
     return false;
 }
 }
