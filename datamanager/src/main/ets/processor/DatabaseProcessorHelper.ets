@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
 import { Constants } from '@ohos/datastructure/src/main/ets/Constants';
 import {
   CalendarsColumns,
   DEFAULT_CALENDAR_VALUE
 } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
-
-const TAG = 'DatabaseProcessorHelper';
+import dataSharePredicates from '@ohos.data.dataSharePredicates';
+import { ValueType } from '@ohos.data.ValuesBucket';
 
 /**
  * 初始化数据中的 creator。保护 creator 字段无法被应用自定义插入
@@ -28,7 +29,7 @@ const TAG = 'DatabaseProcessorHelper';
  * @param values 插入的数据
  * @param creator 调用接口的应用
  */
-export function initValueCreator(values, creator) {
+export function initValueCreator(values: data_rdb.ValuesBucket, creator: ValueType) {
   values[Constants.CREATOR] = creator;
 }
 
@@ -38,7 +39,7 @@ export function initValueCreator(values, creator) {
  * @param predicates
  * @param creator 调用接口的应用
  */
-export function initPredicateCreator(predicates, creator) {
+export function initPredicateCreator(predicates: dataSharePredicates.DataSharePredicates, creator: ValueType) {
   predicates.equalTo(Constants.CREATOR, creator);
 }
 
@@ -48,7 +49,7 @@ export function initPredicateCreator(predicates, creator) {
  * @param predicates
  * @param creator 调用接口的应用
  */
-export function initPredicateDefaultAndOwnCreator(predicates, creator) {
+export function initPredicateDefaultAndOwnCreator(predicates: dataSharePredicates.DataSharePredicates, creator: ValueType) {
   predicates.beginWrap()
     .equalTo(Constants.CREATOR, creator)
     .or()
@@ -67,10 +68,15 @@ export function initPredicateDefaultAndOwnCreator(predicates, creator) {
  *
  * @param values 更新的数据
  */
-export function deleteValueCreator(values) {
-  if (Object.hasOwnProperty.call(values, Constants.CREATOR)) {
-    Reflect.deleteProperty(values, Constants.CREATOR);
+export function deleteValueCreator(values: data_rdb.ValuesBucket): data_rdb.ValuesBucket {
+  let valuesResult: data_rdb.ValuesBucket = {};
+  for (let key of Object.keys(values)) {
+    if (key === Constants.CREATOR) {
+      continue;
+    }
+    valuesResult[key] = values[key];
   }
+  return valuesResult;
 }
 
 /**
@@ -78,7 +84,7 @@ export function deleteValueCreator(values) {
  *
  * @param predicates
  */
-export function initPredicateDefaultCalendarProtect(predicates) {
+export function initPredicateDefaultCalendarProtect(predicates: dataSharePredicates.DataSharePredicates) {
   predicates.beginWrap()
     .notEqualTo(CalendarsColumns.ACCOUNT_TYPE, DEFAULT_CALENDAR_VALUE.account_type)
     .or()

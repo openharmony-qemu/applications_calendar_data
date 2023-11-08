@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
+import dataSharePredicates from '@ohos.data.dataSharePredicates';
 import LinkedList from '@ohos.util.LinkedList';
 
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { Observable } from '@ohos/common/src/main/ets/observer/Observable';
-import { Observer } from '@ohos/common/src/main/ets/observer/Observer';
+import { Observer, ObserverMessage } from '@ohos/common/src/main/ets/observer/Observer';
 import { hasNoError } from '@ohos/common/src/main/ets/utils/ErrorUtils';
 
 import {
@@ -30,6 +32,7 @@ import {
 import { DatabaseProcessor } from './DatabaseProcessor';
 import getTableByUri from '../utils/CalendarUriHelper';
 import { AlertsMessage } from './alerts/AlertsMessage';
+import { BusinessError } from '@ohos.base';
 
 export const INSERT_OPERATION_NAME = 'insert';
 
@@ -46,37 +49,49 @@ const TAG = 'DefaultProcessor';
  * @since 2022-06-21
  */
 export class DefaultProcessor implements DatabaseProcessor, Observable {
+  protected isFromMigrate: boolean = false;
+  protected logTag: string = TAG;
   private mObserverList: LinkedList<Observer> = new LinkedList();
 
-  insertByHighAuthority(rdbStore, uri: string, values, callback) {
+  constructor(isFromMigrate: boolean = false) {
+    this.isFromMigrate = isFromMigrate;
+    this.initParas();
+    Log.info(this.logTag, `isFromMigrate is ${this.isFromMigrate}`);
+  }
+
+  protected initParas() {
+
+  }
+
+  insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     this.doInsert(rdbStore, uri, values, callback);
   }
 
-  insertByLowAuthority(rdbStore, uri: string, values, callback) {
+  insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     this.doInsert(rdbStore, uri, values, callback);
   }
 
-  deleteByHighAuthority(rdbStore, uri: string, predicates, callback) {
+  deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  deleteByLowAuthority(rdbStore, uri: string, predicates, callback) {
+  deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  updateByHighAuthority(rdbStore, uri: string, values, predicates, callback) {
+  updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doUpdate(rdbStore, uri, values, predicates, callback);
   }
 
-  updateByLowAuthority(rdbStore, uri: string, values, predicates, callback) {
+  updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doUpdate(rdbStore, uri, values, predicates, callback);
   }
 
-  queryByHighAuthority(rdbStore, uri: string, columns: Array<string>, predicates, callback) {
+  queryByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doQuery(rdbStore, uri, columns, predicates, callback);
   }
 
-  queryByLowAuthority(rdbStore, uri: string, columns: Array<string>, predicates, callback) {
+  queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doQuery(rdbStore, uri, columns, predicates, callback);
   }
 
@@ -88,17 +103,19 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
    * @param values 插入的数据
    * @param callback 回调方法
    */
-  doInsert(rdbStore, uri: string, values, callback) {
+  doInsert(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     const table = getTableByUri(uri);
     rdbStore.insert(table, values, (err, rowId) => {
-      Log.log(TAG, `insert ${table} before callback`);
+      Log.log(this.logTag, `insert ${table} before callback`);
       callback(err, rowId);
-      Log.log(TAG, `insert ${table} after callback: rowId = ` + rowId);
       if (hasNoError(err)) {
-        notifyProviderChange(table, OPERATION_INSERT);
-        this.notifyAlertsChanges(INSERT_OPERATION_NAME, table, values);
+        Log.log(this.logTag, `insert ${table} after callback: rowId = ` + rowId);
+        if (!this.isFromMigrate) {
+          notifyProviderChange(table, OPERATION_INSERT);
+          this.notifyAlertsChanges(INSERT_OPERATION_NAME, table, values);
+        }
       } else {
-        Log.warn(TAG, `insert get err:${err?.code}, ${err?.message}`);
+        Log.warn(this.logTag, `insert get err:${err?.code}, ${err?.message}`);
       }
     });
   }
@@ -111,17 +128,17 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
    * @param predicates 删除条件
    * @param callback 回调方法
    */
-  doDelete(rdbStore, uri: string, predicates, callback) {
+  doDelete(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const table = getTableByUri(uri);
-    rdbStore.delete(table, predicates, (err, count) => {
-      Log.log(TAG, `delete ${table} before callback`);
+    rdbStore.delete(table, predicates, (err: BusinessError, count) => {
+      Log.log(this.logTag, `delete ${table} before callback`);
       callback(err, count);
-      Log.log(TAG, `delete ${table} after callback: count = ` + count);
       if (hasNoError(err)) {
+        Log.log(this.logTag, `delete ${table} after callback: count = ` + count);
         notifyProviderChange(table, OPERATION_DELETE);
         this.notifyAlertsChanges(DELETE_OPERATION_NAME, table);
       } else {
-        Log.warn(TAG, `delete get err:${err?.code}, ${err?.message}`);
+        Log.warn(this.logTag, `delete get err:${err?.code}, ${err?.message}`);
       }
     });
   }
@@ -135,17 +152,17 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
    * @param predicates 更新条件
    * @param callback 回调方法
    */
-  doUpdate(rdbStore, uri: string, values, predicates, callback) {
+  doUpdate(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const table = getTableByUri(uri);
     rdbStore.update(table, values, predicates, (err, count) => {
-      Log.log(TAG, `update ${table} before callback`);
+      Log.log(this.logTag, `update ${table} before callback`);
       callback(err, count);
-      Log.log(TAG, `update ${table} after callback: count = ` + count);
       if (hasNoError(err)) {
+        Log.log(this.logTag, `update ${table} after callback: count = ` + count);
         notifyProviderChange(table, OPERATION_UPDATE);
         this.notifyAlertsChanges(UPDATE_OPERATION_NAME, table, values);
       } else {
-        Log.warn(TAG, `update get err:${err?.code}, ${err?.message}`);
+        Log.warn(this.logTag, `update get err:${err?.code}, ${err?.message}`);
       }
     });
   }
@@ -159,46 +176,48 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
    * @param predicates 查询条件
    * @param callback 回调方法
    */
-  doQuery(rdbStore, uri: string, columns: Array<string>, predicates, callback) {
+  doQuery(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const table = getTableByUri(uri);
-    rdbStore.query(table, predicates, columns, function (err, resultSet) {
-      Log.log(TAG, `query ${table} before callback`);
+    let queryInnerFun = (err: BusinessError, resultSet: data_rdb.ResultSet) => {
+      Log.log(this.logTag, `query ${table} before callback`);
       callback(err, resultSet);
-      Log.log(TAG, `query ${table} after callback: resultSet.rowCount = ` + resultSet.rowCount);
       if (!hasNoError(err)) {
-        Log.warn(TAG, `update get err:${err?.code}, ${err?.message}`);
+        Log.warn(this.logTag, `query get err:${err?.code}, ${err?.message}`);
       }
-    });
+    }
+    rdbStore.query(table, predicates, columns, queryInnerFun);
   }
 
   /**
    * 增加一个观察者
    */
-  addObserver(observer) {
+  addObserver(observer: Observer) {
     this.mObserverList.add(observer);
   }
 
   /**
    * 删除一个观察者
    */
-  removeObserver(observer) {
+  removeObserver(observer: Observer) {
     this.mObserverList.remove(observer);
   }
 
   /**
    * 被观察者状态发生改变后，通知d订阅的所有观察者更新
    */
-  notifyChanges(message) {
+  notifyChanges(message: ObserverMessage) {
     this.mObserverList.forEach((observer) => {
       observer.onChange(message);
     })
   }
 
-  notifyAlertsChanges(operationName: string, table: string, values?) {
+  notifyAlertsChanges(operationName: string, table: string, values?: data_rdb.ValuesBucket) {
     let message = new AlertsMessage();
     message.setOperationName(operationName);
     message.setTableName(table);
-    message.setValues(values);
+    if (values) {
+      message.setValues(values);
+    }
     this.notifyChanges(message);
   }
 }

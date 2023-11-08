@@ -27,7 +27,7 @@ napi_value ModuleInit(napi_env env, napi_value exports)
     CalendarManagerNapi::Init(env, exports);
     EventFilterNapi::Init(env, exports);
     CalendarEnumNapi::Init(env, exports);
-    LOG_INFO("napi_moudule Init end...");
+    LOG_INFO("napi_module Init end...");
     return exports;
 }
 }

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
 import { Events } from './Events';
 import { EventIndexes } from './EventIndexes';
 
@@ -22,11 +23,11 @@ import { EventIndexes } from './EventIndexes';
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseEvents(resultSet, indexes: EventIndexes): Events {
-  if (resultSet === null || resultSet === undefined) {
+export function parseEvents(resultSet: data_rdb.ResultSet, indexes: EventIndexes | undefined): Events | undefined {
+  if (resultSet === null || resultSet === undefined || indexes === null || indexes === undefined) {
     return undefined;
   }
-  let event: Events = new Events()
+  let event: Events = new Events();
   if (indexes.idIndex >= 0) {
     event.id = resultSet.getLong(indexes.idIndex);
   }

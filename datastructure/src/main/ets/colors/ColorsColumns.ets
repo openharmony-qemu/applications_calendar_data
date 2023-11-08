@@ -14,12 +14,23 @@
  * limitations under the License.
  */
 
+interface ColorsColumnsType {
+  TABLE_NAME: string;
+  ID: string;
+  ACCOUNT_NAME: string;
+  ACCOUNT_TYPE: string;
+  DATA: string;
+  COLOR_TYPE: string;
+  COLOR_INDEX: string;
+  COLOR: string;
+}
+
 /**
  * the const of table Colors
  *
  * @since 2022-09-08
  */
-export const ColorsColumns = {
+export const ColorsColumns: ColorsColumnsType = {
   TABLE_NAME: 'Colors',
   ID: '_id',
   ACCOUNT_NAME: 'account_name',

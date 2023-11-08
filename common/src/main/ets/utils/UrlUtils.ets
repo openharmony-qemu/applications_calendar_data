@@ -28,12 +28,12 @@ export const TOKEN_ID = 'tokenId';
 
 /**
  * parse query params from Uri, like:
- * xxxx?params1=value1&params2=value2&params3=value3
+ * xxx?params1=value1&params2=value2&params3=value3
  *
  * @param url the url to be parsed.
  * @return map Describes the key-value pair of the query parameter.
  */
-export function getQueries(url: string): Map<string, string> {
+export function getQueries(url: string): Map<string, string> | undefined {
   if (url === null || url === undefined) {
     return undefined;
   }
@@ -77,8 +77,8 @@ export function getQueries(url: string): Map<string, string> {
  */
 export function getTokenIDByUri(uri: string): string {
   let queries = getQueries(uri);
-  if (queries.has(TOKEN_ID)) {
-    return queries.get(TOKEN_ID);
+  if (queries && queries.has(TOKEN_ID)) {
+    return queries.get(TOKEN_ID) as string;
   }
   return "";
 }
@@ -91,8 +91,8 @@ export function getTokenIDByUri(uri: string): string {
  */
 export function getBundleNameByUri(uri: string): string {
   let queries = getQueries(uri);
-  if (queries.has(BUNDLE_NAME)) {
-    return queries.get(BUNDLE_NAME);
+  if (queries && queries.has(BUNDLE_NAME)) {
+    return queries.get(BUNDLE_NAME) as string;
   }
   return "";
 }
@@ -106,15 +106,15 @@ export function getBundleNameByUri(uri: string): string {
  */
 export function getBundleNameAndTokenIDByUri(uri: string): BundleNameAndTokenIdFromUri {
   let queries = getQueries(uri);
-  let bundleNameAndTokenIdFromUri: BundleNameAndTokenIdFromUri;
-  if (queries.has(TOKEN_ID) && queries.has(BUNDLE_NAME)) {
+  let bundleNameAndTokenIdFromUri: BundleNameAndTokenIdFromUri = new BundleNameAndTokenIdFromUri();
+  if (queries && queries.has(TOKEN_ID) && queries.has(BUNDLE_NAME)) {
     bundleNameAndTokenIdFromUri = {
-      bundleName: queries.get(BUNDLE_NAME),
-      tokenId: queries.get(TOKEN_ID)
+      bundleName: queries.get(BUNDLE_NAME) as string,
+      tokenId: queries.get(TOKEN_ID) as string
     };
     return bundleNameAndTokenIdFromUri;
   }
-  return null;
+  return bundleNameAndTokenIdFromUri;
 }
 
 /**
@@ -123,6 +123,6 @@ export function getBundleNameAndTokenIDByUri(uri: string): BundleNameAndTokenIdF
  * @since 2022-10-29
  */
 export class BundleNameAndTokenIdFromUri {
-  bundleName: string;
-  tokenId: string;
+  bundleName: string = '';
+  tokenId: string = '';
 }

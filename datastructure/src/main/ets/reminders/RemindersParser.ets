@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
 import { Reminders } from './Reminders';
 import { RemindersIndexes } from './RemindersIndexes';
 
@@ -22,7 +23,7 @@ import { RemindersIndexes } from './RemindersIndexes';
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseReminders(resultSet, indexes: RemindersIndexes): Reminders {
+export function parseReminders(resultSet: data_rdb.ResultSet, indexes: RemindersIndexes): Reminders | undefined {
   if (resultSet === null || resultSet === undefined) {
     return undefined;
   }
@@ -31,7 +32,7 @@ export function parseReminders(resultSet, indexes: RemindersIndexes): Reminders 
     reminders.id = resultSet.getLong(indexes.idIndex);
   }
   if (indexes.eventIdIndex >= 0) {
-    reminders.eventId = resultSet.getLong(indexes.eventIdIndex);
+    reminders.event_id = resultSet.getLong(indexes.eventIdIndex);
   }
   if (indexes.minutesIndex >= 0) {
     reminders.minutes = resultSet.getLong(indexes.minutesIndex);

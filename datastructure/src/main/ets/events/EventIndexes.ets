@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
 import { EventColumns } from './EventColumns';
 
-/**
- * the columns indexes for table Events
- *
- * @since 2022-05-28
- */
-export class EventIndexes {
+interface EventIndexesType {
   idIndex: number;
   syncIdIndex: number;
   dirtyIndex: number;
   mutatorsIndex: number;
   calendarTypeIndex: number;
+  uuidIndex: number;
   imageTypeIndex: number;
   lastSyncedIndex: number;
   calendarIdIndex: number;
@@ -86,9 +83,79 @@ export class EventIndexes {
   kvSyncedIndex: number;
   kvSyncTimeIndex: number;
   creatorIndex: number;
+}
 
-  constructor() {
-  }
+/**
+ * the columns indexes for table Events
+ *
+ * @since 2022-05-28
+ */
+export class EventIndexes implements EventIndexesType {
+  idIndex = 0;
+  syncIdIndex = 0;
+  dirtyIndex = 0;
+  mutatorsIndex = 0;
+  calendarTypeIndex = 0;
+  uuidIndex = 0;
+  imageTypeIndex = 0;
+  lastSyncedIndex = 0;
+  calendarIdIndex = 0;
+  titleIndex = 0;
+  eventLocationIndex = 0;
+  longitudeIndex = 0;
+  latitudeIndex = 0;
+  descriptionIndex = 0;
+  eventColorIndex = 0;
+  eventColorIndexIndex = 0;
+  eventStatusIndex = 0;
+  selfAttendeeStatusIndex = 0;
+  dtStartIndex = 0;
+  dtEndIndex = 0;
+  eventTimeZoneIndex = 0;
+  durationIndex = 0;
+  allDayIndex = 0;
+  accessLevelIndex = 0;
+  availabilityIndex = 0;
+  hasAlarmIndex = 0;
+  hasExtendedPropertiesIndex = 0;
+  rRuleIndex = 0;
+  rDateIndex = 0;
+  exRuleIndex = 0;
+  exDateIndex = 0;
+  originalIdIndex = 0;
+  originalSyncIdIndex = 0;
+  originalInstanceTimeIndex = 0;
+  originalAllDayIndex = 0;
+  lastDateIndex = 0;
+  eventTimeStampIndex = 0;
+  hasAttendeeDataIndex = 0;
+  guestsCanModifyIndex = 0;
+  guestsCanInviteOthersIndex = 0;
+  guestsCanSeeGuestsIndex = 0;
+  organizerIndex = 0;
+  isOrganizerIndex = 0;
+  deletedIndex = 0;
+  eventEndTimezoneIndex = 0;
+  customAppPackageIndex = 0;
+  customAppUriIndex = 0;
+  uid2445Index = 0;
+  versionIndex = 0;
+  eventUuidIndex = 0;
+  hwExtAlertTypeIndex = 0;
+  importantEventTypeIndex = 0;
+  syncData1Index = 0;
+  syncData2Index = 0;
+  syncData3Index = 0;
+  syncData4Index = 0;
+  syncData5Index = 0;
+  syncData6Index = 0;
+  syncData7Index = 0;
+  syncData8Index = 0;
+  syncData9Index = 0;
+  syncData10Index = 0;
+  kvSyncedIndex = 0;
+  kvSyncTimeIndex = 0;
+  creatorIndex = 0;
 }
 
 /**
@@ -96,7 +163,7 @@ export class EventIndexes {
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseIndexes(resultSet): EventIndexes {
+export function parseIndexes(resultSet: data_rdb.ResultSet): EventIndexes | undefined {
   if (resultSet == null) {
     return undefined;
   }

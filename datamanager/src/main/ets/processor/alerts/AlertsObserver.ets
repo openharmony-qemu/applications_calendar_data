@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-import systemTimer from '@ohos.systemTimer';
-import { ValuesBucket } from '@ohos.data.ValuesBucket'
-
-import { sendBroadcast } from '@ohos/common/src/main/ets/broadcast/BroadcastHelper'
-import { CommonEventConstants } from '../../commonevents/CommonEventConstants';
+import data_rdb from '@ohos.data.relationalStore';
 import { Observer } from '@ohos/common/src/main/ets/observer/Observer';
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
-import { createTimer, startTimer, stopTimer } from '@ohos/common/src/main/ets/utils/SystemTimerUtils';
-
+import { startTimer, stopTimer } from '@ohos/common/src/main/ets/utils/SystemTimerUtils';
 import { AlertsMessage } from './AlertsMessage';
 import AlertsUpdateJudgerFactory from './AlertsUpdateJudgerFactory';
 import { runScheduleNextAlarm } from './AlertsProcessor';
@@ -30,11 +25,8 @@ import { runScheduleNextAlarm } from './AlertsProcessor';
 const TAG = 'AlertsObserver';
 
 export const INSERT_OPERATION_NAME = 'insert';
-
 export const UPDATE_OPERATION_NAME = 'update';
-
 export const DELETE_OPERATION_NAME = 'delete';
-
 export const WAITING_DELAY_TIME = 5000;
 
 /**
@@ -60,8 +52,8 @@ export class AlertsObserver implements Observer {
    */
   private constructor() {
     this.isAlertTimerBeingCreated = false;
-    this.mLastUpdateAlertTime = null;
-    this.mAlertTimerId = null;
+    this.mLastUpdateAlertTime = 0;
+    this.mAlertTimerId = 0;
   }
 
   /**
@@ -117,7 +109,7 @@ export class AlertsObserver implements Observer {
     return AlertsObserver.sInstance;
   }
 
-  onChange(message) {
+  onChange(message: AlertsMessage) {
     Log.debug(TAG, "AlertsObserver enter");
 
     // 判断是否需要更新Alarm
@@ -144,17 +136,16 @@ function isNeedToUpdateAlerts(message: AlertsMessage): boolean {
   // 传入的参数为操作名称和具体操作细节
   let operationName: string = message.getOperationName();
   let tableName: string = message.getTableName();
-  let values: ValuesBucket = message.getValues();
+  let values: data_rdb.ValuesBucket = message.getValues();
 
   // 策略模式+工厂模式:根据operationName使用不同的判断逻辑生产不同实例,扩展不同场景只需要额外增加多的AlarmNeedUpdateJudger类即可
   let alarmNeedUpdateJudgerFactory = new AlertsUpdateJudgerFactory();
   let AlarmNeedUpdateJudger = alarmNeedUpdateJudgerFactory.getAlertsUpdateJudger(operationName);
-  if (AlarmNeedUpdateJudger !== null) {
+  if (AlarmNeedUpdateJudger !== null && AlarmNeedUpdateJudger != undefined) {
     return AlarmNeedUpdateJudger.isNeedToUpdateAlerts(tableName, values);
-  } else {
-    Log.error(TAG, "AlarmNeedUpdateJudger:get Null, You need to confirm your operationName！");
-    return false;
   }
+  Log.error(TAG, "AlarmNeedUpdateJudger:get Null, You need to confirm your operationName！");
+  return false;
 }
 
 /**
@@ -180,7 +171,7 @@ function stopLastTimerAndStartThisTimer(alertsObserver: AlertsObserver) {
     if (err?.message !== undefined) {
       Log.error(TAG, 'failed to stopTimer' + err?.message);
     }
-    Log.debug(TAG, 'sysytem.stopTimer successful' + err?.message);
+    Log.debug(TAG, 'system.stopTimer successful' + err?.message);
     startTimerAfterFiveSeconds(alertsObserver, alertTimerId);
   })
   Log.debug(TAG, `Success to reStart Last AlertTimer, and alertTimerId is ` + JSON.stringify(alertTimerId));

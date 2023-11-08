@@ -14,44 +14,52 @@
  * limitations under the License.
  */
 
+import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { CalendarAlertsColumns } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertsColumns';
 import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
-import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns'
-import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns'
+import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns';
+import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns';
 import { RemindersColumns } from '@ohos/datastructure/src/main/ets/reminders/RemindersColumns';
-
 import { AlertsProcessor } from './alerts/AlertsProcessor';
 import { CalendarsProcessor } from './calendars/CalendarsProcessor';
-import { DatabaseProcessor } from './DatabaseProcessor'
-import { DefaultProcessor } from './DefaultProcessor'
-import { InstancesProcessor } from './instances/InstancesProcessor'
-import { EventsProcessor } from './events/EventsProcessor'
-import { AlertsObserver } from './alerts/AlertsObserver'
+import { DatabaseProcessor } from './DatabaseProcessor';
+import { DefaultProcessor } from './DefaultProcessor';
+import { InstancesProcessor } from './instances/InstancesProcessor';
+import { EventsProcessor } from './events/EventsProcessor';
+import { AlertsObserver } from './alerts/AlertsObserver';
 import { RemindersProcessor } from './reminders/RemindersProcessor';
 
+const TAG: string = "DatabaseProcessorFactory";
 
 /**
  * the Factory of database Processors
  *
  * @since 2022-06-21
  */
-export default {
+class DatabaseProcessorFactory {
   getDatabaseProcessor(tableName: string): DatabaseProcessor {
     let processor: DatabaseProcessor;
+    let calendarsColumnsTABLE_NAME = CalendarsColumns.TABLE_NAME;
+    let eventColumnsTABLE_NAME = EventColumns.TABLE_NAME;
+    let instancesColumnsTABLE_NAME = InstancesColumns.TABLE_NAME;
+    let remindersColumnsTABLE_NAME = RemindersColumns.TABLE_NAME;
+    let calendarAlertsColumnsTABLE_NAME = CalendarAlertsColumns.TABLE_NAME;
+    Log.info(TAG, `calendarsColumnsTABLE_NAME: ${calendarsColumnsTABLE_NAME}`);
+    Log.info(TAG, `tableName: ${tableName}`);
     switch (tableName) {
-      case CalendarsColumns.TABLE_NAME:
+      case calendarsColumnsTABLE_NAME:
         processor = new CalendarsProcessor();
         break;
-      case EventColumns.TABLE_NAME:
+      case eventColumnsTABLE_NAME:
         processor = new EventsProcessor();
         break;
-      case InstancesColumns.TABLE_NAME:
+      case instancesColumnsTABLE_NAME:
         processor = new InstancesProcessor();
         break;
-      case RemindersColumns.TABLE_NAME:
+      case remindersColumnsTABLE_NAME:
         processor = new RemindersProcessor();
         break;
-      case CalendarAlertsColumns.TABLE_NAME:
+      case calendarAlertsColumnsTABLE_NAME:
         processor = new AlertsProcessor();
         break;
       default:
@@ -64,3 +72,5 @@ export default {
     return processor;
   }
 }
+
+export default new DatabaseProcessorFactory();

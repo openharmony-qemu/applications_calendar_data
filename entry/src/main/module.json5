@@ -1,58 +1,57 @@
 {
-    "module": {
-        "name": "entry",
-        "type": "entry",
-        "srcEntrance": "./ets/Application/Application.ets",
+  "module": {
+    "name": "entry",
+    "type": "entry",
+    "srcEntry": "./ets/Application/Application.ets",
+    "description": "$string:description_mainability",
+    "mainElement": "MainAbility",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ],
+    "installationFree": false,
+    "deliveryWithInstall": true,
+    "pages": "$profile:main_pages",
+    "abilities": [
+      {
+        "name": "MainAbility",
+        "srcEntry": "./ets/MainAbility/MainAbility.ets",
         "description": "$string:description_mainability",
-        "mainElement": "MainAbility",
-        "deviceTypes": [
-            "default",
-            "tablet"
-        ],
-        "installationFree": false,
-        "deliveryWithInstall": true,
-        "pages": "$profile:main_pages",
-        "uiSyntax": "ets",
-        "abilities": [
-            {
-                "name": "MainAbility",
-                "srcEntrance": "./ets/MainAbility/MainAbility.ets",
-                "description": "$string:description_mainability",
-                "icon": "$media:icon",
-                "label": "$string:app_name",
-                "visible": true,
-                "launchType": "standard",
-                "startWindowIcon": "$media:icon",
-                "startWindowBackground": "$color:yellow"
-            },
-            {
-                "name": "Application",
-                "srcEntrance": "./ets/Application/Application.ets",
-                "icon": "$media:icon",
-                "startWindowIcon": "$media:icon",
-                "startWindowBackground": "$color:yellow",
-                "visible": true
-            }
-        ],
-        "extensionAbilities": [
-            {
-                "name": "DataShareExtAbility",
-                "srcEntrance": "./ets/DataAbility/DataShareExtAbility.ets",
-                "type": "dataShare",
-                "uri": "datashare://calendardata",
-                "visible": true
-            }
-        ],
-        "metadata": [
-            {
-                "name": "hmos.app.quickfix",
-                "value": "true"
-            }
-        ],
-        "requestPermissions": [
-            {
-                "name": "ohos.permission.PERMISSION_USED_STATS"
-            },
-        ]
-    }
+        "icon": "$media:icon",
+        "label": "$string:app_name",
+        "exported": true,
+        "launchType": "standard",
+        "startWindowIcon": "$media:icon",
+        "startWindowBackground": "$color:yellow"
+      },
+      {
+        "name": "Application",
+        "srcEntry": "./ets/Application/Application.ets",
+        "icon": "$media:icon",
+        "startWindowIcon": "$media:icon",
+        "startWindowBackground": "$color:yellow",
+        "exported": true
+      }
+    ],
+    "extensionAbilities": [
+      {
+        "name": "DataShareExtAbility",
+        "srcEntry": "./ets/DataAbility/DataShareExtAbility.ets",
+        "type": "dataShare",
+        "uri": "datashare://calendardata",
+        "exported": true
+      }
+    ],
+    "metadata": [
+      {
+        "name": "hmos.app.quickfix",
+        "value": "true"
+      }
+    ],
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.PERMISSION_USED_STATS"
+      }
+    ]
+  }
 }

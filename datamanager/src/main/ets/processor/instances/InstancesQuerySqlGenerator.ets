@@ -30,7 +30,7 @@ const TAG = 'InstancesQuerySqlGenerator';
  * @param columns Columns to be queried
  * @param params Parameter object containing begin&end or searchText
  */
-export function generateInstancesQuerySql(columns: Array<string>, params: InstancesQueryParams, callerName): string {
+export function generateInstancesQuerySql(columns: Array<string>, params: InstancesQueryParams, callerName: string): string | undefined {
   if (params === null || params === undefined) {
     Log.error(TAG, `generateInstancesQuerySql get invalid params`);
     return undefined;
@@ -46,7 +46,7 @@ export function generateInstancesQuerySql(columns: Array<string>, params: Instan
   }
 
   // 3.if by low authority, process creator fragment use callerName
-  let hasCaller;
+  let hasCaller: boolean;
   if (hasCaller = !isEmptyStr(callerName)) {
     if (hasBeginEnd) {
       sql += ` AND`;
@@ -65,7 +65,7 @@ export function generateInstancesQuerySql(columns: Array<string>, params: Instan
   }
 
   // 5.process orderBy fragment
-  const orderByFragment: string = getOrderByFragment(params);
+  const orderByFragment: string = getOrderByFragment(params) as string;
   if (!isEmptyStr(orderByFragment)) {
     sql += orderByFragment;
   }
@@ -98,8 +98,8 @@ function getSelectMainBody(columns: Array<string>): string {
   return sql;
 }
 
-function getCreatorSqlFragment(creator): string {
-  const fragment = ` (${InstancesColumns.TABLE_NAME}.${InstancesColumns.CREATOR} = "${creator}")`;
+function getCreatorSqlFragment(creator: string): string {
+  const fragment = ` (${InstancesColumns.TABLE_NAME}.${InstancesColumns.CREATOR} = '${creator}')`;
   return fragment;
 }
 
@@ -125,7 +125,7 @@ function getSearchSqlFragment(searchText: string): string {
   return fragment;
 }
 
-function getOrderByFragment(params: InstancesQueryParams): string {
+function getOrderByFragment(params: InstancesQueryParams): string | undefined {
   const orderByAsc = params.getOrderByAsc();
   const orderByDesc = params.getOrderByDesc();
   if (isEmptyStr(orderByAsc) && isEmptyStr(orderByDesc)) {

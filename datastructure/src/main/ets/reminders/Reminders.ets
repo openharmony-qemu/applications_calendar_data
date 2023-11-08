@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
+interface RemindersType {
+  id: number;
+  event_id: number;
+  minutes: number;
+  method: number;
+  creator: string;
+}
+
 /**
  * the structure of table Reminders
  *
  * @since 2022-10-18
  */
-export class Reminders {
-  id: number;
-  eventId: number;
-  minutes: number;
-  method: number;
-  creator: string;
+export class Reminders implements RemindersType {
+  id = 0;
+  event_id = 0;
+  minutes = 0;
+  method = 0;
+  creator = '';
 }

@@ -14,12 +14,26 @@
  * limitations under the License.
  */
 
+interface extendCalendarEventColumnsType {
+  TABLE_NAME: string,
+  ID: string,
+  HWEXT_EVENT_ID: string,
+  HWEXT_TYPE: string,
+  HWEXT_APP_URI: string,
+  HWEXT_APP_NAME: string,
+  HWEXT_ACTION: string,
+  HWEXT_METHOD: string,
+  HWEXT_SUPPORT_MIN_VERSION: string,
+  HWEXT_STATUS: string,
+  HWEXT_DESCRIPTION: string,
+}
+
 /**
  * the const of table ExtendCalendarEvent
  *
  * @since 2022-09-08
  */
-export const ExtendCalendarEventColumns = {
+export const ExtendCalendarEventColumns: extendCalendarEventColumnsType = {
   TABLE_NAME: 'ExtendCalendarEvent',
   ID: 'id',
   HWEXT_EVENT_ID: 'hwext_event_id',

@@ -14,22 +14,30 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
 import { RemindersColumns } from './RemindersColumns';
+
+interface ReminderIndexesType {
+  idIndex: number;
+  eventIdIndex: number;
+  minutesIndex: number;
+  methodIndex: number;
+  creatorIndex: number;
+  notificationIndex: number;
+}
 
 /**
  * the columns indexes for table Reminders
  *
  * @since 2022-10-18
  */
-export class RemindersIndexes {
-  idIndex: number;
-  eventIdIndex: number;
-  minutesIndex: number;
-  methodIndex: number;
-  creatorIndex: number;
-
-  constructor() {
-  }
+export class RemindersIndexes implements ReminderIndexesType {
+  idIndex = 0;
+  eventIdIndex = 0;
+  minutesIndex = 0;
+  methodIndex = 0;
+  creatorIndex = 0;
+  notificationIndex = 0;
 }
 
 /**
@@ -37,7 +45,7 @@ export class RemindersIndexes {
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseRemindersIndexes(resultSet): RemindersIndexes {
+export function parseRemindersIndexes(resultSet: data_rdb.ResultSet): RemindersIndexes | undefined {
   if (resultSet === null || resultSet === undefined) {
     return undefined;
   }

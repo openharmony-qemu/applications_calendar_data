@@ -14,23 +14,30 @@
  * limitations under the License.
  */
 
-import Extension from '@ohos.application.DataShareExtensionAbility'
+import Want from '@ohos.app.ability.Want';
+import Extension from '@ohos.application.DataShareExtensionAbility';
+import dataSharePredicates from '@ohos.data.dataSharePredicates';
+import relationalStore from '@ohos.data.relationalStore';
 
-import { Log } from '@ohos/common/src/main/ets/utils/Log'
+import { Log } from '@ohos/common/src/main/ets/utils/Log';
+import dataShareProxy from '@ohos/dataprovider/src/main/ets/DataShareAbilityAuthenticateProxy';
+import { Permissions } from '@ohos.privacyManager';
+import { GlobalThis } from '@ohos/common/src/main/ets/utils/GlobalThis';
 
-import dataShareProxy from '@ohos/dataprovider/src/main/ets/DataShareAbilityAuthenticateProxy'
-
-const TAG = 'DataShareExtAbility'
+const TAG = 'DataShareExtAbility';
 
 let isDatabaseInitializing = false;
 
 let isDatabaseInitComplete = false;
 
+const WRITE_CALENDAR: Permissions = "ohos.permission.WRITE_CALENDAR";
+const READ_CALENDAR: Permissions = "ohos.permission.READ_CALENDAR";
+
 export default class DataShareExtAbility extends Extension {
-  onCreate(want, callback) {
+  onCreate(want: Want, callback: Function) {
     Log.info(TAG, '[onCreate] enter');
     try {
-      globalThis.extensionContext = this.context;
+      GlobalThis.setExtensionContext(this.context);
       callback();
     } catch (err) {
       Log.error(TAG, `err=${err?.message}`);
@@ -38,7 +45,7 @@ export default class DataShareExtAbility extends Extension {
     Log.info(TAG, '[onCreate] leave');
   }
 
-  insert(uri, value, callback) {
+  insert(uri: string, value: relationalStore.ValuesBucket, callback: Function) {
     if (isDatabaseInitComplete) {
       // If the database has been created, perform data operations directly
       this.doInsert(uri, value, callback);
@@ -52,7 +59,7 @@ export default class DataShareExtAbility extends Extension {
     }
   }
 
-  update(uri, predicates, value, callback) {
+  update(uri: string, predicates: dataSharePredicates.DataSharePredicates, value: relationalStore.ValuesBucket, callback: Function) {
     if (isDatabaseInitComplete) {
       this.doUpdate(uri, predicates, value, callback);
     } else {
@@ -63,7 +70,7 @@ export default class DataShareExtAbility extends Extension {
     }
   }
 
-  query(uri, predicates, columns, callback) {
+  query(uri: string, predicates: dataSharePredicates.DataSharePredicates, columns: Array<string>, callback: Function) {
     if (isDatabaseInitComplete) {
       this.doQuery(uri, predicates, columns, callback);
     } else {
@@ -74,7 +81,7 @@ export default class DataShareExtAbility extends Extension {
     }
   }
 
-  delete(uri, predicates, callback) {
+  delete(uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     if (isDatabaseInitComplete) {
       this.doDelete(uri, predicates, callback);
     } else {
@@ -85,40 +92,40 @@ export default class DataShareExtAbility extends Extension {
     }
   }
 
-  doInsert(uri, value, callback) {
+  doInsert(uri: string, value: relationalStore.ValuesBucket, callback: Function) {
     Log.info(TAG, '[insert] enter');
     try {
-      dataShareProxy.insertByProxy(uri, value, callback);
+      dataShareProxy.insertByProxy(uri, value, WRITE_CALENDAR, callback);
     } catch (err) {
       Log.error(TAG, `err=${err?.message}`);
     }
     Log.info(TAG, '[insert] leave');
   }
 
-  doDelete(uri, predicates, callback) {
+  doDelete(uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     Log.info(TAG, '[delete] enter');
     try {
-      dataShareProxy.deleteByProxy(uri, predicates, callback);
+      dataShareProxy.deleteByProxy(uri, predicates, WRITE_CALENDAR, callback);
     } catch (err) {
       Log.error(TAG, `err=${err?.message}`);
     }
     Log.info(TAG, '[delete] leave');
   }
 
-  doUpdate(uri, predicates, value, callback) {
+  doUpdate(uri: string, predicates: dataSharePredicates.DataSharePredicates, value: relationalStore.ValuesBucket, callback: Function) {
     Log.info(TAG, '[update] enter');
     try {
-      dataShareProxy.updateByProxy(uri, value, predicates, callback)
+      dataShareProxy.updateByProxy(uri, value, predicates, WRITE_CALENDAR, callback)
     } catch (err) {
       Log.error(TAG, `err=${err?.message}`);
     }
     Log.info(TAG, '[update] leave');
   }
 
-  doQuery(uri, predicates, columns, callback) {
+  doQuery(uri: string, predicates: dataSharePredicates.DataSharePredicates, columns: Array<string>, callback: Function) {
     Log.info(TAG, '[query] enter');
     try {
-      dataShareProxy.queryByProxy(uri, columns, predicates, callback);
+      dataShareProxy.queryByProxy(uri, columns, predicates, READ_CALENDAR, callback);
     } catch (err) {
       Log.error(TAG, `err=${err?.message}`);
     }

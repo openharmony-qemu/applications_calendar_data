@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-import systemTimer from '@ohos.systemTimer';
-
 import { sendBroadcast } from '@ohos/common/src/main/ets/broadcast/BroadcastHelper';
-import { Log } from '@ohos/common/src/main/ets/utils/Log';
-
 import { CommonEventConstants } from '../CommonEventConstants';
 import { runScheduleNextAlarm } from '../../processor/alerts/AlertsProcessor';
-
-const TAG = 'ScheduleAlarmNotifier';
 
 /**
  * 在需要提醒的时间发送 Event_Reminder 广播通知，如果提醒时间小于当前时间，则返回false

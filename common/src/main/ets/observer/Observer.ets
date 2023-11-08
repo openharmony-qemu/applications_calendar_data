@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { ObservableMessage } from './Observable';
+
 /**
  * the interface of Observer
  *
@@ -23,5 +25,8 @@ export interface Observer {
   /**
    * 观察者被通知后，执行该方法实现行为
    */
-  onChange<Type>(message?: Type);
+  onChange(message?: ObserverMessage);
+}
+
+export class ObserverMessage implements ObservableMessage {
 }

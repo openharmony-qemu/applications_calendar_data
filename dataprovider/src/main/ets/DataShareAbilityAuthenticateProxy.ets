@@ -23,9 +23,10 @@ import {
 } from '@ohos/common/src/main/ets/utils/UrlUtils';
 
 import { ErrorCode } from '@ohos/datamanager/src/main/ets/constants/ErrorCode';
-
-import { verifyAccessByTokenId } from './AuthenticationUriHelper';
 import delegate from './DataShareAbilityDelegate'
+import data_rdb from '@ohos.data.relationalStore';
+import dataSharePredicates from '@ohos.data.dataSharePredicates';
+import { BusinessError } from '@ohos.base';
 
 const TAG = "DataShareAbilityAuthenticateProxy";
 
@@ -51,45 +52,45 @@ const FAIL_COUNT: number = 1;
  *
  * @since 2022-10-17
  */
-export default {
+class DataShareAbilityAuthenticateProxy {
   async init(): Promise<boolean> {
     Log.log(TAG, 'init start');
     let isDatabaseInitComplete = await delegate.init();
     Log.log(TAG, 'init end');
     return isDatabaseInitComplete;
-  },
+  }
 
-  async insertByProxy(uri: string, value, callback) {
+  async insertByProxy(uri: string, value: data_rdb.ValuesBucket, permission: Permissions, callback: Function) {
     let insertDataParameter = new InsertDataParameter(value);
     insertDataParameter.operationName = INSERT_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, insertDataParameter, PERMISSIONS_WRITE_WHOLE_CALENDAR,
-      PERMISSIONS_WRITE_CALENDAR, callback);
+      PERMISSIONS_WRITE_CALENDAR, permission, callback);
     dataOperateAfterVerify(uri, verifyFlag, insertDataParameter);
-  },
+  }
 
-  async deleteByProxy(uri: string, predicates, callback) {
+  async deleteByProxy(uri: string, predicates: dataSharePredicates.DataSharePredicates, permission: Permissions, callback: Function) {
     let deleteDataParameter = new DeleteDataParameter(predicates);
     deleteDataParameter.operationName = DELETE_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, deleteDataParameter, PERMISSIONS_WRITE_WHOLE_CALENDAR,
-      PERMISSIONS_WRITE_CALENDAR, callback);
+      PERMISSIONS_WRITE_CALENDAR, permission, callback);
     dataOperateAfterVerify(uri, verifyFlag, deleteDataParameter);
-  },
+  }
 
-  async updateByProxy(uri: string, value, predicates, callback) {
+  async updateByProxy(uri: string, value: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, permission: Permissions, callback: Function) {
     let updateDataParameter = new UpdateDataParameter(value, predicates);
     updateDataParameter.operationName = UPDATE_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, updateDataParameter, PERMISSIONS_WRITE_WHOLE_CALENDAR,
-      PERMISSIONS_WRITE_CALENDAR, callback);
+      PERMISSIONS_WRITE_CALENDAR, permission, callback);
     dataOperateAfterVerify(uri, verifyFlag, updateDataParameter);
-  },
+  }
 
-  async queryByProxy(uri: string, columns, predicates, callback) {
+  async queryByProxy(uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, permission: Permissions, callback: Function) {
     let queryDataParameter = new QueryDataParameter(columns, predicates);
     queryDataParameter.operationName = QUERY_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, queryDataParameter, PERMISSIONS_READ_WHOLE_CALENDAR,
-      PERMISSIONS_READ_CALENDAR, callback);
+      PERMISSIONS_READ_CALENDAR, permission, callback);
     dataOperateAfterVerify(uri, verifyFlag, queryDataParameter);
-  },
+  }
 }
 
 /**
@@ -101,14 +102,13 @@ export default {
  * @Param lowPermission indicates low-level permission to be verified
  */
 async function verifyByUri(uri: string, dataParameter: DataParameter, highPermission: Permissions,
-                           lowPermission: Permissions, callback): Promise<number> {
+                           lowPermission: Permissions, permission: Permissions, callback: Function): Promise<number> {
   let bundleNameAndTokenIdFromUri: BundleNameAndTokenIdFromUri = getBundleNameAndTokenIDByUri(uri);
 
   // Verify whether tokenId has HIGH-level to use database.
-  let isAll: boolean = await verifyAccessByTokenId(bundleNameAndTokenIdFromUri.tokenId, highPermission);
-  if (isAll) {
+  if (permission === PERMISSIONS_READ_WHOLE_CALENDAR || permission === PERMISSIONS_WRITE_WHOLE_CALENDAR) {
     // Encapsulate the callback function of an object to add Permission Used Record
-    dataParameter.callback = (err, rowId) => {
+    dataParameter.callback = (err: BusinessError, rowId: number) => {
       callback(err, rowId);
       addPermissionUsedRecordInCallBack(err, bundleNameAndTokenIdFromUri.tokenId, highPermission);
     }
@@ -117,10 +117,9 @@ async function verifyByUri(uri: string, dataParameter: DataParameter, highPermis
   }
 
   // Verify whether tokenId has LOW-level to use database.
-  let isNormal: boolean = await verifyAccessByTokenId(bundleNameAndTokenIdFromUri.tokenId, lowPermission);
-  if (isNormal) {
+  if (permission === PERMISSIONS_READ_CALENDAR || permission === PERMISSIONS_WRITE_CALENDAR) {
     // Encapsulate the callback function of an object to add Permission Used Record
-    dataParameter.callback = (err, rowId) => {
+    dataParameter.callback = (err: BusinessError, rowId: number) => {
       callback(err, rowId);
       addPermissionUsedRecordInCallBack(err, bundleNameAndTokenIdFromUri.tokenId, lowPermission);
     }
@@ -144,12 +143,12 @@ function dataOperateAfterVerify(uri: string, verifyFlag: number, dataParameter: 
     dataOperateSelectorByLowAuthority(uri, dataParameter);
   } else {
     // callback error with information
-    const err = {
+    const err: BusinessError = {
       code: ErrorCode.ILLEGAL_ARGUMENT_ERROR,
       name: 'AuthenticateException',
       message: 'Caller App does not have permission to read'
     };
-    DataParameter.prototype.callback(err, PERMISSIONS_FLAG_UNAUTHORIZED);
+    dataParameter.callback(err, PERMISSIONS_FLAG_UNAUTHORIZED);
   }
   return;
 }
@@ -161,7 +160,7 @@ function dataOperateAfterVerify(uri: string, verifyFlag: number, dataParameter: 
  * @Param tokenId
  * @Param permission indicates permission to be verified
  */
-function addPermissionUsedRecordInCallBack(err, tokenId: string, permission: Permissions) {
+function addPermissionUsedRecordInCallBack(err: BusinessError, tokenId: string, permission: Permissions) {
   // add Permission Used Record
   if (hasNoError(err)) {
     try {
@@ -169,7 +168,7 @@ function addPermissionUsedRecordInCallBack(err, tokenId: string, permission: Per
         .then(() => {
           console.log('addPermissionUsedRecord success Permission is ' + permission);
         })
-        .catch((err) => {
+        .catch((err: BusinessError) => {
           console.log(`addPermissionUsedRecord fail, err->${JSON.stringify(err)}`);
         });
     } catch (err) {
@@ -181,7 +180,7 @@ function addPermissionUsedRecordInCallBack(err, tokenId: string, permission: Per
         .then(() => {
           console.log('addPermissionUsedRecord success Permission is ' + permission);
         })
-        .catch((err) => {
+        .catch((err: BusinessError) => {
           console.log(`addPermissionUsedRecord fail, err->${JSON.stringify(err)}`);
         });
     } catch (err) {
@@ -257,15 +256,16 @@ async function dataOperateSelectorByLowAuthority(uri: string, dataParameter: Dat
  * @since 2022-12-28
  */
 abstract class DataParameter {
-  operationName: string;
+  operationName: string = '';
 
-  value;
+  value: data_rdb.ValuesBucket = {} as data_rdb.ValuesBucket;
 
-  columns;
+  columns: Array<string> = [];
 
-  predicates;
+  predicates: dataSharePredicates.DataSharePredicates = new dataSharePredicates.DataSharePredicates();
 
-  callback;
+  callback: Function = (err: BusinessError, count: number) => {
+  };
 }
 
 /**
@@ -274,7 +274,7 @@ abstract class DataParameter {
  * @since 2022-12-28
  */
 class InsertDataParameter extends DataParameter {
-  constructor(value) {
+  constructor(value: data_rdb.ValuesBucket) {
     super();
     this.value = value;
   }
@@ -286,7 +286,7 @@ class InsertDataParameter extends DataParameter {
  * @since 2022-12-28
  */
 class DeleteDataParameter extends DataParameter {
-  constructor(predicates) {
+  constructor(predicates: dataSharePredicates.DataSharePredicates) {
     super();
     this.predicates = predicates;
   }
@@ -298,7 +298,7 @@ class DeleteDataParameter extends DataParameter {
  * @since 2022-12-28
  */
 class UpdateDataParameter extends DataParameter {
-  constructor(value, predicates) {
+  constructor(value: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates) {
     super();
     this.value = value;
     this.predicates = predicates;
@@ -311,9 +311,11 @@ class UpdateDataParameter extends DataParameter {
  * @since 2022-10-28
  */
 class QueryDataParameter extends DataParameter {
-  constructor(columns, predicates) {
+  constructor(columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates) {
     super();
     this.columns = columns;
     this.predicates = predicates;
   }
 }
+
+export default new DataShareAbilityAuthenticateProxy()

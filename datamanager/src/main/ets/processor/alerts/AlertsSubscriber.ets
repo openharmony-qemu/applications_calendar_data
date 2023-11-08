@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import commonEvent from '@ohos.commonEvent'
-
+import commonEventManager from '@ohos.commonEventManager';
 import { Subscriber } from '@ohos/common/src/main/ets/subscriber/Subscriber'
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
-
 import { runScheduleNextAlarm } from './AlertsProcessor'
 import { CommonEventConstants } from '../../commonevents/CommonEventConstants';
+import { BusinessError } from '@ohos.base';
 
 const TAG = 'AlertsSubscriber';
 
@@ -32,9 +31,8 @@ const TAG = 'AlertsSubscriber';
 export class AlertsSubscriber implements Subscriber {
   // AlertsSubscriber 的单例
   private static sInstance: AlertsSubscriber;
-
   // AlertsSubscriber 持有的订阅者
-  private subscriber;
+  private subscriber: commonEventManager.CommonEventSubscriber | null = null;
 
   private constructor() {
     this.subscriber;
@@ -65,12 +63,10 @@ export class AlertsSubscriber implements Subscriber {
    */
   subscribe() {
     // 订阅的公共事件集合
-    var subscribeInfo = {
-      events: [CommonEventConstants.CHECK_NEXT_ALARM, CommonEventConstants.EVENT_REMINDER],
-    }
 
     // 创建订阅对象
-    commonEvent.createSubscriber(subscribeInfo, (err, subscriber) => {
+    commonEventManager.createSubscriber(
+      { events: [CommonEventConstants.CHECK_NEXT_ALARM, CommonEventConstants.EVENT_REMINDER] }, (err, subscriber) => {
       if (err?.code) {
         Log.error(TAG, `CreateSubscriberCallBack err = ${JSON.stringify(err)}`);
       } else {
@@ -78,7 +74,7 @@ export class AlertsSubscriber implements Subscriber {
         Log.info(TAG, "Create subscriber succeed");
         if (this.subscriber != null) {
           Log.info(TAG, "subscriber subscribe commonEvent");
-          commonEvent.subscribe(subscriber, (err, data) => {
+          commonEventManager.subscribe(subscriber, (err, data) => {
             if (err?.code) {
               Log.error(TAG, `SubscribeCallBack err= ${JSON.stringify(err)}`);
             } else {
@@ -99,12 +95,12 @@ export class AlertsSubscriber implements Subscriber {
    */
   unSubscribe() {
     if (this.subscriber != null) {
-      commonEvent.unsubscribe(this.subscriber, (err) => {
+      commonEventManager.unsubscribe(this.subscriber, (err: BusinessError) => {
         if (err?.code) {
           Log.error(TAG, `UnsubscribeCallBack err= = ${JSON.stringify(err)}`);
         } else {
           Log.info(TAG, "Unsubscribe");
-          this.subscriber = null
+          this.subscriber = null;
           Log.info(TAG, "Unsubscribe succeed");
         }
       })

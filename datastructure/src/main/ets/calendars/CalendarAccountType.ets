@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
+interface calendarAccountType {
+  BIRTHDAY_ACCOUNT_TYPE: string,
+  CUSTOM_ACCOUNT_TYPE: string,
+}
+
 /**
  * the const of table CalendarAccountType
  *
  * @since 2022-09-13
  */
-export const CalendarAccountType = {
+export const CalendarAccountType: calendarAccountType = {
   BIRTHDAY_ACCOUNT_TYPE: 'com.calendardata.birthday',
   CUSTOM_ACCOUNT_TYPE: 'com.calendardata.custom',
 }

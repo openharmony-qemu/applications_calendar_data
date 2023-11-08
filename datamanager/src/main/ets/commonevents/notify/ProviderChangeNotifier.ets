@@ -17,15 +17,15 @@
 import { CommonEventConstants } from '../CommonEventConstants';
 import { sendBroadcast } from '@ohos/common/src/main/ets/broadcast/BroadcastHelper';
 
-export const OPERATION_INSERT = 'insert';
+export const OPERATION_INSERT: string = 'insert';
 
-export const OPERATION_UPDATE = 'update';
+export const OPERATION_UPDATE: string = 'update';
 
-export const OPERATION_DELETE = 'delete';
+export const OPERATION_DELETE: string = 'delete';
 
-export const OPERATION_UNKNOWN = 'unknown';
+export const OPERATION_UNKNOWN: string = 'unknown';
 
-const BROAD_CAST_DELAY = 100;
+const BROAD_CAST_DELAY: number = 100;
 
 /**
  * 发送数据库变化广播通知
@@ -33,8 +33,17 @@ const BROAD_CAST_DELAY = 100;
  * @param tableName 变化的表
  * @param operation 操作：插入、更新、删除、未知
  */
+interface ParametersI {
+  table: string;
+  operation: string;
+}
+
+interface DataI {
+  parameters: ParametersI;
+}
+
 export function notifyProviderChange(tableName: string, operation: string) {
-  const data = {
+  const data: DataI = {
     parameters: {
       table: tableName,
       operation: operation,

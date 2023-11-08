@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
+interface CommonEventConstantsType {
+  CHECK_NEXT_ALARM: string;
+  EVENT_REMINDER: string;
+  DATA_CHANGED: string;
+}
+
 /**
  * the const of CommonEvent
  *
  * @since 2022-10-08
  */
-export const CommonEventConstants = {
+export const CommonEventConstants: CommonEventConstantsType = {
   CHECK_NEXT_ALARM: 'calendardata.CHECK_NEXT_ALARM',
   EVENT_REMINDER: 'calendardata.EVENT_REMINDER',
   DATA_CHANGED: 'calendardata.DATA_CHANGED',

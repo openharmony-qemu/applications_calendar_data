@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
+interface reminderMethodType {
+  METHOD_DEFAULT: number,
+  METHOD_ALERT: number,
+  METHOD_EMAIL: number,
+  METHOD_SMS: number,
+  METHOD_ALARM: number,
+}
+
 /**
  * the type of ReminderMethod
  *
  * @since 2022-09-13
  */
-export const ReminderMethodType = {
+export const ReminderMethodType: reminderMethodType = {
   METHOD_DEFAULT: 0,
   METHOD_ALERT: 1,
   METHOD_EMAIL: 2,

@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
+import { BusinessError } from '@ohos.base';
+
 /**
  * 判断error是否为无错误
  *
  * @param err 错误Error对象
  */
-export function hasNoError(err): boolean {
-  return err === null || err === undefined || err?.code === 0;
+export function hasNoError(err: BusinessError): boolean {
+  if (!err) {
+    return true;
+  }
+  return err?.code === 0;
 }
 
 /**
@@ -28,6 +33,6 @@ export function hasNoError(err): boolean {
  *
  * @param err 错误Error对象
  */
-export function hasError(err): boolean {
-  return!hasNoError(err);
+export function hasError(err: BusinessError): boolean {
+  return !hasNoError(err);
 }

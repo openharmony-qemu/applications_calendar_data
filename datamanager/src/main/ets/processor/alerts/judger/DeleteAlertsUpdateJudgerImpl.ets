@@ -24,6 +24,7 @@ import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/Cal
 import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns';
 import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns';
 import { RemindersColumns } from '@ohos/datastructure/src/main/ets/reminders/RemindersColumns';
+import relationalStore from '@ohos.data.relationalStore';
 
 const TAG = "DeleteAlarmNeedUpdateJudgerImpl";
 
@@ -43,10 +44,10 @@ export default class DeleteAlarmNeedUpdateJudgerImpl implements AlertsUpdateJudg
     this.tableNameSet.add(RemindersColumns.TABLE_NAME);
   }
 
-  isNeedToUpdateAlerts(tableName, values) {
+  isNeedToUpdateAlerts(tableName: string, values: relationalStore.ValuesBucket): boolean {
     if (values !== null && values !== undefined) {
       Log.error(TAG, "this is not a delete operation, please check your Code!");
-      return;
+      return false;
     }
     if (this.tableNameSet.has(tableName)) {
       return true;

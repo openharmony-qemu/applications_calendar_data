@@ -1,12 +1,11 @@
 {
-    "module": {
-        "name": "dataprovider",
-        "type": "har",
-        "deviceTypes": [
-            "default",
-            "tablet"
-        ],
-        "installationFree": false,
-        "uiSyntax": "ets"
-    }
+  "module": {
+    "name": "dataprovider",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ],
+    "installationFree": false
+  }
 }

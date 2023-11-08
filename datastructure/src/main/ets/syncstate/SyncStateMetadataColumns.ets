@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
+interface SyncStateMetadataColumnsType {
+  TABLE_NAME: string;
+  VERSION: string;
+  ID: string;
+}
+
 /**
  * the const of table SyncStateMetadata
  *
  * @since 2022-09-08
  */
-export const SyncStateMetadataColumns = {
+export const SyncStateMetadataColumns: SyncStateMetadataColumnsType = {
   TABLE_NAME: '_sync_state_metadata',
   VERSION: 'version',
+  ID: '_id',
 }
