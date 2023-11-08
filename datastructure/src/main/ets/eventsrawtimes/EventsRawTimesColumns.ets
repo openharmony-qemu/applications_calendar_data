@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
+interface eventsRawTimesColumnsType {
+  TABLE_NAME: string,
+  ID: string,
+  EVENT_ID: string,
+  DT_START_2445: string,
+  DT_END_2445: string,
+  ORIGINAL_INSTANCE_TIME2445: string,
+  LAST_DATE2445: string,
+}
+
 /**
  * the const of table EventsRawTimes
  *
  * @since 2022-09-08
  */
-export const EventsRawTimesColumns = {
+export const EventsRawTimesColumns: eventsRawTimesColumnsType = {
   TABLE_NAME: 'EventsRawTimes',
   ID: '_id',
   EVENT_ID: 'event_id',
-  DTSTART2445: 'dtstart2445',
-  DTEND2445: 'dtend2445',
+  DT_START_2445: 'dtstart2445',
+  DT_END_2445: 'dtend2445',
   ORIGINAL_INSTANCE_TIME2445: 'originalInstanceTime2445',
   LAST_DATE2445: 'lastDate2445',
 }

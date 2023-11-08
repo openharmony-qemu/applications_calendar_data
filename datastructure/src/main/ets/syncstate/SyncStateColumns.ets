@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
+interface SyncStateColumnsType {
+  TABLE_NAME: string;
+  ID: string;
+  ACCOUNT_NAME: string;
+  ACCOUNT_TYPE: string;
+  DATA: string;
+}
+
 /**
  * the const of table SyncState
  *
  * @since 2022-09-08
  */
-export const SyncStateColumns = {
+export const SyncStateColumns: SyncStateColumnsType = {
   TABLE_NAME: '_sync_state',
   ID: '_id',
   ACCOUNT_NAME: 'account_name',

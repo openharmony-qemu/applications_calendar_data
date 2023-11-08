@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
+interface extendedPropertiesColumnsType {
+  TABLE_NAME: string,
+  ID: string,
+  EVENT_ID: string,
+  NAME: string,
+  VALUE: string,
+}
+
 /**
  * the const of table ExtendedProperties
  *
  * @since 2022-09-08
  */
-export const ExtendedPropertiesColumns = {
+export const ExtendedPropertiesColumns: extendedPropertiesColumnsType = {
   TABLE_NAME: 'ExtendedProperties',
   ID: '_id',
   EVENT_ID: 'event_id',

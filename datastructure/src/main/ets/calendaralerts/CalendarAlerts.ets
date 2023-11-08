@@ -14,21 +14,35 @@
  * limitations under the License.
  */
 
+interface CalendarAlertsType {
+  id: number;
+  eventId: number
+  begin: number
+  end: number
+  alarmTime: number
+  creationTime: number
+  receivedTime: number
+  notifyTime: number
+  state: number
+  minutes: number
+  creator: string
+}
+
 /**
  * the structure of table CalendarAlerts
  *
  * @since 2022-09-19
  */
-export class CalendarAlerts {
-  id: number;
-  eventId: number;
-  begin: number;
-  end: number;
-  alarmTime: number;
-  creationTime: number;
-  receivedTime: number;
-  notifyTime: number;
-  state: number;
-  minutes: number;
-  creator: string;
+export class CalendarAlerts implements CalendarAlertsType {
+  id = 0;
+  eventId = 0;
+  begin = 0;
+  end = 0;
+  alarmTime = 0;
+  creationTime = 0;
+  receivedTime = 0;
+  notifyTime = 0;
+  state = 0;
+  minutes = 0;
+  creator = '';
 }

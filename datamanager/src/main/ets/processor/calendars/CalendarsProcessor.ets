@@ -16,15 +16,12 @@
 
 import data_rdb from '@ohos.data.relationalStore';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
-
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { getBundleNameByUri } from '@ohos/common/src/main/ets/utils/UrlUtils';
-
 import {
   CalendarsColumns,
   DEFAULT_CALENDAR_VALUE
 } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
-
 import { DefaultProcessor } from '../DefaultProcessor';
 import {
   initValueCreator,
@@ -42,43 +39,44 @@ const TAG = 'CalendarsProcessor';
  * @since 2022-10-17
  */
 export class CalendarsProcessor extends DefaultProcessor {
-  async insertByHighAuthority(rdbStore, uri: string, values, callback) {
+  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     this.doInsert(rdbStore, uri, values, callback);
   }
 
-  async insertByLowAuthority(rdbStore, uri: string, values, callback) {
-    const callerName = getBundleNameByUri(uri);
-    initValueCreator(values, callerName);
+  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+    if (!this.isFromMigrate) {
+      const callerName = getBundleNameByUri(uri);
+      initValueCreator(values, callerName);
+    }
     this.doInsert(rdbStore, uri, values, callback);
   }
 
-  async deleteByHighAuthority(rdbStore, uri: string, predicates, callback) {
+  async deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     initPredicateDefaultCalendarProtect(predicates);
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async deleteByLowAuthority(rdbStore, uri: string, predicates, callback) {
+  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async updateByHighAuthority(rdbStore, uri: string, values, predicates, callback) {
-    deleteValueCreator(values);
-    initPredicateDefaultCalendarProtect(predicates);
+  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    values = deleteValueCreator(values);
     this.doUpdate(rdbStore, uri, values, predicates, callback);
   }
 
-  async updateByLowAuthority(rdbStore, uri: string, values, predicates, callback) {
+  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
-    deleteValueCreator(values);
+    values = deleteValueCreator(values);
     initPredicateCreator(predicates, callerName);
     this.doUpdate(rdbStore, uri, values, predicates, callback);
   }
 
-  async queryByLowAuthority(rdbStore, uri: string, columns: Array<string>, predicates, callback) {
+  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateDefaultAndOwnCreator(predicates, callerName);
     this.doQuery(rdbStore, uri, columns, predicates, callback);
@@ -91,9 +89,13 @@ export class CalendarsProcessor extends DefaultProcessor {
  * @param rdbStore rdb数据库
  * @return 插入的行id
  */
-export async function insertDefaultCalendar(rdbStore: data_rdb.RdbStore): Promise<number> {
+export async function insertDefaultCalendar(rdbStore: data_rdb.RdbStore | null): Promise<number> {
   Log.debug(TAG, `insertDefaultCalendar start`);
-  let rowId: number;
+  let rowId: number = -1;
+  if (!rdbStore) {
+    Log.error(TAG, 'insertDefaultCalendar error rdbStore is null');
+    return rowId;
+  }
   const isOwnDefault = await isExistDefaultCalendar(rdbStore);
   if (isOwnDefault === undefined || isOwnDefault === null || isOwnDefault === true) {
     rowId = -1;
@@ -108,17 +110,16 @@ export async function insertDefaultCalendar(rdbStore: data_rdb.RdbStore): Promis
   return rowId;
 }
 
-
 /**
- * 检查日历存储的默认账户是否已经存在
+ * 检查日历存储的默认账户是否已经存在,account_name is phone, CREATOR is com.huawei.hmos.calendardata
  *
  * @param rdbStore rdb数据库
  * @return true 存在 false 不存在
  */
-export async function isExistDefaultCalendar(rdbStore: data_rdb.RdbStore): Promise<boolean> {
+export async function isExistDefaultCalendar(rdbStore: data_rdb.RdbStore) {
   Log.debug(TAG, `isExistDefaultCalendar start`);
   const columns = [CalendarsColumns.ID, CalendarsColumns.ACCOUNT_NAME, CalendarsColumns.ACCOUNT_TYPE,
-  CalendarsColumns.CREATOR];
+    CalendarsColumns.CREATOR];
   let predicates = new dataSharePredicates.DataSharePredicates();
   predicates.equalTo(CalendarsColumns.ACCOUNT_NAME, DEFAULT_CALENDAR_VALUE.account_name);
   predicates.equalTo(CalendarsColumns.CREATOR, DEFAULT_CALENDAR_VALUE.creator);
@@ -128,7 +129,7 @@ export async function isExistDefaultCalendar(rdbStore: data_rdb.RdbStore): Promi
       return;
     }
     if (resultSet.rowCount > 0) {
-      Log.error(TAG, 'Default Calendar is already exist');
+      Log.info(TAG, 'Default Calendar is already exist');
       return true;
     }
   } catch (err) {

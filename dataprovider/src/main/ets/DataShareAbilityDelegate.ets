@@ -15,13 +15,14 @@
  */
 
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
-
 import { insertDefaultCalendar } from '@ohos/datamanager/src/main/ets/processor/calendars/CalendarsProcessor';
 import CalendarDataHelper from '@ohos/datamanager/src/main/ets/utils/CalendarDataHelper';
 import getTableByUri from '@ohos/datamanager/src/main/ets/utils/CalendarUriHelper';
 import factory from '@ohos/datamanager/src/main/ets/processor/DatabaseProcessorFactory';
+import data_rdb from '@ohos.data.relationalStore';
+import dataSharePredicates from '@ohos.data.dataSharePredicates';
 
-let rdbStore;
+let rdbStore: data_rdb.RdbStore;
 let TAG = "DataShareAbilityDelegate";
 
 /**
@@ -29,11 +30,11 @@ let TAG = "DataShareAbilityDelegate";
  *
  * @since 2022-06-15
  */
-export default {
+class DataShareAbilityDelegate {
   async init(): Promise<boolean> {
     Log.info(TAG, 'init start');
     try {
-      rdbStore = await CalendarDataHelper.getInstance().getRdbStore();
+      rdbStore = await CalendarDataHelper.getInstance().getRdbStore() as data_rdb.RdbStore;
       await insertDefaultCalendar(rdbStore);
     } catch (err) {
       Log.error(TAG, 'init err');
@@ -41,9 +42,14 @@ export default {
     }
     Log.info(TAG, 'init end');
     return true;
-  },
+  }
 
-  insertByHighAuthority(uri, value, callback) {
+  insertByHighAuthority(uri: string, value: data_rdb.ValuesBucket, callback: Function) {
+    if (!rdbStore) {
+      this.getDb();
+      Log.warn(TAG, `insert uri: ${uri} rdbStore is null`)
+      return;
+    }
     Log.info(TAG, `insert uri: ${uri}`);
     let table = getTableByUri(uri);
     Log.info(TAG, `insert table: ${table}`);
@@ -55,9 +61,19 @@ export default {
     } else {
       Log.error(TAG, 'insert with invalid processor');
     }
-  },
+  }
 
-  insertByLowAuthority(uri: string, value, callback) {
+  async getDb() {
+    rdbStore = await CalendarDataHelper.getInstance().getRdbStore() as data_rdb.RdbStore;
+  }
+
+  insertByLowAuthority(uri: string, value: data_rdb.ValuesBucket, callback: Function) {
+
+    if (!rdbStore) {
+      Log.warn(TAG, `insert uri: ${uri} rdbStore is null`)
+      this.getDb();
+      return;
+    }
     Log.info(TAG, `insert uri: ${uri}`);
     let table = getTableByUri(uri);
     Log.info(TAG, `insert table: ${table}`);
@@ -69,9 +85,14 @@ export default {
     } else {
       Log.error(TAG, 'insert with invalid processor');
     }
-  },
+  }
 
-  deleteByHighAuthority(uri, predicates, callback) {
+  deleteByHighAuthority(uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    if (!rdbStore) {
+      this.getDb();
+      Log.warn(TAG, `deleteByHighAuthority uri: ${uri} rdbStore is null`)
+      return;
+    }
     Log.info(TAG, `delete uri: ${uri}`);
     let table = getTableByUri(uri);
     Log.info(TAG, `delete table: ${table}`);
@@ -83,9 +104,14 @@ export default {
     } else {
       Log.error(TAG, 'delete with invalid processor');
     }
-  },
+  }
 
-  deleteByLowAuthority(uri, predicates, callback) {
+  deleteByLowAuthority(uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    if (!rdbStore) {
+      this.getDb();
+      Log.warn(TAG, `deleteByHighAuthority uri: ${uri} rdbStore is null`)
+      return;
+    }
     Log.info(TAG, `delete uri: ${uri}`);
     let table = getTableByUri(uri);
     Log.info(TAG, `delete table: ${table}`);
@@ -97,38 +123,52 @@ export default {
     } else {
       Log.error(TAG, 'delete with invalid processor');
     }
-  },
+  }
 
-  updateByHighAuthority(uri, value, predicates, callback) {
-    Log.info(TAG, `update uri: ${uri}`);
+  updateByHighAuthority(uri: string, value: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    if (!rdbStore) {
+      this.getDb();
+      Log.warn(TAG, `updateByHighAuthority uri: ${uri} rdbStore is null`)
+      return;
+    }
+    Log.info(TAG, `High update uri: ${uri}`);
     let table = getTableByUri(uri);
-    Log.info(TAG, `update table: ${table}`);
+    Log.info(TAG, `High update table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.updateByHighAuthority(rdbStore, uri, value, predicates, callback);
       return;
     } else {
-      Log.error(TAG, 'update with invalid processor');
+      Log.error(TAG, 'High update with invalid processor');
     }
-  },
+  }
 
-  updateByLowAuthority(uri, value, predicates, callback) {
-    Log.info(TAG, `update uri: ${uri}`);
+  updateByLowAuthority(uri: string, value: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    if (!rdbStore) {
+      this.getDb();
+      Log.warn(TAG, `updateByLowAuthority uri: ${uri} rdbStore is null`)
+      return;
+    }
+    Log.info(TAG, `Low update uri: ${uri}`);
     let table = getTableByUri(uri);
-    Log.info(TAG, `update table: ${table}`);
+    Log.info(TAG, `Low update table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.updateByLowAuthority(rdbStore, uri, value, predicates, callback);
       return;
     } else {
-      Log.error(TAG, 'update with invalid processor');
+      Log.error(TAG, 'Low update with invalid processor');
     }
-  },
+  }
 
-
-  queryByHighAuthority(uri, columns, predicates, callback) {
+  queryByHighAuthority(uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    if (!rdbStore) {
+      this.getDb();
+      Log.warn(TAG, `updateByHighAuthority uri: ${uri} rdbStore is null`)
+      return;
+    }
     Log.info(TAG, `query uri: ${uri}`);
     const table = getTableByUri(uri);
     Log.info(TAG, `query table: ${table}`);
@@ -140,9 +180,14 @@ export default {
     } else {
       Log.error(TAG, 'query with invalid processor');
     }
-  },
+  }
 
-  queryByLowAuthority(uri, columns, predicates, callback) {
+  queryByLowAuthority(uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    if (!rdbStore) {
+      this.getDb();
+      Log.warn(TAG, `updateByHighAuthority uri: ${uri} rdbStore is null`)
+      return;
+    }
     Log.info(TAG, `query uri: ${uri}`);
     const table = getTableByUri(uri);
     Log.info(TAG, `query table: ${table}`);
@@ -156,3 +201,5 @@ export default {
     }
   }
 }
+
+export default new DataShareAbilityDelegate()

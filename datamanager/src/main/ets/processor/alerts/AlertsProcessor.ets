@@ -16,8 +16,6 @@
 
 import data_rdb from '@ohos.data.relationalStore';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
-import DataShareResultSet from '@ohos.data.DataShareResultSet';
-
 import { sendBroadcast } from '@ohos/common/src/main/ets/broadcast/BroadcastHelper';
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import {
@@ -32,7 +30,7 @@ import { getBundleNameByUri } from '@ohos/common/src/main/ets/utils/UrlUtils';
 import { CalendarAccountType } from '@ohos/datastructure/src/main/ets/calendars/CalendarAccountType';
 import { CalendarAlerts } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlerts';
 import { parseCalendarAlerts } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertsParser';
-import { CalendarAlertStateType } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertStateType';
+import { CalendarAlertState } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertStateType';
 import { CalendarAlertsColumns } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertsColumns';
 import { CalendarAlertsIndexes } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertsIndexes';
 import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
@@ -51,6 +49,8 @@ import { notifyEventReminder } from '../../commonevents/notify/ScheduleAlarmNoti
 import CalendarDataHelper from '../../utils/CalendarDataHelper';
 import { acquireExpandAll } from '../instances/InstancesProcessor';
 import { initValueCreator, initPredicateCreator, deleteValueCreator } from '../DatabaseProcessorHelper';
+import { ValueType, ValuesBucket } from '@ohos.data.ValuesBucket';
+import { BusinessError } from '@ohos.base';
 
 const TAG = 'AlertsProcessor';
 
@@ -112,7 +112,7 @@ const ALERT_GENERATE_QUERY = `SELECT * FROM (${ALL_DAY_QUERY} UNION ALL ${NO_ALL
  * @since 2022-10-25
  */
 export class AlertsProcessor extends DefaultProcessor {
-  async insertByHighAuthority(rdbStore, uri: string, values, callback) {
+  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     const isEventExist = await isEventSameWithAlertId(rdbStore, values);
@@ -120,7 +120,7 @@ export class AlertsProcessor extends DefaultProcessor {
       this.doInsert(rdbStore, uri, values, callback);
     } else {
       Log.warn(TAG, 'not support insert operation');
-      const err = {
+      const err: BusinessError = {
         code: ErrorCode.UN_SUPPORT_OPERATION,
         name: 'UnSupportedOperationException',
         message: 'The calling application cannot insert an reminder without its own event'
@@ -129,7 +129,7 @@ export class AlertsProcessor extends DefaultProcessor {
     }
   }
 
-  async insertByLowAuthority(rdbStore, uri: string, values, callback) {
+  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: ValuesBucket, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     const isEventCreatorExist = await isEventSameWithAlertCreator(rdbStore, values);
@@ -137,7 +137,7 @@ export class AlertsProcessor extends DefaultProcessor {
       this.doInsert(rdbStore, uri, values, callback);
     } else {
       Log.warn(TAG, 'not support insert operation');
-      const err = {
+      const err: BusinessError = {
         code: ErrorCode.UN_SUPPORT_OPERATION,
         name: 'UnSupportedOperationException',
         message: 'The calling application cannot insert an reminder with different creator from event'
@@ -146,25 +146,25 @@ export class AlertsProcessor extends DefaultProcessor {
     }
   }
 
-  async deleteByLowAuthority(rdbStore, uri: string, predicates, callback) {
+  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async updateByHighAuthority(rdbStore, uri: string, values, predicates, callback) {
-    deleteValueCreator(values);
+  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    values = deleteValueCreator(values);
     this.doUpdate(rdbStore, uri, values, predicates, callback)
   }
 
-  async updateByLowAuthority(rdbStore, uri: string, values, predicates, callback) {
+  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
-    deleteValueCreator(values);
+    values = deleteValueCreator(values);
     initPredicateCreator(predicates, callerName);
     this.doUpdate(rdbStore, uri, values, predicates, callback)
   }
 
-  async queryByLowAuthority(rdbStore, uri: string, columns: Array<string>, predicates, callback) {
+  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doQuery(rdbStore, uri, columns, predicates, callback);
@@ -178,21 +178,27 @@ export class AlertsProcessor extends DefaultProcessor {
  * @param values 插入操作的数据
  * @return true 相同 false 不相同
  */
-async function isEventSameWithAlertCreator(rdbStore, values): Promise<boolean> {
+async function isEventSameWithAlertCreator(rdbStore: data_rdb.RdbStore, values: ValuesBucket): Promise<boolean> {
   Log.debug(TAG, 'isEventSameWithAlertCreator start');
   const calendarAlertCreator = values[CalendarsColumns.CREATOR];
   let resultSet = await queryEventIdAndCreatorByAlert(rdbStore, values);
   if (resultSet === null || resultSet === undefined) {
     return false;
   }
-  const eventIndexes: EventIndexes = parseIndexes(resultSet);
-  if (resultSet.goToFirstRow()) {
-    let events: Events = parseEvents(resultSet, eventIndexes);
-    if (events === null || events === undefined) {
-      return false;
+  try {
+    const eventIndexes: EventIndexes = parseIndexes(resultSet) as EventIndexes;
+    if (resultSet.goToFirstRow()) {
+      let events: Events | undefined = parseEvents(resultSet, eventIndexes);
+      if (events === null || events === undefined) {
+        return false;
+      }
+      return events.creator === calendarAlertCreator;
     }
-    if (events.creator === calendarAlertCreator) {
-      return true;
+  } catch (err) {
+    Log.warn(TAG, `isEventSameWithAlertCreator err ${JSON.stringify(err)}`);
+  } finally {
+    if (resultSet) {
+      resultSet.close();
     }
   }
   return false;
@@ -205,14 +211,22 @@ async function isEventSameWithAlertCreator(rdbStore, values): Promise<boolean> {
  * @param values 插入操作的数据
  * @return true 相同 false 不相同
  */
-async function isEventSameWithAlertId(rdbStore, values): Promise<boolean> {
+async function isEventSameWithAlertId(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<boolean> {
   Log.debug(TAG, 'isEventSameWithAlertId start');
   let resultSet = await queryEventIdAndCreatorByAlert(rdbStore, values);
-  if (resultSet === null || resultSet === undefined) {
-    return false;
-  }
-  if (resultSet.rowCount > 0) {
-    return true;
+  try {
+    if (resultSet === null || resultSet === undefined) {
+      return false;
+    }
+    if (resultSet.rowCount > 0) {
+      return true;
+    }
+  } catch (err) {
+    Log.warn(TAG, `isEventSameWithAlertId err ${JSON.stringify(err)}`);
+  } finally {
+    if (resultSet) {
+      resultSet.close();
+    }
   }
   return false;
 }
@@ -224,18 +238,17 @@ async function isEventSameWithAlertId(rdbStore, values): Promise<boolean> {
  * @param values 插入操作的数据
  * @return DataShareResultSet
  */
-async function queryEventIdAndCreatorByAlert(rdbStore, values): Promise<DataShareResultSet> {
-  const eventId = values[CalendarAlertsColumns.EVENT_ID];
+async function queryEventIdAndCreatorByAlert(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket) {
+  const eventId = values[CalendarAlertsColumns.EVENT_ID] as ValueType;
   const columns = [EventColumns.ID, EventColumns.CREATOR];
   let predicates = new dataSharePredicates.DataSharePredicates();
   predicates.equalTo(EventColumns.ID, eventId);
-  let resultSet: DataShareResultSet;
   try {
-    resultSet = await rdbStore.query(EventColumns.TABLE_NAME, predicates, columns);
+    return await rdbStore.query(EventColumns.TABLE_NAME, predicates, columns);
   } catch (err) {
     Log.error(TAG, 'Event query data error');
   }
-  return resultSet;
+  return;
 }
 
 /**
@@ -246,6 +259,10 @@ async function queryEventIdAndCreatorByAlert(rdbStore, values): Promise<DataShar
 export async function runScheduleNextAlarm(isRemoveAlarms: boolean = false) {
   Log.info(TAG, 'runScheduleNextAlarm start.');
   let rdbStore = await CalendarDataHelper.getInstance().getRdbStore();
+  if (!rdbStore) {
+    Log.warn(TAG, 'runScheduleNextAlarm: rdbStore is null.');
+    return;
+  }
   await deleteRepeatReminders(rdbStore);
   try {
     if (isRemoveAlarms) {
@@ -264,7 +281,7 @@ export async function runScheduleNextAlarm(isRemoveAlarms: boolean = false) {
  */
 async function scheduleNextAlarmLocked(rdbStore: data_rdb.RdbStore) {
   Log.info(TAG, 'scheduleNextAlarmLocked start.');
-  let rowsDeleted: number;
+  let rowsDeleted: number = 0;
   let isAlarmLessThenCurrent: boolean = false;
   const date: Date = new Date();
   let currentMillis = date.getTime();
@@ -278,29 +295,27 @@ async function scheduleNextAlarmLocked(rdbStore: data_rdb.RdbStore) {
   }
 
   let nextAlarmTime = end;
-  let tmpAlarmTime: number;
   try {
-    tmpAlarmTime = await findNextAlarmTime(rdbStore, currentMillis);
+    let tmpAlarmTime: number = await findNextAlarmTime(rdbStore, currentMillis);
+    if (tmpAlarmTime !== INVALIDATE_TIME_MILLIS && tmpAlarmTime < nextAlarmTime) {
+      nextAlarmTime = tmpAlarmTime;
+    }
   } catch (err) {
     Log.error(TAG, 'TAG, Error in getting nextAlarmTime');
   }
-  if (tmpAlarmTime !== INVALIDATE_TIME_MILLIS && tmpAlarmTime < nextAlarmTime) {
-    nextAlarmTime = tmpAlarmTime;
-  }
-
   const localOffset = getCurrentTimeZoneMillisecond(date);
   const queryParams = [localOffset.toString(), localOffset.toString(), start.toString(), nextAlarmTime.toString(),
   currentMillis.toString(), start.toString(), nextAlarmTime.toString(), currentMillis.toString()];
 
   // 扩展Instances：扩展范围为一天
   await acquireExpandAll(rdbStore, start - MILLS_PER_DAY, end + MILLS_PER_DAY);
+  let resultSet: data_rdb.ResultSet | null = null;
   try {
-    let resultSet = await rdbStore.querySql(ALERT_GENERATE_QUERY, queryParams);
+    resultSet = await rdbStore.querySql(ALERT_GENERATE_QUERY, queryParams);
     Log.info(TAG, "scheduleNextAlarmLocked() result row count is " + resultSet.rowCount);
-    const indexes: CalendarAlertsIndexes = parseScheduleCalendarAlertsIndexes(resultSet);
+    const indexes: CalendarAlertsIndexes = parseScheduleCalendarAlertsIndexes(resultSet) as CalendarAlertsIndexes;
     while (resultSet.goToNextRow()) {
-      let calendarAlerts: CalendarAlerts;
-      calendarAlerts = parseCalendarAlerts(resultSet, indexes);
+      let calendarAlerts: CalendarAlerts | undefined = parseCalendarAlerts(resultSet, indexes);
       if (calendarAlerts === null || calendarAlerts === undefined) {
         Log.debug(TAG, "scheduleNextAlarmLocked() result is null or undefined");
         continue;
@@ -322,12 +337,16 @@ async function scheduleNextAlarmLocked(rdbStore: data_rdb.RdbStore) {
         isAlarmLessThenCurrent = true;
       }
     }
-    if (isAlarmLessThenCurrent === true || rowsDeleted > 0) {
+    if (isAlarmLessThenCurrent || rowsDeleted > 0) {
       sendBroadcast(CommonEventConstants.EVENT_REMINDER);
       runScheduleNextAlarm();
     }
   } catch (err) {
     Log.error(TAG, 'This is a resultSet ergodic error');
+  } finally {
+    if (resultSet) {
+      resultSet.close();
+    }
   }
 }
 
@@ -394,9 +413,9 @@ async function alarmExists(rdbStore: data_rdb.RdbStore, calendarAlerts: Calendar
  * @param resultSet 执行查询sql语句的结果
  * @return CalendarAlertsIndexes 返回查询的列Index
  */
-function parseScheduleCalendarAlertsIndexes(resultSet): CalendarAlertsIndexes {
+function parseScheduleCalendarAlertsIndexes(resultSet: data_rdb.ResultSet) {
   if (resultSet === null || resultSet === undefined) {
-    return undefined;
+    return;
   }
   let indexes: CalendarAlertsIndexes = new CalendarAlertsIndexes();
   indexes.alarmTimeIndex = resultSet.getColumnIndex('alertAlarmTime');
@@ -414,21 +433,20 @@ function parseScheduleCalendarAlertsIndexes(resultSet): CalendarAlertsIndexes {
  * @param calendarAlerts 携带参数的calendarAlerts
  * @return 成功则返回rowId
  */
-async function insertAlert(rdbStore, date, calendarAlerts: CalendarAlerts): Promise<number> {
+async function insertAlert(rdbStore: data_rdb.RdbStore, date: Date, calendarAlerts: CalendarAlerts): Promise<number> {
   let currentMillis = date.getTime();
-  let rowId: number;
-  const valueBucket = {
-    [CalendarAlertsColumns.EVENT_ID]: calendarAlerts.eventId,
-    [CalendarAlertsColumns.BEGIN]: calendarAlerts.begin,
-    [CalendarAlertsColumns.END]: calendarAlerts.end,
-    [CalendarAlertsColumns.ALARM_TIME]: calendarAlerts.alarmTime,
-    [CalendarAlertsColumns.CREATION_TIME]: currentMillis,
-    [CalendarAlertsColumns.RECEIVED_TIME]: 0,
-    [CalendarAlertsColumns.NOTIFY_TIME]: 0,
-    [CalendarAlertsColumns.STATE]: CalendarAlertStateType.STATE_SCHEDULED,
-    [CalendarAlertsColumns.MINUTES]: calendarAlerts.minutes,
-    [CalendarAlertsColumns.CREATOR]: calendarAlerts.creator,
-  }
+  let rowId: number = -1;
+  const valueBucket: ValuesBucket = {};
+  valueBucket[CalendarAlertsColumns.EVENT_ID] = calendarAlerts.eventId;
+  valueBucket[CalendarAlertsColumns.BEGIN] = calendarAlerts.begin;
+  valueBucket[CalendarAlertsColumns.END] = calendarAlerts.end;
+  valueBucket[CalendarAlertsColumns.ALARM_TIME] = calendarAlerts.alarmTime;
+  valueBucket[CalendarAlertsColumns.CREATION_TIME] = currentMillis;
+  valueBucket[CalendarAlertsColumns.RECEIVED_TIME] = 0;
+  valueBucket[CalendarAlertsColumns.NOTIFY_TIME] = 0;
+  valueBucket[CalendarAlertsColumns.STATE] = CalendarAlertState.STATE_SCHEDULED;
+  valueBucket[CalendarAlertsColumns.MINUTES] = calendarAlerts.minutes;
+  valueBucket[CalendarAlertsColumns.CREATOR] = calendarAlerts.creator;
   try {
     rowId = await rdbStore.insert(CalendarAlertsColumns.TABLE_NAME, valueBucket);
     Log.debug(TAG, `insertAlert succeed , rowId = ${rowId}`);
@@ -445,7 +463,7 @@ async function insertAlert(rdbStore, date, calendarAlerts: CalendarAlerts): Prom
  * @param currentMillis 当前时间
  * @return 成功则返回受影响的行数
  */
-async function deleteInvalidAlert(rdbStore: data_rdb.RdbStore, currentMillis): Promise<number> {
+async function deleteInvalidAlert(rdbStore: data_rdb.RdbStore, currentMillis: number): Promise<number> {
   Log.info(TAG, 'deleteInvalidAlert start.');
   let rowsDeleted: number = 0;
   let arraysDeleteId: number[] = [];
@@ -509,7 +527,7 @@ async function deleteRepeatReminders(rdbStore: data_rdb.RdbStore) {
 async function removeScheduledAlarmsLocked(rdbStore: data_rdb.RdbStore) {
   Log.info(TAG, 'removeScheduledAlarmsLocked start.');
   let predicates = new dataSharePredicates.DataSharePredicates();
-  predicates.equalTo(CalendarAlertsColumns.STATE, CalendarAlertStateType.STATE_SCHEDULED)
+  predicates.equalTo(CalendarAlertsColumns.STATE, CalendarAlertState.STATE_SCHEDULED)
   try {
     await rdbStore.delete(CalendarAlertsColumns.TABLE_NAME, predicates);
     Log.debug(TAG, `removeScheduledAlarmsLocked succeed`);

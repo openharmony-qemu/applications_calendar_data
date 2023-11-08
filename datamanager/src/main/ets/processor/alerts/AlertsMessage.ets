@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-import { ValuesBucket } from '@ohos.data.ValuesBucket';
+import data_rdb from '@ohos.data.relationalStore';
+import { ObserverMessage } from '@ohos/common/src/main/ets/observer/Observer';
 
 /**
  * the Alerts Message, It is used to describe the scenario where the alerts table needs to be updated
  *
  * @since 2022-09-09
  */
-export class AlertsMessage {
+export class AlertsMessage extends ObserverMessage {
   private mOperationName: string;
   private mTableName: string;
-  private mValues: ValuesBucket;
+  private mValues: data_rdb.ValuesBucket;
 
   constructor() {
-    this.mOperationName = undefined;
-    this.mTableName = undefined;
-    this.mValues = undefined;
+    super();
+    this.mOperationName = '';
+    this.mTableName = '';
+    this.mValues = {};
   }
 
   setOperationName(mOperationName: string) {
@@ -40,7 +42,7 @@ export class AlertsMessage {
     this.mTableName = mTableName;
   }
 
-  setValues(mValues: ValuesBucket) {
+  setValues(mValues: data_rdb.ValuesBucket) {
     this.mValues = mValues;
   }
 
@@ -52,7 +54,7 @@ export class AlertsMessage {
     return this.mTableName;
   }
 
-  getValues(): ValuesBucket {
+  getValues(): data_rdb.ValuesBucket {
     return this.mValues;
   }
 }

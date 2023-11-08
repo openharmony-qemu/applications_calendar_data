@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
+
 /**
  * AlertsUpdateJudger 类的接口，具体实现类以 场景名 + AlertsUpdateJudger +impl命名
  *
@@ -27,5 +29,5 @@ export default interface AlertsUpdateJudger {
    * @Param values 修改操作的更新值
    * @Return 是否需要更新 Alerts 表
    */
-  isNeedToUpdateAlerts(tableName: string, values): boolean;
+  isNeedToUpdateAlerts(tableName: string, values: data_rdb.ValuesBucket): boolean;
 }

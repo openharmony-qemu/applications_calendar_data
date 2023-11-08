@@ -19,14 +19,14 @@
  *
  * @since 2022-08-24
  */
-export const ErrorCode = {
+export const enum ErrorCode {
   /**
    * the operation is not supported
    */
-  UN_SUPPORT_OPERATION: -1,
+  UN_SUPPORT_OPERATION = -1,
 
   /**
    * the argument is illegal
    */
-  ILLEGAL_ARGUMENT_ERROR: 1
+  ILLEGAL_ARGUMENT_ERROR = 1
 }

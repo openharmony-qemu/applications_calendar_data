@@ -16,12 +16,54 @@
 
 import { Constants } from '../Constants';
 
+interface CalendarsColumnsType {
+  TABLE_NAME: string;
+  ID: string;
+  ACCOUNT_NAME: string;
+  ACCOUNT_TYPE: string;
+  SYNC_ID: string;
+  DIRTY: string;
+  MUTATORS: string;
+  NAME: string;
+  CALENDAR_DISPLAY_NAME: string;
+  CALENDAR_COLOR: string;
+  CALENDAR_COLOR_INDEX: string;
+  CALENDAR_ACCESS_LEVEL: string;
+  VISIBLE: string;
+  SYNC_EVENTS: string;
+  CALENDAR_LOCATION: string;
+  CALENDAR_TIMEZONE: string;
+  OWNER_ACCOUNT: string;
+  IS_PRIMARY: string;
+  CAN_ORGANIZER_RESPOND: string;
+  CAN_MODIFY_TIMEZONE: string;
+  CAN_PARTIALLY_UPDATE: string;
+  MAX_REMINDERS: string;
+  ALLOWED_REMINDERS: string;
+  ALLOWED_AVAILABILITY: string;
+  ALLOWED_ATTENDEE_TYPES: string;
+  DELETED: string;
+  CALENDAR_TIME_STAMP: string;
+  CAL_SYNC1: string;
+  CAL_SYNC2: string;
+  CAL_SYNC3: string;
+  CAL_SYNC4: string;
+  CAL_SYNC5: string;
+  CAL_SYNC6: string;
+  CAL_SYNC7: string;
+  CAL_SYNC8: string;
+  CAL_SYNC9: string;
+  CAL_SYNC10: string;
+  CAN_REMINDER: string;
+  CREATOR: string;
+}
+
 /**
  * the const of table Calendars
  *
  * @since 2022-09-08
  */
-export const CalendarsColumns = {
+export const CalendarsColumns: CalendarsColumnsType = {
   TABLE_NAME: 'Calendars',
   ID: '_id',
   ACCOUNT_NAME: 'account_name',
@@ -63,11 +105,15 @@ export const CalendarsColumns = {
   CREATOR: Constants.CREATOR,
 }
 
-export const APP_NAME = {
+interface AppNameType {
+  CALENDARDATA: string;
+}
+
+export const APP_NAME: AppNameType = {
   CALENDARDATA: 'calendardata',
 }
 
-export const DEFAULT_CALENDAR_VALUE = {
+export const DEFAULT_CALENDAR_VALUE: Record<string, number | string> = {
   '_id': 1,
   'account_name': 'phone',
   'account_type': 'com.calendardata.phone',

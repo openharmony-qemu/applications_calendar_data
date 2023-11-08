@@ -14,34 +14,29 @@
  * limitations under the License.
  */
 
-/**
- * the structure of table Calendars
- *
- * @since 2022-10-18
- */
-export class Calendars {
-  id: number;
-  accountName: string;
-  accountType: string;
-  syncId: string;
-  dirty: number;
-  mutators: string;
-  name: string;
-  calendarDisplayName: string;
-  calendarColor: number;
-  calendarColorIndex: string;
-  calendarAccessLevel: number;
-  visible: number;
-  syncEvents: number;
-  calendarLocation: string;
-  calendarTimezone: string;
-  ownerAccount: string;
-  isPrimary: number;
-  canOrganizerRespond: number;
-  canModifyTimeZone: number;
-  canPartiallyUpdate: number;
-  maxReminders: number;
-  allowedReminders: string;
+interface CalendarsType {
+  id: number
+  accountName: string
+  accountType: string
+  syncId: string
+  dirty: number
+  mutators: string
+  name: string
+  calendarDisplayName: string
+  calendarColor: number
+  calendarColorIndex: string
+  calendarAccessLevel: number
+  visible: number
+  syncEvents: number
+  calendarLocation: string
+  calendarTimezone: string
+  ownerAccount: string
+  isPrimary: number
+  canOrganizerRespond: number
+  canModifyTimeZone: number
+  canPartiallyUpdate: number
+  maxReminders: number
+  allowedReminders: string
   allowedAvailability: string;
   allowedAttendeeTypes: string;
   deleted: number;
@@ -58,4 +53,50 @@ export class Calendars {
   calSync10: string;
   canReminder: number;
   creator: string;
+}
+
+/**
+ * the structure of table Calendars
+ *
+ * @since 2022-10-18
+ */
+export class Calendars implements CalendarsType {
+  id = 0;
+  accountName = '';
+  accountType = '';
+  syncId = '';
+  dirty = 0;
+  mutators = '';
+  name = '';
+  calendarDisplayName = '';
+  calendarColor = 0;
+  calendarColorIndex = '';
+  calendarAccessLevel = 0;
+  visible = 0;
+  syncEvents = 0;
+  calendarLocation = '';
+  calendarTimezone = '';
+  ownerAccount = '';
+  isPrimary = 0;
+  canOrganizerRespond = 0;
+  canModifyTimeZone = 0;
+  canPartiallyUpdate = 0;
+  maxReminders = 0;
+  allowedReminders = '';
+  allowedAvailability = '';
+  allowedAttendeeTypes = '';
+  deleted = 0;
+  calendarTimeStamp = 0;
+  calSync1 = '';
+  calSync2 = '';
+  calSync3 = '';
+  calSync4 = '';
+  calSync5 = '';
+  calSync6 = '';
+  calSync7 = '';
+  calSync8 = '';
+  calSync9 = '';
+  calSync10 = '';
+  canReminder = 0;
+  creator = '';
 }

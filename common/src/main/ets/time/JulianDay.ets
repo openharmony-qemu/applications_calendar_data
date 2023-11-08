@@ -23,24 +23,24 @@
  * @param monthDay 该月日期
  */
 export function getJulianDay(year: number, month: number, monthDay: number): number {
-  let num = 0
+  let num = 0;
   if (month <= 2) {
-    month += 12
-    year -= 1
+    month += 12;
+    year -= 1;
   }
   if (year * 372 + month * 31 + monthDay >= 588829) {
-    num = Math.floor(year / 100)
-    num = 2 - num + Math.floor(year / 400)
+    num = Math.floor(year / 100);
+    num = 2 - num + Math.floor(year / 400);
   }
-  const day: number = monthDay + 0.5000115740
-  const date = Math.floor(365.25 * (year + 4716) + 0.01) + Math.floor(30.60001 * (month + 1)) + day + num - 1524.5
-  return Math.floor(date)
+  const day: number = monthDay + 0.5000115740;
+  const date = Math.floor(365.25 * (year + 4716) + 0.01) + Math.floor(30.60001 * (month + 1)) + day + num - 1524.5;
+  return Math.floor(date);
 }
 
 export function getJulianDayByMills(date: Date, timeMills: number) {
   if (date === null || date === undefined) {
-    date = new Date()
+    date = new Date();
   }
-  date.setTime(timeMills)
-  return getJulianDay(date.getFullYear(), date.getMonth() + 1, date.getDate())
+  date.setTime(timeMills);
+  return getJulianDay(date.getFullYear(), date.getMonth() + 1, date.getDate());
 }

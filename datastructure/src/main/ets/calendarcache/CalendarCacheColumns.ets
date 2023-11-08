@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
+interface CalendarCacheColumnsType {
+  TABLE_NAME: string;
+  ID: string;
+  KEY: string;
+  VALUE: string;
+}
+
 /**
  * the const of table CalendarCache
  *
  * @since 2022-09-08
  */
-export const CalendarCacheColumns = {
+export const CalendarCacheColumns: CalendarCacheColumnsType = {
   TABLE_NAME: 'CalendarCache',
   ID: '_id',
   KEY: 'key',

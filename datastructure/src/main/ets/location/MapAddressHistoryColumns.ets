@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
+interface mapAddressHistoryColumnsType {
+  TABLE_NAME: string,
+  ID: string,
+  ADDRESS: string,
+  NAME: string,
+  LAT: string,
+  LON: string,
+  TIME: string,
+  DATA1: string,
+  DATA2: string,
+}
+
 /**
  * the const of table MapAddressHistory
  *
  * @since 2022-09-08
  */
-export const MapAddressHistoryColumns = {
+export const MapAddressHistoryColumns: mapAddressHistoryColumnsType = {
   TABLE_NAME: 'map_address_history',
   ID: '_id',
   ADDRESS: 'address',

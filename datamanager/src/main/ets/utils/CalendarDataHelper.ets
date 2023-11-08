@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import ohosDataRdb from '@ohos.data.rdb'
-import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns'
-import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns'
+import ohosDataRdb from '@ohos.data.relationalStore';
+import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns';
+import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns';
 import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
 import { ColorsColumns } from '@ohos/datastructure/src/main/ets/colors/ColorsColumns';
 import { RemindersColumns } from '@ohos/datastructure/src/main/ets/reminders/RemindersColumns';
@@ -34,18 +34,19 @@ import { SyncStateColumns } from '@ohos/datastructure/src/main/ets/syncstate/Syn
 import { MapAddressHistoryColumns } from '@ohos/datastructure/src/main/ets/location/MapAddressHistoryColumns';
 import { SyncStateMetadataColumns } from '@ohos/datastructure/src/main/ets/syncstate/SyncStateMetadataColumns';
 import { Constants } from '@ohos/datastructure/src/main/ets/Constants';
-import { CalendarMetaDataColumns } from '@ohos/datastructure/src/main/ets/calendarmetadata/CalendarMetaDataColumns'
-import { Log } from '@ohos/common/src/main/ets/utils/Log'
+import { CalendarMetaDataColumns } from '@ohos/datastructure/src/main/ets/calendarmetadata/CalendarMetaDataColumns';
+import { Log } from '@ohos/common/src/main/ets/utils/Log';
+import { GlobalThis } from '@ohos/common/src/main/ets/utils/GlobalThis';
 
 /**
  * the create Events table sql. OS has a limit of 1024 bytes for each sql string, and this sql string is beyond
  * 1024 bytes, so we don't use this sql directly now.
  */
 let CREATE_EVENTS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${EventColumns.TABLE_NAME} (`
-+ `${EventColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, `
-+ `${EventColumns.SYNC_ID} TEXT, `
-+ `${EventColumns.DIRTY} INTEGER, `
-+ `${EventColumns.MUTATORS} TEXT, `
+  + `${EventColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, `
+  + `${EventColumns.SYNC_ID} TEXT, `
+  + `${EventColumns.DIRTY} INTEGER, `
+  + `${EventColumns.MUTATORS} TEXT, `
 + `${EventColumns.EVENT_CALENDAR_TYPE} INTEGER NOT NULL DEFAULT 0), `
 + `${EventColumns.EVENT_IMAGE_TYPE} TEXT, `
 + `${EventColumns.LAST_SYNCED} INTEGER DEFAULT 0, `
@@ -242,11 +243,11 @@ let CREATE_CALENDAR_METADATA_TABLE_SQL = `CREATE TABLE IF NOT EXISTS `
  * the create EventsRawTimes table sql
  */
 let CREATE_EVENTS_RAW_TIMES_TABLE_SQL = `CREATE TABLE IF NOT EXISTS `
-+ `${EventsRawTimesColumns.TABLE_NAME} (`
-+ `${EventsRawTimesColumns.ID} INTEGER PRIMARY KEY, `
-+ `${EventsRawTimesColumns.EVENT_ID} INTEGER NOT NULL, `
-+ `${EventsRawTimesColumns.DTSTART2445} TEXT, `
-+ `${EventsRawTimesColumns.DTEND2445} TEXT, `
+  + `${EventsRawTimesColumns.TABLE_NAME} (`
+  + `${EventsRawTimesColumns.ID} INTEGER PRIMARY KEY, `
+  + `${EventsRawTimesColumns.EVENT_ID} INTEGER NOT NULL, `
+  + `${EventsRawTimesColumns.DT_START_2445} TEXT, `
+  + `${EventsRawTimesColumns.DT_END_2445} TEXT, `
 + `${EventsRawTimesColumns.ORIGINAL_INSTANCE_TIME2445} TEXT, `
 + `${EventsRawTimesColumns.LAST_DATE2445} TEXT, `
 + `UNIQUE (${EventsRawTimesColumns.EVENT_ID}))`;
@@ -316,12 +317,11 @@ let TAG = "CalendarDataHelper"
  * @since 2022-04-06
  */
 class CalendarDataHelper {
-  private static instance: CalendarDataHelper
+  private static instance: CalendarDataHelper;
 
-  private rdbStore
+  private rdbStore: ohosDataRdb.RdbStore | null = null;
 
   private constructor() {
-    this.rdbStore = undefined
   }
 
   /**
@@ -340,50 +340,55 @@ class CalendarDataHelper {
    */
   public async getRdbStore() {
     if (this.rdbStore === null || this.rdbStore === undefined) {
-      await CalendarDataHelper.instance.initRdbStore();
+      await CalendarDataHelper.getInstance().initRdbStore();
     }
     return this.rdbStore;
   }
 
   private async initRdbStore() {
     Log.log(TAG, 'call initRdbStore start');
-    this.rdbStore = await ohosDataRdb.getRdbStore(globalThis.extensionContext,
-      { name: Constants.DB_NAME }, 1);
-    Log.log(TAG, 'call initRdbStore, rdbStore_ = ' + this.rdbStore);
-    Log.log(TAG, "initRdbStore executeSql start");
+    this.rdbStore = await ohosDataRdb.getRdbStore(GlobalThis.getExtensionContext(), {
+      name: Constants.DB_NAME,
+      securityLevel: ohosDataRdb.SecurityLevel.S1,
+    });
+    if (this.rdbStore == null || this.rdbStore == undefined) {
+      Log.error(TAG, 'initRdbStore rdbStore is null');
+      return;
+    }
     try {
       await this.createEventsTable();
       Log.log(TAG, "initRdbStore createEventsTable succeed");
     } catch (err) {
       Log.error(TAG, `initRdbStore createEventsTable get err:${err}`);
     }
-    await this.rdbStore.executeSql(CREATE_CALENDARS_TABLE_SQL, []);
+    Log.log(TAG, "initRdbStore executeSql start");
+    await this.rdbStore?.executeSql(CREATE_CALENDARS_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore createCalendarsTable succeed");
-    await this.rdbStore.executeSql(CREATE_REMINDERS_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_REMINDERS_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_REMINDERS_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_INSTANCES_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_INSTANCES_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_INSTANCES_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_COLORS_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_COLORS_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_COLORS_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_ATTENDEES_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_ATTENDEES_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_ATTENDEES_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_CALENDAR_ALERTS_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_CALENDAR_ALERTS_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_CALENDAR_ALERTS_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_CALENDAR_CACHE_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_CALENDAR_CACHE_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_CALENDAR_CACHE_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_CALENDAR_METADATA_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_CALENDAR_METADATA_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_CALENDAR_METADATA_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_EVENTS_RAW_TIMES_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_EVENTS_RAW_TIMES_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_EVENTS_RAW_TIMES_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_MAP_ADDRESS_HISTORY_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_MAP_ADDRESS_HISTORY_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_MAP_ADDRESS_HISTORY_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_EXTENDED_PROPERTIES_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_EXTENDED_PROPERTIES_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_EXTENDED_PROPERTIES_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_SYNC_STATE_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_SYNC_STATE_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_SYNC_STATE_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_SYNC_STATE_METADATA_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_SYNC_STATE_METADATA_TABLE_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_SYNC_STATE_METADATA_TABLE_SQL succeed");
-    await this.rdbStore.executeSql(CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL, []);
     Log.log(TAG, "initRdbStore CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL succeed");
 
     this.createSyncIdUpdateTrigger();
@@ -402,127 +407,127 @@ class CalendarDataHelper {
     // other fields are added later.
     Log.log(TAG, 'call createEventsTable start');
     let CREATE_EVENTS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${EventColumns.TABLE_NAME} (`
-    + `${EventColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, `
-    + `${EventColumns.SYNC_ID} TEXT, `
-    + `${EventColumns.DIRTY} INTEGER, `
-    + `${EventColumns.MUTATORS} TEXT, `
-    + `${EventColumns.EVENT_CALENDAR_TYPE} INTEGER NOT NULL DEFAULT 0)`;
+      + `${EventColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, `
+      + `${EventColumns.SYNC_ID} TEXT, `
+      + `${EventColumns.DIRTY} INTEGER, `
+      + `${EventColumns.MUTATORS} TEXT, `
+      + `${EventColumns.EVENT_CALENDAR_TYPE} INTEGER NOT NULL DEFAULT 0)`;
 
-    await this.rdbStore.executeSql(CREATE_EVENTS_TABLE_SQL, []);
+    await this.rdbStore?.executeSql(CREATE_EVENTS_TABLE_SQL, []);
     Log.log(TAG, 'call createEventsTable add column start');
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_IMAGE_TYPE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.LAST_SYNCED} INTEGER DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.CALENDAR_ID} INTEGER NOT NULL`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.TITLE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_LOCATION} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.LOCATION_LONGITUDE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.LOCATION_LATITUDE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.DESCRIPTION} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_COLOR} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_COLOR_INDEX} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_STATUS} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SELF_ATTENDEE_STATUS} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.DTSTART} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.DTEND} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_TIMEZONE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.DURATION} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.ALLDAY} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.ACCESS_LEVEL} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.AVAILABILITY} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.HAS_ALARM} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.HAS_EXTENDED_PROPERTIES} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.RRULE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.RDATE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.EXRULE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.EXDATE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.ORIGINAL_ID} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.ORIGINAL_SYNC_ID} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.ORIGINAL_INSTANCE_TIME} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.ORIGINAL_ALL_DAY} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.LAST_DATE} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_TIME_STAMP} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.HAS_ATTENDEE_DATE} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.GUESTS_CAN_MODIFY} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.GUESTS_CAN_INVITE_OTHERS} INTEGER NOT NULL DEFAULT 1`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.GUESTS_CAN_SEE_GUESTS} INTEGER NOT NULL DEFAULT 1`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.ORGANIZER} STRING`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.IS_ORGANIZER} INTEGER`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.DELETED} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_END_TIMEZONE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.CUSTOM_APP_PACKAGE} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.CUSTOM_APP_URI} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.UID2445} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.VERSION} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.EVENT_UUID} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.HWEXT_ALERT_TYPE} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.IMPORTANT_EVENT_TYPE} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA1} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA2} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA3} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA4} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA5} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA6} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA7} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA8} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA9} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.SYNC_DATA10} TEXT`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.KV_SYNC} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.KV_SYNC_TIME} INTEGER NOT NULL DEFAULT 0`, []);
-    await this.rdbStore.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-    `${EventColumns.CREATOR} TEXT NOT NULL`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_IMAGE_TYPE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.LAST_SYNCED} INTEGER DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.CALENDAR_ID} INTEGER NOT NULL`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.TITLE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_LOCATION} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.LOCATION_LONGITUDE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.LOCATION_LATITUDE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.DESCRIPTION} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_COLOR} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_COLOR_INDEX} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_STATUS} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SELF_ATTENDEE_STATUS} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.DTSTART} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.DTEND} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_TIMEZONE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.DURATION} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.ALLDAY} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.ACCESS_LEVEL} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.AVAILABILITY} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.HAS_ALARM} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.HAS_EXTENDED_PROPERTIES} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.RRULE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.RDATE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.EXRULE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.EXDATE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.ORIGINAL_ID} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.ORIGINAL_SYNC_ID} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.ORIGINAL_INSTANCE_TIME} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.ORIGINAL_ALL_DAY} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.LAST_DATE} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_TIME_STAMP} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.HAS_ATTENDEE_DATE} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.GUESTS_CAN_MODIFY} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.GUESTS_CAN_INVITE_OTHERS} INTEGER NOT NULL DEFAULT 1`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.GUESTS_CAN_SEE_GUESTS} INTEGER NOT NULL DEFAULT 1`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.ORGANIZER} STRING`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.IS_ORGANIZER} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.DELETED} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_END_TIMEZONE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.CUSTOM_APP_PACKAGE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.CUSTOM_APP_URI} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.UID2445} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.VERSION} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.EVENT_UUID} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.HWEXT_ALERT_TYPE} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.IMPORTANT_EVENT_TYPE} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA1} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA2} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA3} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA4} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA5} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA6} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA7} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA8} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA9} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.SYNC_DATA10} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.KV_SYNC} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.KV_SYNC_TIME} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
+      `${EventColumns.CREATOR} TEXT NOT NULL`, []);
     Log.log(TAG, 'call createEventsTable end');
   }
 
@@ -547,7 +552,7 @@ class CalendarDataHelper {
 
     let EVENTS_CLEANUP_TRIGGER = `CREATE TRIGGER events_cleanup_delete DELETE ON ` +
     `${EventColumns.TABLE_NAME} BEGIN ${EVENTS_CLEANUP_TRIGGER_SQL} END`
-    await this.rdbStore.executeSql(EVENTS_CLEANUP_TRIGGER, []);
+    await this.rdbStore?.executeSql(EVENTS_CLEANUP_TRIGGER, []);
     Log.log(TAG, 'call createDeleteEventTriggers end');
   }
 
@@ -590,9 +595,9 @@ class CalendarDataHelper {
     ` BEGIN ${CALENDAR_UPDATE_COLOR_TRIGGER_SQL} END`
 
     Log.log(TAG, 'call CREATE_EVENT_COLOR_UPDATE_TRIGGER');
-    await this.rdbStore.executeSql(CREATE_EVENT_COLOR_UPDATE_TRIGGER, [])
+    await this.rdbStore?.executeSql(CREATE_EVENT_COLOR_UPDATE_TRIGGER, [])
     Log.log(TAG, 'call CREATE_CALENDAR_COLOR_UPDATE_TRIGGER');
-    await this.rdbStore.executeSql(CREATE_CALENDAR_COLOR_UPDATE_TRIGGER, [])
+    await this.rdbStore?.executeSql(CREATE_CALENDAR_COLOR_UPDATE_TRIGGER, [])
     Log.log(TAG, 'call createColorsTriggers end');
   }
 
@@ -604,7 +609,7 @@ class CalendarDataHelper {
     let CALENDAR_CLEANUP_TRIGGER = `CREATE TRIGGER calendar_cleanup DELETE ON ` +
     `${CalendarsColumns.TABLE_NAME} ` +
     `BEGIN ${CALENDAR_CLEANUP_TRIGGER_SQL} END`
-    await this.rdbStore.executeSql(CALENDAR_CLEANUP_TRIGGER, []);
+    await this.rdbStore?.executeSql(CALENDAR_CLEANUP_TRIGGER, []);
     Log.log(TAG, 'call createCalendarCleanupTrigger end');
   }
 
@@ -613,15 +618,15 @@ class CalendarDataHelper {
     let EVENTS_ORIGINAL_SYNC_TRIGGER_SQL = `UPDATE ${EventColumns.TABLE_NAME}` +
     ` SET ${EventColumns.ORIGINAL_SYNC_ID} = ` +
     `new.${EventColumns.SYNC_ID}` +
-    ` WHERE ${EventColumns.ORIGINAL_ID} =old.${EventColumns.ID};`
+      ` WHERE ${EventColumns.ORIGINAL_ID} =old.${EventColumns.ID};`
     let CREATE_SYNC_ID_UPDATE_TRIGGER = `CREATE TRIGGER original_sync_update` +
-    ` UPDATE OF ${EventColumns.SYNC_ID}` +
-    ` ON ${EventColumns.TABLE_NAME}` +
-    ` BEGIN ${EVENTS_ORIGINAL_SYNC_TRIGGER_SQL} END`
+      ` UPDATE OF ${EventColumns.SYNC_ID}` +
+      ` ON ${EventColumns.TABLE_NAME}` +
+      ` BEGIN ${EVENTS_ORIGINAL_SYNC_TRIGGER_SQL} END`
 
-    await this.rdbStore.executeSql(CREATE_SYNC_ID_UPDATE_TRIGGER, []);
+    await this.rdbStore?.executeSql(CREATE_SYNC_ID_UPDATE_TRIGGER, []);
     Log.log(TAG, 'call createSyncIdUpdateTrigger end');
   }
 }
 
-export default CalendarDataHelper
+export default CalendarDataHelper;

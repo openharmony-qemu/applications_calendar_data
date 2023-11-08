@@ -35,5 +35,7 @@ export interface Observable {
   /**
    * 被观察者状态发生改变后，通知订阅的所有观察者更新
    */
-  notifyChanges<Type>(message?: Type);
+  notifyChanges(message?: ObservableMessage);
 }
+
+export interface ObservableMessage {}

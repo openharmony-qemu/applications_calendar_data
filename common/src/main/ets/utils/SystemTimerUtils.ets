@@ -15,7 +15,7 @@
  */
 
 import systemTimer from '@ohos.systemTimer';
-
+import { AsyncCallback } from '@ohos.base';
 import { Log } from './Log';
 
 const TAG = 'SystemTimerUtils';
@@ -26,12 +26,12 @@ const TAG = 'SystemTimerUtils';
  * @param options 定时器选项，数据结构参考系统api：SystemTimer
  * @param callback 定时器的回调函数，到达定时器的触发时间时回调
  */
-export async function createTimer(options, callback?): Promise<number> {
-  let timerId;
+export async function createTimer(options: systemTimer.TimerOptions, callback?: AsyncCallback<number>): Promise<number | void> {
+  let timerId: number | void;
   if (callback !== null && callback !== undefined) {
-    timerId = await systemTimer.createTimer(options, callback);
+    timerId = systemTimer.createTimer(options, callback);
   } else {
-    timerId = await systemTimer.createTimer(options, (err, timerId) => {
+    timerId = systemTimer.createTimer(options, (err, timerId) => {
       if (err?.message !== undefined) {
         Log.error(TAG, 'failed to create a Timer because:' + err?.message);
       }
@@ -51,7 +51,7 @@ export async function createTimer(options, callback?): Promise<number> {
  * @Param timer The timer ID.
  * @Param triggerTime 触发时间
  */
-export function startTimer(timer: number, triggerTime: number, callback?): void {
+export function startTimer(timer: number, triggerTime: number, callback?: AsyncCallback<void, void>): void {
   if (callback !== null && callback !== undefined) {
     systemTimer.startTimer(timer, triggerTime, callback);
   } else {
@@ -69,7 +69,7 @@ export function startTimer(timer: number, triggerTime: number, callback?): void 
  *
  * @Param timer The timer ID.
  */
-export function stopTimer(timer: number, callback?): void {
+export function stopTimer(timer: number, callback?: AsyncCallback<void, void>): void {
   if (callback !== null && callback !== undefined) {
     systemTimer.stopTimer(timer, callback);
   } else {
@@ -87,7 +87,7 @@ export function stopTimer(timer: number, callback?): void {
  *
  * @Param timer The timer ID.
  */
-export function destroyTimer(timer: number, callback): void {
+export function destroyTimer(timer: number, callback: AsyncCallback<void, void>): void {
   if (callback !== null && callback !== undefined) {
     systemTimer.destroyTimer(timer, callback);
   } else {

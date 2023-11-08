@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import commonEvent from '@ohos.commonEvent';
-
+import commonEventManager from '@ohos.commonEventManager';
 import { Log } from '../utils/Log';
+import { BusinessError } from '@ohos.base';
 
 const TAG = 'BroadcastHelper';
 
@@ -26,8 +26,8 @@ const TAG = 'BroadcastHelper';
  * @param action 广播action
  * @param data 广播携带数据，数据结构参考系统api：CommonEventPublishData
  */
-export function sendBroadcast(action: string, data?) {
-  const callback = (err) => {
+export function sendBroadcast(action: string, data?: commonEventManager.CommonEventPublishData): void {
+  const callback = (err: BusinessError): void => {
     if (err?.code) {
       Log.error(TAG, `sendBroadcast [${action}] get err:${err?.code}, msg=${err?.message}`);
     } else {
@@ -35,8 +35,8 @@ export function sendBroadcast(action: string, data?) {
     }
   };
   if (data) {
-    commonEvent.publish(action, data, callback);
+    commonEventManager.publish(action, data, callback);
   } else {
-    commonEvent.publish(action, callback);
+    commonEventManager.publish(action, callback);
   }
 }

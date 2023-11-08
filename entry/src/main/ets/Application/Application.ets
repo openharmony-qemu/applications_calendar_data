@@ -16,20 +16,21 @@
 
 import UIAbility from '@ohos.app.ability.UIAbility';
 import { Log } from '@ohos/common/src/main/ets/utils/Log'
+import Want from '@ohos.app.ability.Want';
+import window from '@ohos.window';
 
-const TAG = 'Application'
+const TAG = 'Application';
 
 export default class Application extends UIAbility {
-  onCreate(want, launchParam) {
+  onCreate(want: Want) {
     Log.log(TAG, "MainAbility onCreate");
-    globalThis.abilityWant = want;
   }
 
   onDestroy() {
     Log.log(TAG, "MainAbility onDestroy");
   }
 
-  onWindowStageCreate(windowStage) {
+  onWindowStageCreate(windowStage: window.WindowStage) {
     // Main window is created, set main page for this ability
     Log.log(TAG, "MainAbility onWindowStageCreate");
 

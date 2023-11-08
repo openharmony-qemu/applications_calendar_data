@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import data_rdb from '@ohos.data.rdb'
+import data_rdb from '@ohos.data.relationalStore';
 import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns'
 import { Events } from '@ohos/datastructure/src/main/ets/events/Events'
 import { EventIndexes, parseIndexes } from '@ohos/datastructure/src/main/ets/events/EventIndexes'
@@ -31,10 +31,10 @@ const TAG = "InstanceExpandHelper"
  * 删除所有Instances
  * 如时区变化等场景，需要清空后重新扩展
  */
-export async function deleteAllInstances(rdbStore): Promise<boolean> {
-  const predicate = new data_rdb.RdbPredicates(InstancesColumns.TABLE_NAME)
-  const result = await rdbStore.delete(predicate)
-  return result >= 0
+export async function deleteAllInstances(rdbStore: data_rdb.RdbStore): Promise<boolean> {
+  const predicate = new data_rdb.RdbPredicates(InstancesColumns.TABLE_NAME);
+  const result = await rdbStore.delete(predicate);
+  return result >= 0;
 }
 
 /**
@@ -43,21 +43,30 @@ export async function deleteAllInstances(rdbStore): Promise<boolean> {
  * @param beginTime 开始时间
  * @param end 结束时间
  */
-export async function expandAllByRange(rdbStore, beginTime: number, endTime: number): Promise<boolean> {
-  Log.info(TAG, `expandAllByRange called: ${beginTime}, ${endTime}, rdbStore=${rdbStore}`)
-  const queryPredicates = new data_rdb.RdbPredicates(EventColumns.TABLE_NAME)
-  queryPredicates.between(EventColumns.DTSTART, beginTime, endTime)
-  const columns = [EventColumns.ID, EventColumns.TITLE, EventColumns.DTSTART, EventColumns.DTEND, EventColumns.CREATOR]
-  const resultSet = await rdbStore.query(queryPredicates, columns)
-  Log.debug(TAG, `expandAllByRange query callback: ${resultSet}`)
-  if (resultSet !== null && resultSet !== undefined) {
-    if (resultSet.rowCount <= 0) {
-      Log.info(TAG, `expandAllByRange ${beginTime}/${endTime} no event to be expand`)
-      return true
+export async function expandAllByRange(rdbStore: data_rdb.RdbStore, beginTime: number, endTime: number): Promise<boolean> {
+  Log.info(TAG, `expandAllByRange called: ${beginTime}, ${endTime}, rdbStore=${rdbStore}`);
+  const queryPredicates = new data_rdb.RdbPredicates(EventColumns.TABLE_NAME);
+  queryPredicates.between(EventColumns.DTSTART, beginTime, endTime);
+  const columns = [EventColumns.ID, EventColumns.TITLE, EventColumns.DTSTART, EventColumns.DTEND, EventColumns.CREATOR];
+  let resultSet: data_rdb.ResultSet | null = null;
+  try {
+    resultSet = await rdbStore.query(queryPredicates, columns);
+    Log.debug(TAG, `expandAllByRange query callback: ${resultSet}`);
+    if (resultSet !== null && resultSet !== undefined) {
+      if (resultSet.rowCount <= 0) {
+        Log.info(TAG, `expandAllByRange ${beginTime}/${endTime} no event to be expand`);
+        return true;
+      }
+      return await expandInstancesByResultSet(rdbStore, resultSet);
     }
-    return await expandInstancesByResultSet(rdbStore, resultSet)
+  } catch (err) {
+    Log.warn(TAG, `expandAllByRange err ${JSON.stringify(err)}`);
+  } finally {
+    if (resultSet) {
+      resultSet.close();
+    }
   }
-  Log.warn(TAG, "expandAllByRange end with empty cursor")
+  Log.warn(TAG, "expandAllByRange end with empty cursor");
   return false
 }
 
@@ -68,7 +77,7 @@ export async function expandAllByRange(rdbStore, beginTime: number, endTime: num
  * @param beginTime 开始时间
  * @param endTime 结束时间
  */
-export function expandOneInRange(rdbStore, event: Events, expandedBegin: number, expandedEnd: number): boolean {
+export function expandOneInRange(rdbStore: data_rdb.RdbStore, event: Events, expandedBegin: number, expandedEnd: number): boolean {
   if (event === null || event === undefined) {
     Log.warn(TAG, 'expandOneInRange get invalid params');
     return false;
@@ -102,8 +111,8 @@ export function expandOneInRange(rdbStore, event: Events, expandedBegin: number,
  * @param beginTime 开始时间
  * @param endTime 结束时间
  */
-export function expandAllByPredicates(rdbStore, eventId: number, expandedBegin: number, expandedEnd: number): boolean {
-  return false
+export function expandAllByPredicates(rdbStore: data_rdb.RdbStore, eventId: number, expandedBegin: number, expandedEnd: number): boolean {
+  return false;
 }
 
 /**
@@ -113,15 +122,15 @@ export function expandAllByPredicates(rdbStore, eventId: number, expandedBegin: 
  * @param resultSet Events表查询到的结果
  * @return true 处理成功 false 处理失败
  */
-async function expandInstancesByResultSet(rdbStore: data_rdb.RdbStore, resultSet): Promise<boolean> {
-  Log.debug(TAG, 'expandInstancesByResultSet generateInstancesMap begin')
-  const instancesMap = generateInstancesMapFromValues(resultSet)
-  Log.debug(TAG, `expandInstancesByResultSet generateInstancesMap end: ${instancesMap}`)
+async function expandInstancesByResultSet(rdbStore: data_rdb.RdbStore, resultSet: data_rdb.ResultSet): Promise<boolean> {
+  Log.debug(TAG, 'expandInstancesByResultSet generateInstancesMap begin');
+  const instancesMap = generateInstancesMapFromValues(resultSet);
+  Log.debug(TAG, `expandInstancesByResultSet generateInstancesMap end: ${instancesMap}`);
   if (instancesMap !== null && instancesMap !== undefined) {
-    return await batchInsertInstances(rdbStore, instancesMap)
+    return await batchInsertInstances(rdbStore, instancesMap);
   }
-  Log.warn(TAG, 'expandInstancesByResultSet maybe occurs some error')
-  return false
+  Log.warn(TAG, 'expandInstancesByResultSet maybe occurs some error');
+  return false;
 }
 
 /**
@@ -131,30 +140,30 @@ async function expandInstancesByResultSet(rdbStore: data_rdb.RdbStore, resultSet
  *
  * @param resultSet db.query结果集
  */
-function generateInstancesMapFromValues(resultSet): InstancesMap {
-  const moveToFirstSuccessful: boolean = resultSet.goToFirstRow()
+function generateInstancesMapFromValues(resultSet: data_rdb.ResultSet) {
+  const moveToFirstSuccessful: boolean = resultSet.goToFirstRow();
   if (!moveToFirstSuccessful) {
-    Log.error(TAG, "generateInstancesMapFromValues move to first failed")
-    return undefined
+    Log.error(TAG, "generateInstancesMapFromValues move to first failed");
+    return;
   }
-  const instancesMap: InstancesMap = new InstancesMap()
-  const indexes: EventIndexes = parseIndexes(resultSet)
-  let event: Events
-  const date: Date = new Date()
+  const instancesMap: InstancesMap = new InstancesMap();
+  const indexes: EventIndexes = parseIndexes(resultSet) as EventIndexes;
+  let event: Events | undefined = undefined;
+  const date: Date = new Date();
   do {
-    event = parseEvents(resultSet, indexes)
+    event = parseEvents(resultSet, indexes);
     if (event === null || event === undefined) {
-      continue
+      continue;
     }
-    const rruleSet: RecurrenceSet = new RecurrenceSet(event.rRule, event.rDate, event.exRule, event.exDate)
+    const rruleSet: RecurrenceSet = new RecurrenceSet(event.rRule, event.rDate, event.exRule, event.exDate);
     if (rruleSet.hasRecurrence()) {
-      Log.warn(TAG, "generateInstancesMapFromValues not support rrule event yet")
+      Log.warn(TAG, "generateInstancesMapFromValues not support rrule event yet");
     }
-    const contentValues: data_rdb.ValuesBucket = getContentValuesFromEvent(date, event)
-    const syncIdKey = event.calendarId + "_" + event.id
-    instancesMap.pushInstances(syncIdKey, contentValues)
-  } while (resultSet.goToNextRow())
-  return instancesMap
+    const contentValues: data_rdb.ValuesBucket = getContentValuesFromEvent(date, event);
+    const syncIdKey = event.calendarId + "_" + event.id;
+    instancesMap.pushInstances(syncIdKey, contentValues);
+  } while (resultSet.goToNextRow());
+  return instancesMap;
 }
 
 /**
@@ -163,10 +172,10 @@ function generateInstancesMapFromValues(resultSet): InstancesMap {
  * @param event Event数据
  */
 function getContentValuesFromEvent(date: Date, event: Events): data_rdb.ValuesBucket {
-  const startDay = getJulianDayByMills(date, event.dtStart)
-  let endDay = getJulianDayByMills(date, event.dtEnd)
-  const startMinute = getMinutesByMills(date, event.dtStart)
-  let endMinute = getMinutesByMills(date, event.dtEnd)
+  const startDay = getJulianDayByMills(date, event.dtStart);
+  let endDay = getJulianDayByMills(date, event.dtEnd);
+  const startMinute = getMinutesByMills(date, event.dtStart);
+  let endMinute = getMinutesByMills(date, event.dtEnd);
 
   // 午夜的特殊情况，当endMinute == 0.将前一天更改为+24小时
   // Exception: 如果startMinute和endMinute在同一天都为0,只留下endMinute.
@@ -175,43 +184,44 @@ function getContentValuesFromEvent(date: Date, event: Events): data_rdb.ValuesBu
     endDay -= 1;
   }
   return {
-    [InstancesColumns.EVENT_ID]: event.id,
-    [InstancesColumns.BEGIN]: event.dtStart,
-    [InstancesColumns.END]: event.dtEnd,
-    [InstancesColumns.START_DAY]: startDay,
-    [InstancesColumns.END_DAY]: endDay,
-    [InstancesColumns.START_MINUTE]: startMinute,
-    [InstancesColumns.END_MINUTE]: endMinute,
-    [InstancesColumns.CREATOR]: event.creator
+    event_id: event.id,
+    begin: event.dtStart,
+    end: event.dtEnd,
+    startDay: startDay,
+    endDay: endDay,
+    startMinute: startMinute,
+    endMinute: endMinute,
+    creator: event.creator
   }
 }
 
 async function batchInsertInstances(rdbStore: data_rdb.RdbStore, instancesMap: InstancesMap): Promise<boolean> {
-  Log.debug(TAG, `batchInsertInstances begin`)
-  for (let valuesList of instancesMap.values()) {
-    for (let contentValues of valuesList) {
-      Log.debug(TAG, `InsertInstances begin: ${instancesValuesToString(contentValues)}`)
+  Log.debug(TAG, `batchInsertInstances begin`);
+  for (let i = 0; i < Object.values(instancesMap).length; i++) {
+    let valuesList: Array<data_rdb.ValuesBucket> = Object.values(instancesMap)[i];
+    for (let j = 0; j < valuesList.length; j++) {
+      Log.debug(TAG, `InsertInstances begin: ${instancesValuesToString(valuesList[j])}`);
       try {
-        const rowId = await rdbStore.insert(InstancesColumns.TABLE_NAME, contentValues)
+        const rowId = await rdbStore.insert(InstancesColumns.TABLE_NAME, valuesList[j]);
         if (rowId < 0) {
-          Log.warn(TAG, `InsertInstances failed ${instancesValuesToString(contentValues)}`)
-          return false
+          Log.warn(TAG, `InsertInstances failed ${instancesValuesToString(valuesList[j])}`);
+          return false;
         }
       } catch (err) {
         // 当eventId、begin、end三个字段与表中已有数据一致时，产生表约束冲突会抛出异常，此报错可忽略
         // 为不影响其他Instances插入try-catch保护一下
-        Log.error(TAG, `InsertInstances get err:${err}`)
+        Log.error(TAG, `InsertInstances get err:${err}`);
       }
-      Log.debug(TAG, `InsertInstances end: ${instancesValuesToString(contentValues)}`)
+      Log.debug(TAG, `InsertInstances end: ${instancesValuesToString(valuesList[i])}`);
     }
   }
-  Log.debug(TAG, `batchInsertInstances successful`)
-  return true
+  Log.debug(TAG, `batchInsertInstances successful`);
+  return true;
 }
 
-function instancesValuesToString(values): string {
+function instancesValuesToString(values: data_rdb.ValuesBucket): string {
   return `eventId=${values.event_id},begin=${values.begin},end=${values.end}, startDay=${values.startDay}`
-  + `,endDay=${values.endDay},startMinute=${values.startMinute},endMinute=${values.endMinute}`
+    + `,endDay=${values.endDay},startMinute=${values.startMinute},endMinute=${values.endMinute}`;
 }
 
 /**
@@ -220,6 +230,7 @@ function instancesValuesToString(values): string {
  * @since 2022-05-28
  */
 class InstancesMap extends Map<string, Array<data_rdb.ValuesBucket>> {
+  instancesList: Array<data_rdb.ValuesBucket> = [];
   /**
    * 以syncIdKey为key，将Instances对应的ValuesBucket放入集合Map中
    * 注：每个key对应一个Instances列表
@@ -228,14 +239,13 @@ class InstancesMap extends Map<string, Array<data_rdb.ValuesBucket>> {
    * @param values ValuesBucket数据，由此生成Instances实例
    */
   pushInstances(syncIdKey: string, values: data_rdb.ValuesBucket) {
-    let instancesList: Array<data_rdb.ValuesBucket> = undefined
     if (this.has(syncIdKey)) {
-      instancesList = this.get(syncIdKey)
+      this.instancesList = this.get(syncIdKey) as data_rdb.ValuesBucket[];
     }
-    if (instancesList === null || instancesList === undefined) {
-      instancesList = new Array<data_rdb.ValuesBucket>()
-      this.set(syncIdKey, instancesList)
+    if (this.instancesList === null || this.instancesList === undefined || this.instancesList?.length === 0) {
+      this.instancesList = new Array<data_rdb.ValuesBucket>();
+      this.set(syncIdKey, this.instancesList);
     }
-    instancesList.push(values)
+    this.instancesList.push(values);
   }
 }

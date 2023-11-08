@@ -16,16 +16,35 @@
 
 import { Constants } from '../Constants';
 
+interface RemindersColumnsType {
+  TABLE_NAME: string;
+  ID: string;
+  EVENT_ID: string;
+  MINUTES: string;
+  METHOD: string;
+  CREATOR: string;
+  NOTIFICATION_REMINDER_ID: string;
+}
+
 /**
  * the const of table Reminders
  *
  * @since 2022-09-08
  */
-export const RemindersColumns = {
+export const RemindersColumns: RemindersColumnsType = {
   TABLE_NAME: 'Reminders',
   ID: '_id',
   EVENT_ID: 'event_id',
   MINUTES: 'minutes',
   METHOD: 'method',
   CREATOR: Constants.CREATOR,
+  NOTIFICATION_REMINDER_ID: 'notification_reminder_id'
+}
+
+export enum MethodType {
+  DEFAULT = 0,
+  ALERT = 1,
+  EMAIL = 2,
+  SMS = 3,
+  ALARM = 4
 }

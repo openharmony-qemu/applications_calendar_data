@@ -68,7 +68,9 @@ const SYNC_STATE_PATH: string = "_sync_state";
 
 const SYNC_STATE_METADATA_PATH: string = "_sync_state_metadata";
 
-let TAG = "CalendarUriHelper";
+export const URI_EVENTS: string = `${DATA_SHARE_PREFIX}/${EVENTS_PATH}`;
+
+const TAG = "CalendarUriHelper";
 
 /**
  * transfer the user input uri to the specific table
@@ -147,11 +149,11 @@ function getPathByUri(uri: string): string {
 
   // in case of uri containing query condition like Instance's uri
   if (endIndex < 1 || endIndex >= totalLength) {
-    return undefined;
+    return '';
   }
   const path = uri.substring(0, endIndex);
   if (path === null || path === undefined || path.length < 1) {
-    return undefined;
+    return '';
   }
   return path;
 }
@@ -165,7 +167,7 @@ function getPathByUri(uri: string): string {
 function getTablePathNameByPath(path: string): string {
   const array = path.split("/");
   if (array === null || array === undefined || array.length < 1) {
-    return undefined;
+    return '';
   }
   return array[1];
 }

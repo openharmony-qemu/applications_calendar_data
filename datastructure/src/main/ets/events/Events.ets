@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-/**
- * the structure of table Events
- *
- * @since 2022-05-28
- */
-export class Events {
+interface EventsType {
   id: number;
   syncId: string;
   dirty: number;
@@ -85,9 +80,79 @@ export class Events {
   kvSynced: number;
   kvSyncTime: number;
   creator: string;
+}
 
-  constructor() {
-  }
+/**
+ * the structure of table Events
+ *
+ * @since 2022-05-28
+ */
+export class Events implements EventsType {
+  id = 0;
+  syncId = '';
+  dirty = 0;
+  mutators = '';
+  calendarType = 0;
+  imageType = '';
+  lastSynced = 0;
+  calendarId = 0;
+  title = '';
+  eventLocation = '';
+  longitude = '';
+  latitude = '';
+  description = '';
+  eventColor = 0;
+  eventColorIndex = '';
+  eventStatus = 0;
+  selfAttendeeStatus = 0;
+  dtStart = 0;
+  dtEnd = 0;
+  eventTimeZone = '';
+  duration = '';
+  allDay = 0;
+  accessLevel = 0;
+  availability = 0;
+  hasAlarm = 0;
+  hasExtendedProperties = 0;
+  rRule = '';
+  rDate = '';
+  exRule = '';
+  exDate = '';
+  originalId = 0;
+  originalSyncId = '';
+  originalInstanceTime = 0;
+  originalAllDay = 0;
+  lastDate = 0;
+  eventTimeStamp = 0;
+  hasAttendeeData = 0;
+  guestsCanModify = 0;
+  guestsCanInviteOthers = 0;
+  guestsCanSeeGuests = 0;
+  organizer = '';
+  isOrganizer = 0;
+  deleted = 0;
+  eventEndTimezone = '';
+  customAppPackage = '';
+  customAppUri = '';
+  uid2445 = '';
+  version = 0;
+  eventUuid = '';
+  hwExtAlertType = 0;
+  importantEventType = 0;
+  // birthdayKind
+  syncData1 = '';
+  syncData2 = '';
+  syncData3 = '';
+  syncData4 = '';
+  syncData5 = '';
+  syncData6 = '';
+  syncData7 = '';
+  syncData8 = '';
+  syncData9 = '';
+  syncData10 = '';
+  kvSynced = 0;
+  kvSyncTime = 0;
+  creator = '';
 
   /**
    * 判断是否全天日程
@@ -95,6 +160,6 @@ export class Events {
    * @return true 全天日程 false 非全天日程
    */
   public isAllDay(): boolean {
-    return this.allDay != 0;
+    return this.allDay === 1;
   }
 }

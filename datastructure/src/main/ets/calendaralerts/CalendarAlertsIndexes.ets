@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
+import DataShareResultSet from '@ohos.data.DataShareResultSet';
 import { CalendarAlertsColumns } from './CalendarAlertsColumns';
 
-/**
- * the columns indexes for table CalendarAlerts
- *
- * @since 2022-09-19
- */
-export class CalendarAlertsIndexes {
+interface CalendarAlertsType {
   idIndex: number;
   eventIdIndex: number;
   beginIndex: number;
@@ -33,9 +30,25 @@ export class CalendarAlertsIndexes {
   stateIndex: number;
   minutesIndex: number;
   creatorIndex: number;
+}
 
-  constructor() {
-  }
+/**
+ * the columns indexes for table CalendarAlerts
+ *
+ * @since 2022-09-19
+ */
+export class CalendarAlertsIndexes implements CalendarAlertsType {
+  idIndex = 0;
+  eventIdIndex = 0;
+  beginIndex = 0;
+  endIndex = 0;
+  alarmTimeIndex = 0;
+  creationTimeIndex = 0;
+  receivedTimeIndex = 0;
+  notifyTimeIndex = 0;
+  stateIndex = 0;
+  minutesIndex = 0;
+  creatorIndex = 0;
 }
 
 /**
@@ -43,7 +56,7 @@ export class CalendarAlertsIndexes {
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseCalendarAlertsIndexes(resultSet): CalendarAlertsIndexes {
+export function parseCalendarAlertsIndexes(resultSet: data_rdb.ResultSet): CalendarAlertsIndexes | undefined {
   if (resultSet === null || resultSet === undefined) {
     return undefined;
   }

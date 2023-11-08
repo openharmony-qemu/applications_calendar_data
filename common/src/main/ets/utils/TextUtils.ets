@@ -30,5 +30,5 @@ export function isUninterrupted(str: string): boolean {
   if (isEmptyStr(str)) {
     return false;
   }
-  return /^[a-zA-z][a-zA-Z0-9]*$/.test(str);
+  return new RegExp("/^[a-zA-z][a-zA-Z0-9]*$/").test(str);
 }

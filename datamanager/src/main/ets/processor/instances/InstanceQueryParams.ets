@@ -39,11 +39,11 @@ const MAX_SEARCH_LENGTH = 32;
  * @since 2022-09-02
  */
 export class InstancesQueryParams {
-  [KEY_RANGE_BEGIN]?: number;
-  [KEY_RANGE_END]?: number;
-  [KEY_SEARCH_TEXT]?: string;
-  [KEY_ORDER_BY_ASC]?: string;
-  [KEY_ORDER_BY_DESC]?: string;
+  begin?: number
+  end?: number
+  searchText?: string
+  orderByAsc?: string
+  orderByDesc?: string
 
   constructor() {
   }
@@ -70,43 +70,43 @@ export class InstancesQueryParams {
   }
 
   public getBegin(): number {
-    return this[KEY_RANGE_BEGIN];
+    return this.begin as number;
   }
 
   public setBegin(begin: number): void {
-    this[KEY_RANGE_BEGIN] = begin;
+    this.begin = begin;
   }
 
   public getEnd(): number {
-    return this[KEY_RANGE_END];
+    return this.end as number;
   }
 
   public setEnd(end: number): void {
-    this[KEY_RANGE_END] = end;
+    this.end = end;
   }
 
   public getSearchText(): string {
-    return this[KEY_SEARCH_TEXT];
+    return this.searchText as string;
   }
 
   public setSearchText(searchText: string): void {
-    this[KEY_SEARCH_TEXT] = searchText;
+    this.searchText = searchText;
   }
 
   public getOrderByAsc(): string {
-    return this[KEY_ORDER_BY_ASC];
+    return this.orderByAsc as string;
   }
 
   public setOrderByAsc(orderByAsc: string): void {
-    this[KEY_ORDER_BY_ASC] = orderByAsc;
+    this.orderByAsc = orderByAsc;
   }
 
   public getOrderByDesc(): string {
-    return this[KEY_ORDER_BY_DESC];
+    return this.orderByDesc as string;
   }
 
   public setOrderByDesc(orderByDesc: string): void {
-    this[KEY_ORDER_BY_DESC] = orderByDesc;
+    this.orderByDesc = orderByDesc;
   }
 }
 
@@ -136,7 +136,7 @@ export function isValidQueryParams(params: InstancesQueryParams): boolean {
  * @param uri uri from caller
  * @return result of InstancesQueryParams after parsed
  */
-export function parseParamsFromUri(uri: string): InstancesQueryParams {
+export function parseParamsFromUri(uri: string): InstancesQueryParams | undefined {
   const queryMap = getQueries(uri);
   if (queryMap === null || queryMap === undefined || queryMap.size <= 0) {
     Log.warn(TAG, 'parseBeginEndFromUri get invalid queryMap');
@@ -160,15 +160,15 @@ export function parseParamsFromUri(uri: string): InstancesQueryParams {
  * @param params the object to save parse result
  */
 function parseBeginEndFromQueryMap(queryMap: Map<string, string>, params: InstancesQueryParams): void {
-  const beginStr = queryMap.get(KEY_RANGE_BEGIN);
-  const endStr = queryMap.get(KEY_RANGE_END);
+  const beginStr = queryMap.get(KEY_RANGE_BEGIN) as string;
+  const endStr = queryMap.get(KEY_RANGE_END) as string;
   if (isEmptyStr(beginStr) || isEmptyStr(endStr)) {
     Log.warn(TAG, 'parseBeginEndFromUri get invalid begin end str');
     return;
   }
   try {
-    const beginTime = parseInt(beginStr);
-    const endTime = parseInt(endStr);
+    const beginTime = Number.parseInt(beginStr);
+    const endTime = Number.parseInt(endStr);
     Log.debug(TAG, `parseBeginEndFromUri ${beginTime}/${endTime}`);
     params.setBegin(beginTime);
     params.setEnd(endTime);
@@ -184,7 +184,7 @@ function parseBeginEndFromQueryMap(queryMap: Map<string, string>, params: Instan
  * @param params the object to save parse result
  */
 function parseSearchTextFromQueryMap(queryMap: Map<string, string>, params: InstancesQueryParams): void {
-  let searchText = queryMap.get(KEY_SEARCH_TEXT);
+  let searchText = queryMap.get(KEY_SEARCH_TEXT) as string;
   if (isEmptyStr(searchText)) {
     return;
   }
@@ -192,7 +192,7 @@ function parseSearchTextFromQueryMap(queryMap: Map<string, string>, params: Inst
   // decode for chinese search
   searchText = decodeURI(searchText);
   if (isEmptyStr(searchText)) {
-    Log.warn(TAG, `the searchText is empty after decode`)
+    Log.warn(TAG, `the searchText is empty after decode`);
     return;
   }
   const originalText = searchText;
@@ -226,7 +226,7 @@ function getSecuritySearchText(searchText: string): string {
    * PostgreSQL -> "
    * String separator -> '
    */
-  return searchText.replace(/(?<matchedText>[\`\]\"\'])/gm, '$<matchedText>$<matchedText>');
+  return searchText.replace(RegExp("/(?<matchedText>[\`\]\"\'])/gm"), '$<matchedText>$<matchedText>');
 }
 
 /**
@@ -236,11 +236,11 @@ function getSecuritySearchText(searchText: string): string {
  * @param params the object to save parse result
  */
 function parseOrderByFromQueryMap(queryMap: Map<string, string>, params: InstancesQueryParams): void {
-  const orderByAsc = queryMap.get(KEY_ORDER_BY_ASC);
+  const orderByAsc = queryMap.get(KEY_ORDER_BY_ASC) as string;
   if (isUninterrupted(orderByAsc)) {
     params.setOrderByAsc(orderByAsc);
   }
-  const orderByDesc = queryMap.get(KEY_ORDER_BY_DESC);
+  const orderByDesc = queryMap.get(KEY_ORDER_BY_DESC) as string;
   if (isUninterrupted(orderByDesc)) {
     params.setOrderByDesc(orderByDesc);
   }

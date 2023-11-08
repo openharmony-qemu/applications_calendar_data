@@ -15,8 +15,9 @@
  */
 
 import data_rdb from '@ohos.data.relationalStore';
-import DataShareResultSet from '@ohos.data.DataShareResultSet';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
+import { BusinessError } from '@ohos.base';
+import { ValueType } from '@ohos.data.ValuesBucket';
 
 import { Log } from "@ohos/common/src/main/ets/utils/Log";
 import { hasNoError } from '@ohos/common/src/main/ets/utils/ErrorUtils';
@@ -37,7 +38,7 @@ import { DefaultProcessor } from "./../DefaultProcessor";
 import { initValueCreator, initPredicateCreator, deleteValueCreator } from '../DatabaseProcessorHelper';
 import { acquireExpandOne, isNeedRefreshInstances, acquireUpdateOne } from '../instances/InstancesProcessor';
 
-const TAG = "EventsProcessor";
+const TAG: string = "EventsProcessor";
 
 /**
  * the Events table processor
@@ -45,7 +46,7 @@ const TAG = "EventsProcessor";
  * @since 2022-06-24
  */
 export class EventsProcessor extends DefaultProcessor {
-  async insertByHighAuthority(rdbStore, uri: string, values, callback) {
+  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     const isCalendarExist = await isCalendarContainSameId(rdbStore, values);
@@ -53,7 +54,7 @@ export class EventsProcessor extends DefaultProcessor {
       this.insertEventWithInstanceExpand(rdbStore, uri, values, callback);
     } else {
       Log.warn(TAG, 'not support insert operation');
-      const err = {
+      const err: BusinessError = {
         code: ErrorCode.UN_SUPPORT_OPERATION,
         name: 'UnSupportedOperationException',
         message: 'The calling application cannot insert an event without its own calendar'
@@ -62,7 +63,7 @@ export class EventsProcessor extends DefaultProcessor {
     }
   }
 
-  async insertByLowAuthority(rdbStore, uri: string, values, callback) {
+  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     const isCalendarCreatorExist = await isCalendarContainSameCreator(rdbStore, values);
@@ -70,7 +71,7 @@ export class EventsProcessor extends DefaultProcessor {
       this.insertEventWithInstanceExpand(rdbStore, uri, values, callback);
     } else {
       Log.warn(TAG, 'not support insert operation');
-      const err = {
+      const err: BusinessError = {
         code: ErrorCode.UN_SUPPORT_OPERATION,
         name: 'UnSupportedOperationException',
         message: 'The calling application cannot insert an event with different creator from calendar'
@@ -79,25 +80,25 @@ export class EventsProcessor extends DefaultProcessor {
     }
   }
 
-  async deleteByLowAuthority(rdbStore, uri: string, predicates, callback) {
+  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async updateByHighAuthority(rdbStore, uri: string, values, predicates, callback) {
+  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     deleteValueCreator(values);
     this.updateEventWithInstance(rdbStore, uri, values, predicates, callback);
   }
 
-  async updateByLowAuthority(rdbStore, uri: string, values, predicates, callback) {
+  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     deleteValueCreator(values);
     initPredicateCreator(predicates, callerName);
     this.updateEventWithInstance(rdbStore, uri, values, predicates, callback);
   }
 
-  async queryByLowAuthority(rdbStore, uri: string, columns: Array<string>, predicates, callback) {
+  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doQuery(rdbStore, uri, columns, predicates, callback);
@@ -111,8 +112,8 @@ export class EventsProcessor extends DefaultProcessor {
    * @param values 插入的数据
    * @param callback 回调方法
    */
-  async insertEventWithInstanceExpand(rdbStore, uri: string, values, callback) {
-    this.doInsert(rdbStore, uri, values, function (err, rowId) {
+  async insertEventWithInstanceExpand(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+    this.doInsert(rdbStore, uri, values, (err: BusinessError, rowId: number) => {
       Log.debug(TAG, `before insert callback`);
       if (hasNoError(err)) {
         acquireExpandOne(rdbStore, rowId, values);
@@ -131,12 +132,12 @@ export class EventsProcessor extends DefaultProcessor {
    * @param predicates 更新条件
    * @param callback 回调方法
    */
-  async updateEventWithInstance(rdbStore, uri: string, values, predicates, callback) {
+  async updateEventWithInstance(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     let needUpdatedEventIds: Array<number>;
     if (isNeedRefreshInstances(values)) {
       needUpdatedEventIds = await queryEventIdsByPredicate(rdbStore, predicates);
     }
-    this.doUpdate(rdbStore, uri, values, predicates, function (err, count) {
+    this.doUpdate(rdbStore, uri, values, predicates, (err: BusinessError, count: Function) => {
       Log.debug(TAG, `before update callback`);
       if (hasNoError(err)) {
         updateInstances(rdbStore, needUpdatedEventIds);
@@ -154,16 +155,16 @@ export class EventsProcessor extends DefaultProcessor {
  * @param values 插入操作的数据
  * @return true 相同 false 不相同
  */
-async function isCalendarContainSameCreator(rdbStore, values): Promise<boolean> {
+async function isCalendarContainSameCreator(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<boolean> {
   Log.debug(TAG, 'isCalendarContainSameCreator start');
   const EventCreator = values[EventColumns.CREATOR];
   let resultSet = await queryCalendarIdAndCreatorByEvent(rdbStore, values);
   if (resultSet === null || resultSet === undefined) {
     return false;
   }
-  const calendarsIndexes: CalendarsIndexes = parseCalendarsIndexes(resultSet);
+  const calendarsIndexes: CalendarsIndexes | undefined = parseCalendarsIndexes(resultSet);
   if (resultSet.goToFirstRow()) {
-    let calendars: Calendars = parseCalendars(resultSet, calendarsIndexes);
+    let calendars: Calendars | undefined = parseCalendars(resultSet, calendarsIndexes);
     if (calendars === null || calendars === undefined) {
       return false;
     }
@@ -181,7 +182,7 @@ async function isCalendarContainSameCreator(rdbStore, values): Promise<boolean> 
  * @param values 插入操作的数据
  * @return true 相同 false 不相同
  */
-async function isCalendarContainSameId(rdbStore, values): Promise<boolean> {
+async function isCalendarContainSameId(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<boolean> {
   Log.debug(TAG, 'isCalendarContainSameId start');
   let resultSet = await queryCalendarIdAndCreatorByEvent(rdbStore, values);
   if (resultSet === null || resultSet === undefined) {
@@ -200,12 +201,12 @@ async function isCalendarContainSameId(rdbStore, values): Promise<boolean> {
  * @param values 插入操作的数据
  * @return DataShareResultSet
  */
-async function queryCalendarIdAndCreatorByEvent(rdbStore, values): Promise<DataShareResultSet> {
-  const calendarId = values[EventColumns.CALENDAR_ID];
+async function queryCalendarIdAndCreatorByEvent(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<data_rdb.ResultSet> {
+  const calendarId = values[EventColumns.CALENDAR_ID] as ValueType;
   const columns = [CalendarsColumns.ID, CalendarsColumns.CREATOR];
   let predicates = new dataSharePredicates.DataSharePredicates();
   predicates.equalTo(CalendarsColumns.ID, calendarId);
-  let resultSet: DataShareResultSet;
+  let resultSet: data_rdb.ResultSet = {} as data_rdb.ResultSet;
   try {
     resultSet = await rdbStore.query(CalendarsColumns.TABLE_NAME, predicates, columns);
   } catch (err) {
@@ -220,7 +221,7 @@ async function queryCalendarIdAndCreatorByEvent(rdbStore, values): Promise<DataS
  * @param rdbStore rdb数据库
  * @param predicates update条件，用于定位需要刷新Instances对应eventId的范围
  */
-async function queryEventIdsByPredicate(rdbStore: data_rdb.RdbStore, predicates): Promise<Array<number>> {
+async function queryEventIdsByPredicate(rdbStore: data_rdb.RdbStore, predicates: dataSharePredicates.DataSharePredicates): Promise<Array<number>> {
   const resultArray: Array<number> = new Array();
   const columns = [EventColumns.ID];
   try {
@@ -293,10 +294,12 @@ async function queryEventsByIds(rdbStore: data_rdb.RdbStore, eventIds: Array<num
       Log.error(TAG, `queryEventsByIds goto first row failed ${resultSet?.rowCount}`);
       return resultMap;
     }
-    const indexes: EventIndexes = parseIndexes(resultSet);
+    const indexes: EventIndexes | undefined = parseIndexes(resultSet);
     do {
-      const event: Events = parseEvents(resultSet, indexes);
-      resultMap.set(event.id, event);
+      const event: Events | undefined = parseEvents(resultSet, indexes);
+      if (event != undefined) {
+        resultMap.set(event.id, event);
+      }
     } while (resultSet.goToNextRow());
   } catch (err) {
     Log.error(TAG, `queryEventsByIds get err ${err?.message}`);

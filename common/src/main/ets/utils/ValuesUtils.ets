@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ValuesBucket } from '@ohos.data.ValuesBucket';
+import data_rdb from '@ohos.data.relationalStore';
 
 /**
  * 判断ValuesBucket中是否包含某Key的值
@@ -22,7 +22,7 @@ import { ValuesBucket } from '@ohos.data.ValuesBucket';
  * @param values 待检查的ValuesBucket
  * @param key 待检测的key
  */
-export function isContainsKey(values: ValuesBucket, key: string): boolean {
+export function isContainsKey(values: data_rdb.ValuesBucket, key: string): boolean {
   if (values === null || values === undefined) {
     return false;
   }
@@ -38,7 +38,7 @@ export function isContainsKey(values: ValuesBucket, key: string): boolean {
  * @param values 待检查的ValuesBucket
  * @param key 待检测的一组key
  */
-export function isContainsOneOfKeys(values: ValuesBucket, keys: Array<string>): boolean {
+export function isContainsOneOfKeys(values: data_rdb.ValuesBucket, keys: Array<string>): boolean {
   if (values === null || values === undefined) {
     return false;
   }
@@ -59,7 +59,7 @@ export function isContainsOneOfKeys(values: ValuesBucket, keys: Array<string>): 
  * @param values 待检查的ValuesBucket
  * @param key 待检测的一组key
  */
-export function isContainsAllKeys(values: ValuesBucket, keys: Array<string>): boolean {
+export function isContainsAllKeys(values: data_rdb.ValuesBucket, keys: Array<string>): boolean {
   if (values === null || values === undefined) {
     return false;
   }

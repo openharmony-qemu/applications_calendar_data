@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
 import { CalendarAlerts } from './CalendarAlerts';
 import { CalendarAlertsIndexes } from './CalendarAlertsIndexes';
 
@@ -22,7 +23,7 @@ import { CalendarAlertsIndexes } from './CalendarAlertsIndexes';
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseCalendarAlerts(resultSet, indexes: CalendarAlertsIndexes): CalendarAlerts {
+export function parseCalendarAlerts(resultSet: data_rdb.ResultSet, indexes: CalendarAlertsIndexes): CalendarAlerts | undefined {
   if (resultSet === null || resultSet === undefined) {
     return undefined;
   }

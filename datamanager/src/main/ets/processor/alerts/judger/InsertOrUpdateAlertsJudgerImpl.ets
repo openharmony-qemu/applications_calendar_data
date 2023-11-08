@@ -22,6 +22,7 @@ import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/Cal
 import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns';
 import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns';
 import { RemindersColumns } from '@ohos/datastructure/src/main/ets/reminders/RemindersColumns';
+import relationalStore from '@ohos.data.relationalStore';
 
 /**
  * 在数据表 插入或更新 场景下判断是否需要刷新 alerts
@@ -39,11 +40,11 @@ export default class InsertOrUpdateAlertsUpdateJudgerImpl implements AlertsUpdat
     this.tableNameMap.set(RemindersColumns.TABLE_NAME, ['', '']);
   }
 
-  isNeedToUpdateAlerts(tableName, values) {
+  isNeedToUpdateAlerts(tableName: string, values: relationalStore.ValuesBucket) {
     if (this.tableNameMap.has(tableName)) {
-      let rowArray: string[] = this.tableNameMap.get(tableName);
+      let rowArray: string[] | undefined = this.tableNameMap.get(tableName);
       let keys: string[] = Object.keys(values);
-      let hashSet = new HashSet();
+      let hashSet = new HashSet<string>();
       if (rowArray === null || rowArray === undefined) {
         return false;
       }

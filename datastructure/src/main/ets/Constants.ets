@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
+interface InterfaceConstants {
+  DB_NAME: string;
+  CREATOR: string;
+}
+
 /**
  * the const of data structure
  *
  * @since 2022-09-08
  */
-export const Constants = {
+export const Constants: InterfaceConstants = {
   /**
    * the database name
    */

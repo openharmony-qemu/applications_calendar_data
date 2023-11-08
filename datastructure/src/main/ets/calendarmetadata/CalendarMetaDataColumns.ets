@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
+interface CalendarMetaDataColumnsType {
+  TABLE_NAME: string,
+  ID: string,
+  LOCAL_TIME_ZONE: string,
+  MIN_INSTANCE: string,
+  MAX_INSTANCE: string,
+}
+
 /**
  * the const of table CalendarMetaData
  *
  * @since 2022-06-01
  */
-export const CalendarMetaDataColumns = {
+export const CalendarMetaDataColumns: CalendarMetaDataColumnsType = {
   TABLE_NAME: 'CalendarMetaData',
   ID: '_id',
   LOCAL_TIME_ZONE: 'localTimeZone',

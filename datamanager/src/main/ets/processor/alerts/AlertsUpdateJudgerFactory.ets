@@ -39,11 +39,7 @@ export default class AlertsUpdateJudgerFactory {
     this.map.set(DELETE_OPERATION_NAME, new DeleteAlertsUpdateJudgerImpl());
   }
 
-  getAlertsUpdateJudger(judgerType: string): AlertsUpdateJudger {
-    if (this.map.has(judgerType)) {
-      return this.map.get(judgerType);
-    } else {
-      return null;
-    }
+  getAlertsUpdateJudger(judgerType: string): AlertsUpdateJudger | undefined {
+    return this.map.has(judgerType) ? this.map.get(judgerType) : undefined;
   }
 }

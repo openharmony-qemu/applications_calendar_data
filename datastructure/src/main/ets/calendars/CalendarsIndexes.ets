@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
 import { CalendarsColumns } from './CalendarsColumns';
 
-/**
- * the columns indexes for table Calendars
- *
- * @since 2022-10-18
- */
-export class CalendarsIndexes {
+interface CalendarIndexesType {
   idIndex: number;
   accountNameIndex: number;
   accountTypeIndex: number;
@@ -60,9 +56,52 @@ export class CalendarsIndexes {
   calSync10Index: number;
   canReminderIndex: number;
   creatorIndex: number;
+}
 
-  constructor() {
-  }
+/**
+ * the columns indexes for table Calendars
+ *
+ * @since 2022-10-18
+ */
+export class CalendarsIndexes implements CalendarIndexesType {
+  idIndex = 0;
+  accountNameIndex = 0;
+  accountTypeIndex = 0;
+  syncIdIndex = 0;
+  dirtyIndex = 0;
+  mutatorsIndex = 0;
+  nameIndex = 0;
+  calendarDisplayNameIndex = 0;
+  calendarColorIndex = 0;
+  calendarColorIndexIndex = 0;
+  calendarAccessLevelIndex = 0;
+  visibleIndex = 0;
+  syncEventsIndex = 0;
+  calendarLocationIndex = 0;
+  calendarTimezoneIndex = 0;
+  ownerAccountIndex = 0;
+  isPrimaryIndex = 0;
+  canOrganizerRespondIndex = 0;
+  canModifyTimeZoneIndex = 0;
+  canPartiallyUpdateIndex = 0;
+  maxRemindersIndex = 0;
+  allowedRemindersIndex = 0;
+  allowedAvailabilityIndex = 0;
+  allowedAttendeeTypesIndex = 0;
+  deletedIndex = 0;
+  calendarTimeStampIndex = 0;
+  calSync1Index = 0;
+  calSync2Index = 0;
+  calSync3Index = 0;
+  calSync4Index = 0;
+  calSync5Index = 0;
+  calSync6Index = 0;
+  calSync7Index = 0;
+  calSync8Index = 0;
+  calSync9Index = 0;
+  calSync10Index = 0;
+  canReminderIndex = 0;
+  creatorIndex = 0;
 }
 
 /**
@@ -70,7 +109,7 @@ export class CalendarsIndexes {
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseCalendarsIndexes(resultSet): CalendarsIndexes {
+export function parseCalendarsIndexes(resultSet: data_rdb.ResultSet): CalendarsIndexes | undefined {
   if (resultSet === null || resultSet === undefined) {
     return undefined;
   }

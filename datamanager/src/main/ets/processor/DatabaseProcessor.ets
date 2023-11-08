@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import data_rdb from '@ohos.data.relationalStore';
+import dataSharePredicates from '@ohos.data.dataSharePredicates';
+
 /**
  * the interface of Database Processor
  *
@@ -28,7 +31,7 @@ export interface DatabaseProcessor {
    * @param values 插入的数据
    * @param callback 回调方法
    */
-  insertByHighAuthority(rdbStore, uri: string, values, callback);
+  insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function);
 
   /**
    * 低权限插入接口
@@ -38,7 +41,7 @@ export interface DatabaseProcessor {
    * @param values 插入的数据
    * @param callback 回调方法
    */
-  insertByLowAuthority(rdbStore, uri: string, values, callback);
+  insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function);
 
   /**
    * 高权限删除接口
@@ -48,7 +51,7 @@ export interface DatabaseProcessor {
    * @param predicates 删除条件
    * @param callback 回调方法
    */
-  deleteByHighAuthority(rdbStore, uri: string, predicates, callback);
+  deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function);
 
   /**
    * 低权限删除接口
@@ -58,7 +61,7 @@ export interface DatabaseProcessor {
    * @param predicates 删除条件
    * @param callback 回调方法
    */
-  deleteByLowAuthority(rdbStore, uri: string, predicates, callback);
+  deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function);
 
   /**
    * 高权限更新接口
@@ -69,7 +72,7 @@ export interface DatabaseProcessor {
    * @param predicates 更新条件
    * @param callback 回调方法
    */
-  updateByHighAuthority(rdbStore, uri: string, values, predicates, callback);
+  updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function);
 
   /**
    * 低权限更新接口
@@ -80,7 +83,7 @@ export interface DatabaseProcessor {
    * @param predicates 更新条件
    * @param callback 回调方法
    */
-  updateByLowAuthority(rdbStore, uri: string, values, predicates, callback);
+  updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function);
 
   /**
    * 高权限查询接口
@@ -91,7 +94,7 @@ export interface DatabaseProcessor {
    * @param predicates 查询条件
    * @param callback 回调方法
    */
-  queryByHighAuthority(rdbStore, uri: string, columns: Array<string>, predicates, callback);
+  queryByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function);
 
   /**
    * 低权限查询接口
@@ -102,5 +105,5 @@ export interface DatabaseProcessor {
    * @param predicates 查询条件
    * @param callback 回调方法
    */
-  queryByLowAuthority(rdbStore, uri: string, columns: Array<string>, predicates, callback);
+  queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function);
 }
