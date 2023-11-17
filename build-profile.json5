@@ -4,13 +4,13 @@
       {
         "name": "release",
         "material": {
-          "storePassword": "0000001ADC4F530BD582A0FFAAE19604C3AFE077D8FE1BF589B8B7F2A52DFCBA47D1E3113C3B59B94871",
-          "certpath": ".\\signature\\auto_ohos_release_applications_calendar_data_com.ohos.calendardata.cer",
+          "storePassword": "0000001A215A879374ADD92B99D03A62451D12F7EE48D38F19F65E4C2E4F7C8A4FC07C0DF36EA19C4014",
+          "certpath": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001A9A0E0A2E3FC6C18DDC2B51A20BA8D7F28A0DC616FF6624BDBEA07F7BFEE6F5D98117E1D09E7B",
-          "profile": ".\\signature\\auto_ohos_release_applications_calendar_data_com.ohos.calendardata.p7b",
+          "keyPassword": "0000001A6C07EF1EEF288D5BC2C5A9C3006D60D1AF3939BB06041BCE3FCD76E5D56297512CD77474267B",
+          "profile": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": ".\\signature\\auto_ohos_release_applications_calendar_data_com.ohos.calendardata.p12"
+          "storeFile": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.p12"
         }
       }
     ],
