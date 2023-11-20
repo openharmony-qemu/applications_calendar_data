@@ -27,7 +27,7 @@ EXTERN_C_START
  */
 static napi_value Init(napi_env env, napi_value exports)
 {
-    LOG_INFO("napi_moudule Init start...");
+    LOG_INFO("napi_module Init start...");
     exports = ModuleInit(env, exports);
     return exports;
 }
