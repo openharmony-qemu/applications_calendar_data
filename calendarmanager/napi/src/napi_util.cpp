@@ -528,7 +528,6 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
     GetNamedPropertyOptional(env, in, "recurrenceRule", out.recurrenceRule);
     GetNamedPropertyOptional(env, in, "description", out.description);
     GetNamedPropertyOptional(env, in, "service", out.service);
-    Native::DumpEvent(out);
     return status;
 }
 
@@ -632,8 +631,8 @@ napi_ref NewWithRef(napi_env env, size_t argc, napi_value* argv, void** out, nap
 
     napi_ref ref = nullptr;
     status = napi_create_reference(env, object, 1, &ref);
-    CHECK_RETURN(status == napi_ok, "napi_create_referenc!e failed", nullptr);
-    CHECK_RETURN(ref != nullptr, "napi_create_referenc!e failed", nullptr);
+    CHECK_RETURN(status == napi_ok, "napi_create_reference failed!", nullptr);
+    CHECK_RETURN(ref != nullptr, "napi_create_reference failed!", nullptr);
     return ref;
 }
 
