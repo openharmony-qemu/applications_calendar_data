@@ -136,9 +136,13 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
       if (hasNoError(err)) {
         Log.log(this.logTag, `delete ${table} after callback: count = ` + count);
         notifyProviderChange(table, OPERATION_DELETE);
-        this.notifyAlertsChanges(DELETE_OPERATION_NAME, table);
+        const deleteValue: data_rdb.ValuesBucket = {
+          'deleteCounts': count
+        }
+        Log.log(this.logTag, `deleteValue: [deleteCounts]: ${deleteValue['deleteCounts']}`);
+        this.notifyAlertsChanges(DELETE_OPERATION_NAME, table, deleteValue);
       } else {
-        Log.warn(this.logTag, `delete get err:${err?.code}, ${err?.message}`);
+        Log.error(this.logTag, `delete get err:${err?.code}, ${err?.message}`);
       }
     });
   }
