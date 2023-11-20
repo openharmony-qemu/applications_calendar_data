@@ -45,7 +45,7 @@ export default class DeleteAlarmNeedUpdateJudgerImpl implements AlertsUpdateJudg
   }
 
   isNeedToUpdateAlerts(tableName: string, values: relationalStore.ValuesBucket): boolean {
-    if (values !== null && values !== undefined) {
+    if (values == null && values == undefined) {
       Log.error(TAG, "this is not a delete operation, please check your Code!");
       return false;
     }
