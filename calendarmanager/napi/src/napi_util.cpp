@@ -304,7 +304,7 @@ napi_status GetValue(napi_env env, napi_value in, CalendarConfig& out)
     napi_status status = napi_has_named_property(env, in, "color", &result);
     if (status == napi_ok && !result) {
         const int64_t defaultColor = 0xFF0A59F7;
-        LOG_DEBUG("napi_value color is null, use default color: %{public}lld", defaultColor);
+        LOG_DEBUG("napi_value color is null, use default color: %{public}lld", (long long int)defaultColor);
         out.color = defaultColor;
         return napi_ok;
     }
