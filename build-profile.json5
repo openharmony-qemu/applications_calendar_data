@@ -4,10 +4,10 @@
       {
         "name": "release",
         "material": {
-          "storePassword": "0000001BC1200F8673A488D1BBDE85E0E78EC30AA145E62E3106C1F19B5D726C7A12B57BDD5FD58324E3D3",
+          "storePassword": "0000001A215A879374ADD92B99D03A62451D12F7EE48D38F19F65E4C2E4F7C8A4FC07C0DF36EA19C4014",
           "certpath": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.cer",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B791F7F7E5AB25D4ED2C381DBB307151826AAB54415B954B1F9E1364EC2709F312578EF2D017449",
+          "keyPassword": "0000001A6C07EF1EEF288D5BC2C5A9C3006D60D1AF3939BB06041BCE3FCD76E5D56297512CD77474267B",
           "profile": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.p12"
