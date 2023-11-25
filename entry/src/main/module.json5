@@ -47,11 +47,6 @@
         "name": "hmos.app.quickfix",
         "value": "true"
       }
-    ],
-    "requestPermissions": [
-      {
-        "name": "ohos.permission.PERMISSION_USED_STATS"
-      }
     ]
   }
 }
