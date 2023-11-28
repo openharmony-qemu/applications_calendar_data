@@ -107,14 +107,15 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     
     LOG_DEBUG("description %{public}s", event.description.value_or("").c_str());
 
-    valuesBucket.Put("description", event.description.value_or(""));
-    if (event.timeZone) {
+    if (event.description.has_value()) {
+        valuesBucket.Put("description", event.description.value());
+    }
+    if (event.timeZone.has_value()) {
         valuesBucket.Put("eventTimezone", event.timeZone.value());
     }
-    if (event.isAllDay) {
-        valuesBucket.Put("allDay", event.isAllDay.value() ? 1 : 0);
+    if (event.isAllDay.has_value()) {
+        valuesBucket.Put("allDay", event.isAllDay.value());
     }
-    valuesBucket.Put("allDay", event.isAllDay ? (event.isAllDay.value() ? 1 : 0) : 0);
     return valuesBucket;
 }
 
