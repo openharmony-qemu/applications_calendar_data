@@ -116,6 +116,6 @@ export const APP_NAME: AppNameType = {
 export const DEFAULT_CALENDAR_VALUE: Record<string, number | string> = {
   '_id': 1,
   'account_name': 'phone',
-  'account_type': 'com.calendardata.phone',
+  'account_type': 'local',
   'creator': APP_NAME.CALENDARDATA,
 }

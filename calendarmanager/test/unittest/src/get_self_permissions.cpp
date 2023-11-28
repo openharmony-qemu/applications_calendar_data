@@ -38,7 +38,7 @@ void SetAccessTokenPermission(const std::string &processName,
         .perms = perms.get(),
         .acls = nullptr,
         .processName = processName.c_str(),
-        .aplStr = "system_basic",
+        .aplStr = "normal",
     };
     tokenId = GetAccessTokenId(&infoInstance);
     if (tokenId == 0) {
