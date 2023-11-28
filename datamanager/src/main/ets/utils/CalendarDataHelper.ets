@@ -502,6 +502,18 @@ class CalendarDataHelper {
       `${EventColumns.HWEXT_ALERT_TYPE} INTEGER NOT NULL DEFAULT 0`, []);
     await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
       `${EventColumns.IMPORTANT_EVENT_TYPE} INTEGER NOT NULL DEFAULT 0`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
+      `${EventColumns.SERVICE.SERVICE_VERIFIED} INTEGER`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
+      `${EventColumns.SERVICE.SERVICE_TYPE} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
+      `${EventColumns.SERVICE.SERVICE_CP_BZ_URI} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
+      `${EventColumns.SERVICE.SERVICE_CP_MNG_URI} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
+      `${EventColumns.SERVICE.SERVICE_DESCRIPTION} TEXT`, []);
+    await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
+      `${EventColumns.SERVICE.SERVICE_MIN_VERSION} INTEGER`, []);
     await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
       `${EventColumns.SYNC_DATA1} TEXT`, []);
     await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
