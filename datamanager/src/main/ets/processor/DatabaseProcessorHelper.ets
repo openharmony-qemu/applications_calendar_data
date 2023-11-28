@@ -87,9 +87,9 @@ export function deleteValueCreator(values: data_rdb.ValuesBucket): data_rdb.Valu
 export function initPredicateDefaultCalendarProtect(predicates: dataSharePredicates.DataSharePredicates) {
   predicates.beginWrap()
     .notEqualTo(CalendarsColumns.ACCOUNT_TYPE, DEFAULT_CALENDAR_VALUE.account_type)
-    .or()
+    .and()
     .notEqualTo(CalendarsColumns.ACCOUNT_NAME, DEFAULT_CALENDAR_VALUE.account_name)
-    .or()
+    .and()
     .notEqualTo(Constants.CREATOR, DEFAULT_CALENDAR_VALUE.creator)
     .endWrap();
 }
