@@ -34,7 +34,7 @@ napi_status CalendarEnvNapi::GetContext(napi_env env, napi_value value)
     bool isStageMode = false;
     auto status = AbilityRuntime::IsStageContext(env, value, isStageMode);
     if (status != napi_ok || !isStageMode) {
-        LOG_ERROR("No support FA Model");
+        LOG_ERROR("No support FA Model; No support get calendarMgr in worker thread");
         return napi_generic_failure;
     }
     m_context = OHOS::AbilityRuntime::GetStageModeContext(env, value);
