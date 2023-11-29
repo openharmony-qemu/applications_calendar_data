@@ -181,6 +181,24 @@ export function parseEvents(resultSet: data_rdb.ResultSet, indexes: EventIndexes
   if (indexes.importantEventTypeIndex >= 0) {
     event.importantEventType = resultSet.getLong(indexes.importantEventTypeIndex);
   }
+  if (indexes.serviceVerifiedIndex >= 0) {
+    event.serviceVerified = resultSet.getLong(indexes.serviceVerifiedIndex);
+  }
+  if (indexes.serviceTypeIndex >= 0) {
+    event.serviceType = resultSet.getString(indexes.serviceTypeIndex);
+  }
+  if (indexes.serviceCpBzUriIndex >= 0) {
+    event.serviceCpBzUri = resultSet.getString(indexes.serviceCpBzUriIndex);
+  }
+  if (indexes.serviceCpMngUriIndex >= 0) {
+    event.serviceCpMngUri = resultSet.getString(indexes.serviceCpMngUriIndex);
+  }
+  if (indexes.serviceDescriptionIndex >= 0) {
+    event.serviceDescription = resultSet.getString(indexes.serviceDescriptionIndex);
+  }
+  if (indexes.serviceSupportMinVersionIndex >= 0) {
+    event.serviceSupportMinVersion = resultSet.getLong(indexes.serviceSupportMinVersionIndex);
+  }
   if (indexes.syncData1Index >= 0) {
     event.syncData1 = resultSet.getString(indexes.syncData1Index);
   }

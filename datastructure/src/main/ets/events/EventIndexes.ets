@@ -70,6 +70,12 @@ interface EventIndexesType {
   eventUuidIndex: number;
   hwExtAlertTypeIndex: number;
   importantEventTypeIndex: number;
+  serviceVerifiedIndex: number;
+  serviceTypeIndex: number;
+  serviceCpBzUriIndex: number;
+  serviceCpMngUriIndex: number;
+  serviceDescriptionIndex: number;
+  serviceSupportMinVersionIndex: number;
   syncData1Index: number;
   syncData2Index: number;
   syncData3Index: number;
@@ -143,6 +149,12 @@ export class EventIndexes implements EventIndexesType {
   eventUuidIndex = 0;
   hwExtAlertTypeIndex = 0;
   importantEventTypeIndex = 0;
+  serviceVerifiedIndex = 0;
+  serviceTypeIndex = 0;
+  serviceCpBzUriIndex = 0;
+  serviceCpMngUriIndex = 0;
+  serviceDescriptionIndex = 0;
+  serviceSupportMinVersionIndex = 0;
   syncData1Index = 0;
   syncData2Index = 0;
   syncData3Index = 0;
@@ -219,6 +231,12 @@ export function parseIndexes(resultSet: data_rdb.ResultSet): EventIndexes | unde
   indexes.eventUuidIndex = resultSet.getColumnIndex(EventColumns.EVENT_UUID);
   indexes.hwExtAlertTypeIndex = resultSet.getColumnIndex(EventColumns.HWEXT_ALERT_TYPE);
   indexes.importantEventTypeIndex = resultSet.getColumnIndex(EventColumns.IMPORTANT_EVENT_TYPE);
+  indexes.serviceVerifiedIndex = resultSet.getColumnIndex(EventColumns.SERVICE.SERVICE_VERIFIED);
+  indexes.serviceTypeIndex = resultSet.getColumnIndex(EventColumns.SERVICE.SERVICE_TYPE);
+  indexes.serviceCpBzUriIndex = resultSet.getColumnIndex(EventColumns.SERVICE.SERVICE_CP_BZ_URI);
+  indexes.serviceCpMngUriIndex = resultSet.getColumnIndex(EventColumns.SERVICE.SERVICE_CP_MNG_URI);
+  indexes.serviceDescriptionIndex = resultSet.getColumnIndex(EventColumns.SERVICE.SERVICE_DESCRIPTION);
+  indexes.serviceSupportMinVersionIndex = resultSet.getColumnIndex(EventColumns.SERVICE.SERVICE_MIN_VERSION);
   indexes.syncData1Index = resultSet.getColumnIndex(EventColumns.SYNC_DATA1);
   indexes.syncData2Index = resultSet.getColumnIndex(EventColumns.SYNC_DATA2);
   indexes.syncData3Index = resultSet.getColumnIndex(EventColumns.SYNC_DATA3);

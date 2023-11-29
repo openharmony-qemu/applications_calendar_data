@@ -66,6 +66,13 @@ interface EventsType {
   eventUuid: string;
   hwExtAlertType: number;
   importantEventType: number;
+  // event service
+  serviceVerified: number;
+  serviceType: string;
+  serviceCpBzUri: string;
+  serviceCpMngUri: string;
+  serviceDescription: string;
+  serviceSupportMinVersion: number;
   // birthdayKind
   syncData1: string;
   syncData2: string;
@@ -139,6 +146,13 @@ export class Events implements EventsType {
   eventUuid = '';
   hwExtAlertType = 0;
   importantEventType = 0;
+  // event service
+  serviceVerified = 0;
+  serviceType = '';
+  serviceCpBzUri = '';
+  serviceCpMngUri = '';
+  serviceDescription = '';
+  serviceSupportMinVersion = 0;
   // birthdayKind
   syncData1 = '';
   syncData2 = '';

@@ -16,6 +16,15 @@
 
 import { Constants } from '../Constants';
 
+interface serviceType {
+  SERVICE_VERIFIED: string;
+  SERVICE_TYPE: string;
+  SERVICE_CP_BZ_URI: string;
+  SERVICE_CP_MNG_URI: string;
+  SERVICE_DESCRIPTION: string;
+  SERVICE_MIN_VERSION: string;
+}
+
 interface eventColumnsType {
   TABLE_NAME: string,
   ID: string,
@@ -82,6 +91,7 @@ interface eventColumnsType {
   KV_SYNC: string,
   KV_SYNC_TIME: string,
   CREATOR: string,
+  SERVICE: serviceType
 }
 
 /**
@@ -155,6 +165,14 @@ export const EventColumns: eventColumnsType = {
   KV_SYNC: 'kv_synced',
   KV_SYNC_TIME: 'kv_sync_time',
   CREATOR: Constants.CREATOR,
+  SERVICE: {
+    SERVICE_VERIFIED: 'service_verified',              // whether service uri legal, INTEGER
+    SERVICE_TYPE: 'service_type',                      // service type of event, TEXT
+    SERVICE_CP_BZ_URI: 'service_cp_bz_uri',            // one click service uri passed in by application, TEXT
+    SERVICE_CP_MNG_URI: 'service_cp_mng_uri',          // one click service uri for management passed in by application, TEXT
+    SERVICE_DESCRIPTION: 'service_description',        // service description of event, TEXT
+    SERVICE_MIN_VERSION: 'service_support_min_version' // Minimum version of one click service, INTEGER
+  }
 }
 
 /**
