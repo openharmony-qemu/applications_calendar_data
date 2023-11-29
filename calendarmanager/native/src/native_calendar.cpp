@@ -97,10 +97,9 @@ int Calendar::AddEvents(const std::vector<Event>& events)
 {
     int count = 0;
     for (const auto &event : events) {
-        auto valueEvent = BuildValueEvent(event, m_id);
-        auto index = DataShareHelperManager::GetInstance().Insert(*(m_eventUri.get()), valueEvent);
+        auto index = Calendar::AddEvent(event);
         if (index > 0) {
-            ++count;
+            count++;
         }
     }
     LOG_INFO("AddEvents count %{public}d", count);
