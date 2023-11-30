@@ -253,7 +253,12 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
     if (ret != DataShare::E_OK) {
         return std::nullopt;
     }
-    out.type = value;
+    const std::set<std::string> serviceType = {"Meeting", "Watching", "Repayment", "Live", "Shopping", "Trip", "Class", "SportsEvents", "SportsExercise"};
+    if (serviceType.count(value)) {
+        out.type = value;
+    } else {
+        return std::nullopt;
+    }
     ret = GetValue(resultSet, "service_cp_bz_uri", value);
     if (ret != DataShare::E_OK) {
         return std::nullopt;
