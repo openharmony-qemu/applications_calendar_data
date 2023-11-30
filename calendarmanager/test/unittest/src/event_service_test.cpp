@@ -53,7 +53,7 @@ HWTEST_F(EventServiceTest, AddEventWithService, testing::ext::TestSize.Level1)
     const string title = "AddEventWithService";
     event.title = title;
     EventService testService {
-        "test",
+        "Meeting",
         "//testuri",
         "test_discription"
     };
