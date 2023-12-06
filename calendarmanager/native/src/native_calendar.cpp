@@ -253,23 +253,31 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
         predicates = std::make_shared<DataShare::DataSharePredicates>();
     }
     predicates->EqualTo("calendar_id", GetId());
-    std::vector<std::string> columns = {"_id", "title", "description",  "event_calendar_type",
-        "dtstart", "dtend", "allDay", "eventTimezone",
-        "eventLocation", "location_longitude", "location_latitude",
-        "service_type", "service_cp_bz_uri", "service_description"};
+    std::vector<string> queryField = {};
+    std::set<string> resultSetField;
+    if (eventKey.size() > 0) {
+        queryField.emplace_back("_id");
+        setField(eventKey, queryField, resultSetField);
+    } else {
+        resultSetField = {"type", "title", "startTime", "endTime", "isAllDay", "description",
+                          "timeZone", "location", "service", "attendee", "reminderTime"};
+    }
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),
-        *(predicates.get()), columns, &error);
+        *(predicates.get()), queryField, &error);
     if (!result) {
         LOG_ERROR("query failed");
         return events;
     }
-    ResultSetToEvents(events, result, columns);
+    ResultSetToEvents(events, result, resultSetField);
     for (auto &event : events) {
         const auto eventId = event.id.value();
-        auto attendees = GetAttendeesByEventId(eventId); // exist bug id must exist
-        event.attendees = std::move(attendees);
-        event.reminderTime = GetRemindersByEventId(eventId);
+        if (resultSetField.count("attendee")) {
+            event.attendees = GetAttendeesByEventId(eventId);
+        }
+        if (resultSetField.count("reminderTime")) {
+            event.reminderTime = GetRemindersByEventId(eventId);
+        }
         DumpEvent(event);
     }
     LOG_INFO("query finished");
