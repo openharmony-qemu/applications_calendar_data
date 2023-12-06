@@ -272,26 +272,46 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
     return std::make_optional<EventService>(out);
 }
 
-void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet)
+void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std::set<std::string>& columns)
 {
     GetValueOptional(resultSet, "_id", event.id);
-    int type = 0;
-    GetValue(resultSet, "event_calendar_type", type);
-    event.type = static_cast<EventType>(type);
-    GetValueOptional(resultSet, "title", event.title);
-    GetValue(resultSet, "dtstart", event.startTime);
-    GetValue(resultSet, "dtend", event.endTime);
-    int isAllDay = 0;
-    GetValue(resultSet, "allDay", isAllDay);
-    event.isAllDay = static_cast<bool>(isAllDay);
-    GetValueOptional(resultSet, "description", event.description);
-    GetValueOptional(resultSet, "eventTimezone", event.timeZone);
-    event.location = ResultSetToLocation(resultSet);
-    event.service = ResultSetToEventService(resultSet);
+    if (columns.count("type")) {
+        int type = 0;
+        GetValue(resultSet, "event_calendar_type", type);
+        event.type = static_cast<EventType>(type);
+    }
+    if (columns.count("title")) {
+        GetValueOptional(resultSet, "title", event.title);
+    }
+    if (columns.count("startTime")) {
+        LOG_DEBUG("TLQ get startTime");
+        GetValue(resultSet, "dtstart", event.startTime);
+    }
+    if (columns.count("endTime")) {
+        LOG_DEBUG("TLQ get endTime");
+        GetValue(resultSet, "dtend", event.endTime);
+    }
+    if (columns.count("isAllDay")) {
+        int isAllDay = 0;
+        GetValue(resultSet, "allDay", isAllDay);
+        event.isAllDay = static_cast<bool>(isAllDay);
+    }
+    if (columns.count("description")) {
+        GetValueOptional(resultSet, "description", event.description);
+    }
+    if (columns.count("timeZone")) {
+        GetValueOptional(resultSet, "eventTimezone", event.timeZone);
+    }
+    if (columns.count("location")) {
+        event.location = ResultSetToLocation(resultSet);
+    }
+    if (columns.count("service")) {
+        event.service = ResultSetToEventService(resultSet);
+    }
 }
 
 int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultSet,
-    const std::vector<std::string>& columns)
+    const std::set<std::string>& columns)
 {
     int rowCount = 0;
     resultSet->GetRowCount(rowCount);
@@ -306,7 +326,7 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
     }
     do {
         Event event;
-        ResultSetToEvent(event, resultSet);
+        ResultSetToEvent(event, resultSet, columns);
         events.emplace_back(event);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
@@ -402,5 +422,46 @@ bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue)
     }
     LOG_DEBUG("color is null");
     return false;
+}
+
+void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+{
+    const std::map<string, string> eventField = { { "id", "_id" },
+                                                  { "type", "event_calendar_type" },
+                                                  { "title", "title" },
+                                                  { "startTime", "dtstart" },
+                                                  { "endTime", "dtend" },
+                                                  { "isAllDay", "allDay" },
+                                                  { "timeZone", "eventTimezone" },
+                                                  { "description", "description" } };
+    for (const auto& field : eventKey) {
+        if (field == "location") {
+            queryField.emplace_back("eventLocation");
+            queryField.emplace_back("location_longitude");
+            queryField.emplace_back("location_latitude");
+            resultSetField.insert(field);
+            continue;
+        }
+        if (field == "service") {
+            queryField.emplace_back("service_type");
+            queryField.emplace_back("service_cp_bz_uri");
+            queryField.emplace_back("service_description");
+            resultSetField.insert(field);
+            continue;
+        }
+        if (field == "attendee") {
+            resultSetField.insert(field);
+            continue;
+        }
+        if (field == "reminderTime") {
+            resultSetField.insert(field);
+            continue;
+        }
+        if (field == "id") {
+            continue;
+        }
+        queryField.emplace_back(eventField.at(field));
+        resultSetField.insert(field);
+    }
 }
 }

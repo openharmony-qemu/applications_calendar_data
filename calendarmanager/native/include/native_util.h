@@ -38,9 +38,11 @@ namespace OHOS::CalendarApi::Native {
 
     std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPtr &resultSet);
     int ResultSetToEvents(std::vector<Event> &events,
-        DataShareResultSetPtr &resultSet, const std::vector<std::string>& columns);
+        DataShareResultSetPtr &resultSet, const std::set<std::string>& columns);
     int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet);
     int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet);
+    void setField(const std::vector<string>& eventKey,
+        std::vector<string>& queryField, std::set<string>& resultSetField);
 
     bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue);
 
