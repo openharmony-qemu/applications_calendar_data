@@ -232,4 +232,78 @@ HWTEST_F(EventFilterTest, FilterByTime_test_003, testing::ext::TestSize.Level1)
     EXPECT_EQ(events.at(1).startTime, event2.startTime);
     EXPECT_EQ(events.at(1).endTime, event2.endTime);
 }
+
+HWTEST_F(EventFilterTest, FilterById_and_eventKey_001, testing::ext::TestSize.Level1)
+{
+    const string title = "FilterById_and_eventKey_001";
+    Event event;
+    event.type = EventType::Important;
+    event.title = title;
+    auto timeNow = Now();
+    event.startTime = timeNow;
+    const int64_t interval = 100;
+    event.endTime = timeNow + interval;
+    auto eventId = calendar->AddEvent(event);
+    auto eventResult = calendar->GetEvents(FilterById({eventId}), {"type", "title", "startTime", "endTime"});
+    const auto newEvent = eventResult.at(0);
+    EXPECT_EQ(newEvent.type, event.type);
+    EXPECT_EQ(newEvent.title.value(), title);
+    EXPECT_EQ(newEvent.startTime, event.startTime);
+    EXPECT_EQ(newEvent.endTime, event.endTime);
+}
+
+HWTEST_F(EventFilterTest, FilterByTitle_and_eventKey_002, testing::ext::TestSize.Level1)
+{
+    const string title = "FilterByTitle_and_eventKey_002";
+    Event event;
+    event.title = title;
+    Location testLocation { "test", 123, 456 };
+    event.location = std::make_optional<Location>(testLocation);
+    event.isAllDay = true;
+    event.attendees =  {
+        {"xiaoming", "xiaoming@abc.com"},
+        {"xiaoqiang", "test_attendee1@abc.com"},
+        {"abc", "test_attendee2@abc.com"}
+    };
+    event.timeZone = "shanghai";
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto eventResult = calendar->GetEvents(FilterByTitle(title),
+        {"title", "location", "isAllDay", "attendee", "timeZone"});
+    const auto newEvent = eventResult.at(0);
+    EXPECT_EQ(newEvent.title.value(), title);
+    EXPECT_EQ(newEvent.location.value(), event.location.value());
+    EXPECT_EQ(newEvent.isAllDay.value(), event.isAllDay.value());
+    EXPECT_EQ(newEvent.attendees, event.attendees);
+    EXPECT_EQ(newEvent.timeZone.value(), event.timeZone.value());
+}
+
+HWTEST_F(EventFilterTest, FilterByTime_and_eventKey_003, testing::ext::TestSize.Level1)
+{
+    const string title = "FilterByTime_and_eventKey_003";
+    Event event;
+    event.title = title;
+    auto timeNow = Now();
+    const int64_t interval = 100;
+    event.startTime = timeNow;
+    event.endTime = timeNow + interval;
+    event.reminderTime = {0, 1, 2};
+    event.description = "FilterByTime_and_eventKey_003 description";
+    optional<string> description = std::make_optional<string>("FilterByTime_and_eventKey_003 description");
+    EventService service = {"Meeting", "FilterByTime_and_eventKey_003 uri", description};
+    event.service = std::make_optional<EventService>(service);
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto eventResult = calendar->GetEvents(FilterByTime(timeNow, event.endTime + 100),
+        {"title", "reminderTime", "description", "service"});
+    const auto newEvent = eventResult.at(0);
+    EXPECT_EQ(newEvent.title.value(), title);
+    ASSERT_EQ(newEvent.reminderTime.has_value(), true);
+    EXPECT_EQ(newEvent.reminderTime.value(), event.reminderTime.value());
+    EXPECT_EQ(newEvent.description.value(), event.description.value());
+    ASSERT_EQ(newEvent.service.has_value(), true);
+    EXPECT_EQ(newEvent.service.value().type, event.service.value().type);
+    EXPECT_EQ(newEvent.service.value().uri, event.service.value().uri);
+    EXPECT_EQ(newEvent.service.value().description.value(), event.service.value().description.value());
+}
 }
