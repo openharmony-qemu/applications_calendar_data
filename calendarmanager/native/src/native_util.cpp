@@ -424,10 +424,16 @@ bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue)
     return false;
 }
 
-void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField) {
-    const std::map<string, string> eventField = {{"id", "_id"}, {"type", "event_calendar_type"},
-        {"title", "title"}, {"startTime", "dtstart"},{"endTime", "dtend"}, {"isAllDay", "allDay"},
-        {"timeZone", "eventTimezone"}, {"description", "description"}};
+void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+{
+    const std::map<string, string> eventField = { { "id", "_id" },
+                                                  { "type", "event_calendar_type" },
+                                                  { "title", "title" },
+                                                  { "startTime", "dtstart" },
+                                                  { "endTime", "dtend" },
+                                                  { "isAllDay", "allDay" },
+                                                  { "timeZone", "eventTimezone" },
+                                                  { "description", "description" } };
     for (const auto& field : eventKey) {
         if (field == "location") {
             queryField.emplace_back("eventLocation");
