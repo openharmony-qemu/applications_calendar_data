@@ -15,6 +15,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <variant>
 #include "native_calendar.h"
 #include "calendar_log.h"
 #include "native_calendar_manager.h"
@@ -210,7 +211,7 @@ HWTEST_F(CalendarTest, GetConfig_default_test, testing::ext::TestSize.Level1)
 {
     auto config = calendar->GetConfig();
     EXPECT_FALSE(config.enableReminder.has_value());
-    EXPECT_FALSE(config.color.has_value());
+    EXPECT_TRUE(std::get<0>(config.color).empty());
 }
 
 HWTEST_F(CalendarTest, SetConfig_empty_param_test, testing::ext::TestSize.Level1)
@@ -220,7 +221,7 @@ HWTEST_F(CalendarTest, SetConfig_empty_param_test, testing::ext::TestSize.Level1
     ASSERT_TRUE(ret);
     auto configExpect = calendar->GetConfig();
     EXPECT_FALSE(configExpect.enableReminder.has_value());
-    EXPECT_FALSE(configExpect.color.has_value());
+    EXPECT_TRUE(std::get<0>(config.color).empty());
 }
 
 HWTEST_F(CalendarTest, SetConfig_with_color_test, testing::ext::TestSize.Level1)
