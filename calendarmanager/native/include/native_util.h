@@ -44,7 +44,7 @@ namespace OHOS::CalendarApi::Native {
     void setField(const std::vector<string>& eventKey,
         std::vector<string>& queryField, std::set<string>& resultSetField);
 
-    bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue);
+    bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue);
 
     template<typename T>
     int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, T& out)

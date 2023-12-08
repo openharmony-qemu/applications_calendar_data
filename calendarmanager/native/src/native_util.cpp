@@ -389,7 +389,7 @@ bool IsValidHexString(const std::string& colorStr)
     return true;
 }
 
-bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue)
+bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue)
 {
     if (colorStr.empty()) {
         LOG_ERROR("color string is empty");
@@ -415,9 +415,9 @@ bool ColorParse(const std::string& colorStr, optional<int64_t>& colorValue)
     }
 
     LOG_DEBUG("color string size is 7 or 9");
-    colorValue = std::stoll(colorStrSub, NULL, 16); // 16 is convert hex string to number
-    if (colorValue.has_value()) {
-        LOG_DEBUG("colorStrSub -> colorValue colorValue:%{public}s", std::to_string(colorValue.value()).c_str());
+    colorValue.emplace<1>(std::stoll(colorStrSub, NULL, 16)); // 16 is convert hex string to number
+    if (std::get_if<1>(&colorValue)) {
+        LOG_DEBUG("colorStrSub -> colorValue colorValue:%{public}s", std::to_string(std::get<1>(colorValue)).c_str());
         return true;
     }
     LOG_DEBUG("color is null");

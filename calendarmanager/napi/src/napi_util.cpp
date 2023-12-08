@@ -16,6 +16,7 @@
 #include "napi_util.h"
 #include <endian.h>
 #include <securec.h>
+#include <sstream>
 #include "calendar_log.h"
 #include "napi_queue.h"
 #include "native_util.h"
@@ -305,7 +306,7 @@ napi_status GetValue(napi_env env, napi_value in, CalendarConfig& out)
     if (status == napi_ok && !result) {
         const int64_t defaultColor = 0xFF0A59F7;
         LOG_DEBUG("napi_value color is null, use default color: %{public}lld", (long long int)defaultColor);
-        out.color = defaultColor;
+        out.color.emplace<1>(defaultColor);
         return napi_ok;
     }
     napi_value value = NULL;
@@ -327,8 +328,8 @@ napi_status GetValue(napi_env env, napi_value in, CalendarConfig& out)
     int64_t colorValue;
     napi_status statusToGetInt64 = napi_get_value_int64(env, value, &colorValue);
     if (statusToGetInt64 == napi_ok) {
-        out.color = colorValue;
-        LOG_DEBUG("color: %{public}s", std::to_string(out.color.value()).c_str());
+        out.color.emplace<1>(colorValue);
+        LOG_DEBUG("color: %{public}s", std::to_string(std::get<1>(out.color)).c_str());
     } else {
         LOG_DEBUG("color number -> int_64 err");
     }
@@ -341,15 +342,27 @@ napi_status SetValue(napi_env env, const CalendarConfig& in, napi_value& out)
     napi_status status = napi_create_object(env, &out);
     CHECK_RETURN((status == napi_ok), "invalid entry object", status);
 
-    if (in.enableReminder) {
+    if (in.enableReminder.has_value()) {
+        LOG_DEBUG("config.enableReminder: %{public}d", in.enableReminder.value_or(-1));
         napi_value enableRemindValue = nullptr;
         status = SetValue(env, in.enableReminder.value(), enableRemindValue);
         CHECK_RETURN((status == napi_ok), "invalid entry enableReminder", status);
         napi_set_named_property(env, out, "enableReminder", enableRemindValue);
     }
-    if (in.color) {
+    if (std::get_if<1>(&in.color)) {
         napi_value colorValue = nullptr;
-        status = SetValue(env, in.color.value(), colorValue);
+        string color;
+        std::stringstream ss;
+        ss << std::hex << std::uppercase << std::get<1>(in.color);
+        ss >> color;
+        const int rgbLen = 5;
+        const int argbLen = 7;
+        if (color.size() == rgbLen || color.size() == argbLen) {
+            color = '0' + color;
+        }
+        color = '#' + color;
+        LOG_DEBUG("config.color: %{public}s", color.c_str());
+        status = SetValue(env, color, colorValue);
         CHECK_RETURN((status == napi_ok), "invalid entry color", status);
         napi_set_named_property(env, out, "color", colorValue);
     }
