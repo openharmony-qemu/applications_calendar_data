@@ -19,11 +19,13 @@
 #include <string_view>
 #include <vector>
 #include <optional>
+#include <variant>
 
 using std::string;
 using std::string_view;
 using std::vector;
 using std::optional;
+using std::variant;
 
 namespace OHOS::CalendarApi {
 
@@ -98,7 +100,7 @@ struct Event {
 
 struct CalendarConfig {
     optional<bool> enableReminder;
-    optional<int64_t> color;
+    variant<string, int64_t> color;
     bool operator==(const CalendarConfig& other) const
     {
         return enableReminder == other.enableReminder && color == other.color;

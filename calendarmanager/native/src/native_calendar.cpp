@@ -294,8 +294,8 @@ bool Calendar::SetConfig(const CalendarConfig& config)
     DataShare::DataSharePredicates m_predicates;
     m_predicates.EqualTo("_id", m_id);
     DataShare::DataShareValuesBucket valuesBucket;
-    if (config.color) {
-        valuesBucket.Put("calendar_color", config.color.value());
+    if (std::get_if<1>(&config.color)) {
+        valuesBucket.Put("calendar_color", std::get<1>(config.color));
     }
     if (config.enableReminder) {
         valuesBucket.Put("canReminder", config.enableReminder.value());
