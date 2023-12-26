@@ -47,19 +47,19 @@ class DataShareAbilityDelegate {
   insertByHighAuthority(uri: string, value: data_rdb.ValuesBucket, callback: Function) {
     if (!rdbStore) {
       this.getDb();
-      Log.warn(TAG, `insert uri: ${uri} rdbStore is null`)
+      Log.warn(TAG, `insertByHighAuthority uri: ${uri} rdbStore is null`)
       return;
     }
-    Log.info(TAG, `insert uri: ${uri}`);
+    Log.info(TAG, `insertByHighAuthority uri: ${uri}`);
     let table = getTableByUri(uri);
-    Log.info(TAG, `insert table: ${table}`);
+    Log.info(TAG, `insertByHighAuthority table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.insertByHighAuthority(rdbStore, uri, value, callback);
       return;
     } else {
-      Log.error(TAG, 'insert with invalid processor');
+      Log.error(TAG, 'insertByHighAuthority with invalid processor');
     }
   }
 
@@ -68,22 +68,21 @@ class DataShareAbilityDelegate {
   }
 
   insertByLowAuthority(uri: string, value: data_rdb.ValuesBucket, callback: Function) {
-
     if (!rdbStore) {
-      Log.warn(TAG, `insert uri: ${uri} rdbStore is null`)
+      Log.warn(TAG, `insertByLowAuthority uri: ${uri} rdbStore is null`)
       this.getDb();
       return;
     }
-    Log.info(TAG, `insert uri: ${uri}`);
+    Log.info(TAG, `insertByLowAuthority uri: ${uri}`);
     let table = getTableByUri(uri);
-    Log.info(TAG, `insert table: ${table}`);
+    Log.info(TAG, `insertByLowAuthority table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.insertByLowAuthority(rdbStore, uri, value, callback);
       return;
     } else {
-      Log.error(TAG, 'insert with invalid processor');
+      Log.error(TAG, 'insertByLowAuthority with invalid processor');
     }
   }
 
@@ -93,35 +92,35 @@ class DataShareAbilityDelegate {
       Log.warn(TAG, `deleteByHighAuthority uri: ${uri} rdbStore is null`)
       return;
     }
-    Log.info(TAG, `delete uri: ${uri}`);
+    Log.info(TAG, `deleteByHighAuthority uri: ${uri}`);
     let table = getTableByUri(uri);
-    Log.info(TAG, `delete table: ${table}`);
+    Log.info(TAG, `deleteByHighAuthority table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.deleteByHighAuthority(rdbStore, uri, predicates, callback);
       return;
     } else {
-      Log.error(TAG, 'delete with invalid processor');
+      Log.error(TAG, 'deleteByHighAuthority with invalid processor');
     }
   }
 
   deleteByLowAuthority(uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     if (!rdbStore) {
       this.getDb();
-      Log.warn(TAG, `deleteByHighAuthority uri: ${uri} rdbStore is null`)
+      Log.warn(TAG, `deleteByLowAuthority uri: ${uri} rdbStore is null`)
       return;
     }
-    Log.info(TAG, `delete uri: ${uri}`);
+    Log.info(TAG, `deleteByLowAuthority uri: ${uri}`);
     let table = getTableByUri(uri);
-    Log.info(TAG, `delete table: ${table}`);
+    Log.info(TAG, `deleteByLowAuthority table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.deleteByLowAuthority(rdbStore, uri, predicates, callback);
       return;
     } else {
-      Log.error(TAG, 'delete with invalid processor');
+      Log.error(TAG, 'deleteByLowAuthority with invalid processor');
     }
   }
 
@@ -131,16 +130,16 @@ class DataShareAbilityDelegate {
       Log.warn(TAG, `updateByHighAuthority uri: ${uri} rdbStore is null`)
       return;
     }
-    Log.info(TAG, `High update uri: ${uri}`);
+    Log.info(TAG, `updateByHighAuthority uri: ${uri}`);
     let table = getTableByUri(uri);
-    Log.info(TAG, `High update table: ${table}`);
+    Log.info(TAG, `updateByHighAuthority table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.updateByHighAuthority(rdbStore, uri, value, predicates, callback);
       return;
     } else {
-      Log.error(TAG, 'High update with invalid processor');
+      Log.error(TAG, 'updateByHighAuthority with invalid processor');
     }
   }
 
@@ -150,54 +149,54 @@ class DataShareAbilityDelegate {
       Log.warn(TAG, `updateByLowAuthority uri: ${uri} rdbStore is null`)
       return;
     }
-    Log.info(TAG, `Low update uri: ${uri}`);
+    Log.info(TAG, `updateByLowAuthority uri: ${uri}`);
     let table = getTableByUri(uri);
-    Log.info(TAG, `Low update table: ${table}`);
+    Log.info(TAG, `updateByLowAuthority table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.updateByLowAuthority(rdbStore, uri, value, predicates, callback);
       return;
     } else {
-      Log.error(TAG, 'Low update with invalid processor');
+      Log.error(TAG, 'updateByLowAuthority with invalid processor');
     }
   }
 
   queryByHighAuthority(uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     if (!rdbStore) {
       this.getDb();
-      Log.warn(TAG, `updateByHighAuthority uri: ${uri} rdbStore is null`)
+      Log.warn(TAG, `queryByHighAuthority uri: ${uri} rdbStore is null`)
       return;
     }
-    Log.info(TAG, `query uri: ${uri}`);
+    Log.info(TAG, `queryByHighAuthority uri: ${uri}`);
     const table = getTableByUri(uri);
-    Log.info(TAG, `query table: ${table}`);
+    Log.info(TAG, `queryByHighAuthority table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.queryByHighAuthority(rdbStore, uri, columns, predicates, callback);
       return;
     } else {
-      Log.error(TAG, 'query with invalid processor');
+      Log.error(TAG, 'queryByHighAuthority with invalid processor');
     }
   }
 
   queryByLowAuthority(uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     if (!rdbStore) {
       this.getDb();
-      Log.warn(TAG, `updateByHighAuthority uri: ${uri} rdbStore is null`)
+      Log.warn(TAG, `queryByLowAuthority uri: ${uri} rdbStore is null`)
       return;
     }
-    Log.info(TAG, `query uri: ${uri}`);
+    Log.info(TAG, `queryByLowAuthority uri: ${uri}`);
     const table = getTableByUri(uri);
-    Log.info(TAG, `query table: ${table}`);
+    Log.info(TAG, `queryByLowAuthority table: ${table}`);
 
     const processor = factory.getDatabaseProcessor(table);
     if (processor !== null && processor !== undefined) {
       processor.queryByLowAuthority(rdbStore, uri, columns, predicates, callback);
       return;
     } else {
-      Log.error(TAG, 'query with invalid processor');
+      Log.error(TAG, 'queryByLowAuthority with invalid processor');
     }
   }
 }
