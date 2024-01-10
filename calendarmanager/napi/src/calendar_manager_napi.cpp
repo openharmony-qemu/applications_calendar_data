@@ -32,7 +32,7 @@ using namespace OHOS::DataShare;
 
 namespace {
     const std::string CALENDAR_MANAGER_CLASS_NAME = "CalendarManager";
-    static napi_ref g_constructorRef = nullptr;
+    static thread_local napi_ref g_constructorRef = nullptr;
     constexpr uint32_t INITIAL_REFCOUNT = 1;
 }
 namespace OHOS::CalendarApi {
