@@ -93,7 +93,7 @@ private:
 class NapiQueue {
 public:
     static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
-                                const std::string& name,NapiAsyncExecute execute = NapiAsyncExecute(),
+                                const std::string& name, NapiAsyncExecute execute = NapiAsyncExecute(),
                                 NapiAsyncComplete complete = NapiAsyncComplete());
 
 private:
