@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OHOS_NAPI_QUEUE_H
-#define OHOS_NAPI_QUEUE_H
+#ifndef CALENDAR_MANAGER_NAPI_QUEUE_H
+#define CALENDAR_MANAGER_NAPI_QUEUE_H
 #include <functional>
 #include <memory>
 #include <string>
@@ -125,4 +125,4 @@ private:
     static void GenerateOutput(AsyncContext &ctx, napi_value output);
 };
 } // namespace Calendar::CalendarApi
-#endif // OHOS_NAPI_QUEUE_H CALENDAR_MANAGER
+#endif
