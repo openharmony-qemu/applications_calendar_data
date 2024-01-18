@@ -29,7 +29,6 @@ static CalendarAccount account {
 };
 class EventAttendeeTest : public testing::Test {
 public:
-    /* SetUpTestCase:The preset action of the test suite is executed before the first TestCase */
     static void SetUpTestSuite(void)
     {
         LOG_INFO("CreateCalendar");
@@ -38,19 +37,14 @@ public:
         LOG_INFO("SetUpTestCase SUCCESS");
     }
 
-    /* TearDownTestCase:The test suite cleanup action is executed after the last TestCase */
     static void TearDownTestSuite(void)
     {
-        // del calendar will del all event associated
         LOG_INFO("DeleteCalendar");
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
         ASSERT_TRUE(ret);
         LOG_INFO("TearDownTestSuite SUCCESS");
     }
-    /* SetUp:Execute before each test case */
     void SetUp() {};
-
-    /* TearDown:Execute after each test case */
     void TearDown() {};
     static std::shared_ptr<Calendar> calendar;
 };

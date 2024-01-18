@@ -48,10 +48,8 @@ void CalendarTest::SetUpTestSuite(void)
 {
     calendar = CalendarManager::GetInstance().GetCalendar(account);
     if (calendar != nullptr && calendar->GetAccount().name == TEST_NAME) {
-        // not the default account del it
         CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
     }
-    LOG_INFO("CreateCalendar");
     calendar = CalendarManager::GetInstance().CreateCalendar(account);
     ASSERT_TRUE(calendar != nullptr);
     LOG_INFO("SetUpTestCase SUCCESS");

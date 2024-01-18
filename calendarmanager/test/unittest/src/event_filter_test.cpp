@@ -28,33 +28,25 @@ static CalendarAccount account {
 };
 class EventFilterTest : public testing::Test {
 public:
-    /* SetUpTestCase:The preset action of the test suite is executed before the first TestCase */
     static void SetUpTestSuite(void)
     {
         calendar = CalendarManager::GetInstance().GetCalendar(account);
         if (calendar != nullptr && calendar->GetAccount().name == TEST_NAME) {
-            // not the default account del it
             CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
         }
-        LOG_INFO("CreateCalendar");
         calendar = CalendarManager::GetInstance().CreateCalendar(account);
         ASSERT_TRUE(calendar != nullptr);
         LOG_INFO("SetUpTestCase SUCCESS");
     }
 
-    /* TearDownTestCase:The test suite cleanup action is executed after the last TestCase */
     static void TearDownTestSuite(void)
     {
-        // del calendar will del all event associated
         LOG_INFO("DeleteCalendar");
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
         ASSERT_TRUE(ret);
         LOG_INFO("TearDownTestSuite SUCCESS");
     }
-    /* SetUp:Execute before each test case */
     void SetUp() {};
-
-    /* TearDown:Execute after each test case */
     void TearDown()
     {
         calendar->DeleteAllEvents();

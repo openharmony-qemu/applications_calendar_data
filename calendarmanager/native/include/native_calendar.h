@@ -46,6 +46,7 @@ public:
     std::vector<Event> GetEvents(std::shared_ptr<EventFilter> filter, const std::vector<string>& eventKey);
     std::vector<Attendee> GetAttendeesByEventId(int id);
     std::optional<std::vector<int>> GetRemindersByEventId(int id);
+    void InsertReminders(int eventId, vector<int> reminders);
     CalendarAccount GetAccount() const
     {
         return m_account;

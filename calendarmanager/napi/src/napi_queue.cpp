@@ -37,14 +37,14 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     size_t argc = ARGC_MAX;
     napi_value argv[ARGC_MAX] = { nullptr };
     status = napi_get_cb_info(env, info, &argc, argv, &self, nullptr);
-    CHECK_STATUS_RETURN_VOID(this, "napi_get_cb_info failed!");
-    CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, "too many arguments!");
-    CHECK_ARGS_RETURN_VOID(this, self != nullptr, "no JavaScript this argument!");
+    CHECK_STATUS_RETURN_VOID(this, " napi_get_cb_info failed!");
+    CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, " too many arguments!");
+    CHECK_ARGS_RETURN_VOID(this, self != nullptr, " no JavaScript this argument!");
     if (!sync) {
         napi_create_reference(env, self, 1, &selfRef);
     }
     status = napi_unwrap(env, self, &native);
-    CHECK_STATUS_RETURN_VOID(this, "self unwrap failed!");
+    CHECK_STATUS_RETURN_VOID(this, " self unwrap failed!");
 
     if (!sync && (argc > 0)) {
         // get the last arguments :: <callback>
@@ -53,25 +53,25 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
         napi_status tyst = napi_typeof(env, argv[index], &type);
         if ((tyst == napi_ok) && (type == napi_function)) {
             status = napi_create_reference(env, argv[index], 1, &callbackRef);
-            CHECK_STATUS_RETURN_VOID(this, "ref callback failed!");
+            CHECK_STATUS_RETURN_VOID(this, " ref callback failed!");
             argc = index;
-            LOG_DEBUG("async callback, no promise");
+            LOG_DEBUG(" async callback, no promise");
         } else {
-            LOG_DEBUG("no callback, async pormose");
+            LOG_DEBUG(" no callback, async pormose");
         }
     }
 
     if (parse) {
         parse(argc, argv);
     } else {
-        CHECK_ARGS_RETURN_VOID(this, argc == 0, "required no arguments!");
+        CHECK_ARGS_RETURN_VOID(this, argc == 0, " required no arguments!");
     }
 }
 
 napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt, const std::string& name,
-    NapiAsyncExecute execute, NapiAsyncComplete complete)
+                                NapiAsyncExecute execute, NapiAsyncComplete complete)
 {
-    LOG_DEBUG("name=%{public}s", name.c_str());
+    LOG_DEBUG("name = %{public}s", name.c_str());
     AsyncContext *aCtx = new AsyncContext;
     aCtx->env = env;
     aCtx->ctx = std::move(ctxt);
@@ -80,7 +80,7 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
     napi_value promise = nullptr;
     if (aCtx->ctx->callbackRef == nullptr) {
         napi_create_promise(env, &aCtx->deferred, &promise);
-        LOG_DEBUG("create deferred promise");
+        LOG_DEBUG("AsyncWork create deferred promise");
     } else {
         napi_get_undefined(env, &promise);
     }
@@ -90,17 +90,17 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
     napi_create_async_work(
         env, nullptr, resource,
         [](napi_env env, void* data) {
-            CHECK_RETURN_VOID(data != nullptr, "napi_async_execute_callback nullptr");
+            CHECK_RETURN_VOID(data != nullptr, "AsyncWork napi_async_execute_callback nullptr");
             auto actx = reinterpret_cast<AsyncContext*>(data);
-            LOG_DEBUG("napi_async_execute_callback ctxt->status=%{public}d", actx->ctx->status);
+            LOG_DEBUG("AsyncWork napi_async_execute_callback ctxt->status=%{public}d", actx->ctx->status);
             if (actx->execute && actx->ctx->status == napi_ok) {
                 actx->execute();
             }
         },
         [](napi_env env, napi_status status, void* data) {
-            CHECK_RETURN_VOID(data != nullptr, "napi_async_complete_callback nullptr");
+            CHECK_RETURN_VOID(data != nullptr, "AsyncWork napi_async_complete_callback nullptr");
             auto actx = reinterpret_cast<AsyncContext*>(data);
-            LOG_DEBUG("napi_async_complete_callback status=%{public}d, ctxt->status=%{public}d",
+            LOG_DEBUG("AsyncWork napi_async_complete_callback status = %{public}d, ctxt->status = %{public}d",
                 status, actx->ctx->status);
             if ((status != napi_ok) && (actx->ctx->status == napi_ok)) {
                 actx->ctx->status = status;
@@ -138,17 +138,17 @@ void NapiQueue::GenerateOutput(AsyncContext &ctx, napi_value output)
     }
     if (ctx.deferred != nullptr) {
         if (ctx.ctx->status == napi_ok) {
-            LOG_DEBUG("deferred promise resolved");
+            LOG_DEBUG("GenerateOutput deferred promise resolved");
             napi_resolve_deferred(ctx.env, ctx.deferred, result[RESULT_DATA]);
         } else {
-            LOG_DEBUG("deferred promise rejected");
+            LOG_DEBUG("GenerateOutput deferred promise rejected");
             napi_reject_deferred(ctx.env, ctx.deferred, result[RESULT_ERROR]);
         }
     } else {
         napi_value callback = nullptr;
         napi_get_reference_value(ctx.env, ctx.ctx->callbackRef, &callback);
         napi_value callbackResult = nullptr;
-        LOG_DEBUG("call callback function");
+        LOG_DEBUG("GenerateOutput call callback function");
         napi_call_function(ctx.env, nullptr, callback, RESULT_ALL, result, &callbackResult);
     }
 }
