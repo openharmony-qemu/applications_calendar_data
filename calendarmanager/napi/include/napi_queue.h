@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OHOS_NAPI_QUEUE_H
-#define OHOS_NAPI_QUEUE_H
+#ifndef CALENDAR_MANAGER_NAPI_QUEUE_H
+#define CALENDAR_MANAGER_NAPI_QUEUE_H
 #include <functional>
 #include <memory>
 #include <string>
@@ -31,12 +31,11 @@ using NapiAsyncComplete = std::function<void(napi_value&)>;
 
 struct ContextBase {
     virtual ~ContextBase();
-    void GetCbInfo(
-        napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser(), bool sync = false);
+    void GetCbInfo(napi_env env, napi_callback_info info,
+                   NapiCbInfoParser parse = NapiCbInfoParser(), bool sync = false);
 
     inline void GetCbInfoSync(napi_env env, napi_callback_info info, NapiCbInfoParser parse = NapiCbInfoParser())
     {
-        /* sync = true, means no callback, not AsyncWork. */
         GetCbInfo(env, info, parse, true);
     }
 
@@ -93,12 +92,12 @@ private:
 
 class NapiQueue {
 public:
-    static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt, const std::string& name,
-        NapiAsyncExecute execute = NapiAsyncExecute(), NapiAsyncComplete complete = NapiAsyncComplete());
+    static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
+                                const std::string& name, NapiAsyncExecute execute = NapiAsyncExecute(),
+                                NapiAsyncComplete complete = NapiAsyncComplete());
 
 private:
     enum {
-        /* AsyncCallback / Promise output result index  */
         RESULT_ERROR = 0,
         RESULT_DATA = 1,
         RESULT_ALL = 2
@@ -126,4 +125,4 @@ private:
     static void GenerateOutput(AsyncContext &ctx, napi_value output);
 };
 } // namespace Calendar::CalendarApi
-#endif // OHOS_NAPI_QUEUE_H
+#endif

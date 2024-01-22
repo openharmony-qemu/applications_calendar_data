@@ -304,21 +304,21 @@ napi_value CalendarNapi::GetConfig(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     auto status = napi_get_cb_info(env, info, &argc, nullptr, &thisVar, nullptr);
     if (status != napi_ok) {
-        LOG_ERROR("napi_get_cb_info failed %{public}d", status);
+        LOG_ERROR("GetConfig napi_get_cb_info failed %{public}d", status);
         return nullptr;
     }
     CalendarNapi *calendarNapi = nullptr;
     status = napi_unwrap(env, thisVar, (void **)&calendarNapi);
     if (status != napi_ok) {
-        LOG_ERROR("napi_unwrap failed %{public}d", status);
+        LOG_ERROR("GetConfig napi_unwrap failed %{public}d", status);
         return nullptr;
     }
     if (calendarNapi == nullptr) {
-        LOG_ERROR("reinterpret_cast failed");
+        LOG_ERROR("GetConfig reinterpret_cast failed");
         return nullptr;
     }
     auto nativeCalendar = calendarNapi->GetNative();
-    CHECK_RETURN(nativeCalendar != nullptr, "nativeCalendar nullptr", nullptr);
+    CHECK_RETURN(nativeCalendar != nullptr, "GetConfig -> get nativeCalendar nullptr", nullptr);
     auto config = nativeCalendar->GetConfig();
     LOG_DEBUG("config.enableReminder:%{public}d", config.enableReminder.value_or(-1));
     if (std::get_if<1>(&config.color)) {
@@ -368,21 +368,21 @@ napi_value CalendarNapi::GetAccount(napi_env env, napi_callback_info info)
     napi_value thisVar = nullptr;
     auto status = napi_get_cb_info(env, info, &argc, nullptr, &thisVar, nullptr);
     if (status != napi_ok) {
-        LOG_ERROR("napi_get_cb_info failed %{public}d", status);
+        LOG_ERROR("GetAccount napi_get_cb_info failed %{public}d", status);
         return nullptr;
     }
     CalendarNapi *calendarNapi = nullptr;
     status = napi_unwrap(env, thisVar, (void **)&calendarNapi);
     if (status != napi_ok) {
-        LOG_ERROR("napi_unwrap failed %{public}d", status);
+        LOG_ERROR("GetAccount napi_unwrap failed %{public}d", status);
         return nullptr;
     }
     if (calendarNapi == nullptr) {
-        LOG_ERROR("reinterpret_cast failed");
+        LOG_ERROR("GetAccount reinterpret_cast failed");
         return nullptr;
     }
     auto nativeCalendar = calendarNapi->GetNative();
-    CHECK_RETURN(nativeCalendar != nullptr, "nativeCalendar nullptr", nullptr);
+    CHECK_RETURN(nativeCalendar != nullptr, "GetAccount -> get nativeCalendar nullptr", nullptr);
     auto account = nativeCalendar->GetAccount();
     LOG_DEBUG("account.name:%{public}s", account.name.c_str());
     LOG_DEBUG("account.type:%{public}s", account.type.c_str());

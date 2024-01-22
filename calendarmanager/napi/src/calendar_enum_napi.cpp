@@ -153,4 +153,4 @@ napi_value CalendarEnumNapi::Init(napi_env env, napi_value exports)
     JsEnumStringInit(env, exports);
     return exports;
 }
-} // namespace Media
+} // namespace CalendarApi

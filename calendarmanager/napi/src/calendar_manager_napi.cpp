@@ -59,17 +59,17 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
     auto execute = [ctxt]() {
         auto nativteCalendar = Native::CalendarManager::GetInstance().CreateCalendar(ctxt->account);
         ctxt->status = (nativteCalendar != nullptr) ? napi_ok : napi_generic_failure;
-        CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
+        CHECK_STATUS_RETURN_VOID(ctxt, "CreateCalendar failed!");
         ctxt->calendar->SetNative(nativteCalendar);
         ctxt->id = nativteCalendar->GetId();
     };
     auto output = [env, ctxt](napi_value& result) {
         ctxt->status = napi_get_reference_value(env, ctxt->ref, &result);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output get ref value failed");
+        CHECK_STATUS_RETURN_VOID(ctxt, "CreateCalendar output get ref value failed");
         ctxt->status = NapiUtil::SetNamedProperty(env, "id", ctxt->id, result);
-        CHECK_STATUS_RETURN_VOID(ctxt, "SetNamedProperty id failed");
+        CHECK_STATUS_RETURN_VOID(ctxt, "CreateCalendar SetNamedProperty id failed");
         ctxt->status = napi_delete_reference(env, ctxt->ref);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output del ref failed");
+        CHECK_STATUS_RETURN_VOID(ctxt, "CreateCalendar output del ref failed");
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
@@ -151,11 +151,11 @@ napi_value CalendarManagerNapi::GetCalendar(napi_env env, napi_callback_info inf
     };
     auto output = [env, ctxt](napi_value& result) {
         ctxt->status = napi_get_reference_value(env, ctxt->ref, &result);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output get ref value failed");
+        CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar output get ref value failed");
         ctxt->status = NapiUtil::SetNamedProperty(env, "id", ctxt->id, result);
-        CHECK_STATUS_RETURN_VOID(ctxt, "SetNamedProperty id failed");
+        CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar SetNamedProperty id failed");
         ctxt->status = napi_delete_reference(env, ctxt->ref);
-        CHECK_STATUS_RETURN_VOID(ctxt, "output del ref failed");
+        CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar output del ref failed");
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }

@@ -51,6 +51,16 @@ Calendar::Calendar(CalendarAccount account, int id)
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
     m_reminderUrl = std::make_unique<Uri>(reminderUrl + bundleName_tokeId);
 }
+void Calendar::InsertReminders(int eventId, vector<int> reminders)
+{
+    for (const auto &reminder : reminders) {
+            DataShare::DataShareValuesBucket valuesBucket;
+            valuesBucket.Put("event_id", eventId);
+            valuesBucket.Put("minutes", reminder);
+            auto index = DataShareHelperManager::GetInstance().Insert(*(m_reminderUrl.get()), valuesBucket);
+            LOG_INFO("Insert reminder index %{public}d", index);
+        }
+}
 
 int Calendar::AddEvent(const Event& event)
 {
@@ -67,14 +77,8 @@ int Calendar::AddEvent(const Event& event)
         LOG_INFO("Insert attendee index %{public}d", index);
     }
     // insert reminder
-    if (event.reminderTime) {
-        for (const auto &reminder : event.reminderTime.value()) {
-            DataShare::DataShareValuesBucket valuesBucket;
-            valuesBucket.Put("event_id", eventId);
-            valuesBucket.Put("minutes", reminder);
-            auto index = DataShareHelperManager::GetInstance().Insert(*(m_reminderUrl.get()), valuesBucket);
-            LOG_INFO("Insert reminder index %{public}d", index);
-        }
+    if (event.reminderTime.has_value()) {
+        InsertReminders(eventId, event.reminderTime.value());
     }
 
     return eventId;
@@ -185,14 +189,8 @@ bool Calendar::UpdateEvent(const Event& event)
         auto ret = DataShareHelperManager::GetInstance().Delete(*(m_reminderUrl.get()), predicates);
         LOG_INFO("Delete reminder num %{public}d", ret);
     }
-    if (event.reminderTime) {
-        for (const auto &reminder : event.reminderTime.value()) {
-            DataShare::DataShareValuesBucket valuesBucket;
-            valuesBucket.Put("event_id", eventId);
-            valuesBucket.Put("minutes", reminder);
-            auto index = DataShareHelperManager::GetInstance().Insert(*(m_reminderUrl.get()), valuesBucket);
-            LOG_INFO("Insert reminder index %{public}d", index);
-        }
+    if (event.reminderTime.has_value()) {
+        InsertReminders(eventId, event.reminderTime.value());
     }
 
     return ret == 1;

@@ -117,10 +117,10 @@ napi_status GetValue(napi_env env, napi_value in, std::string& out)
         return status;
     }
     LOG_DEBUG("napi_value -> std::string get length %{public}d", (int)maxLen);
-    char* buf = new (std::nothrow) char[maxLen + STR_TAIL_LENGTH];
+    char* buf = new (std::nothrow) char[STR_TAIL_LENGTH + maxLen];
     if (buf != nullptr) {
         size_t len = 0;
-        status = napi_get_value_string_utf8(env, in, buf, maxLen + STR_TAIL_LENGTH, &len);
+        status = napi_get_value_string_utf8(env, in, buf, STR_TAIL_LENGTH + maxLen, &len);
         if (status == napi_ok) {
             buf[len] = 0;
             out = std::string(buf);
@@ -146,7 +146,7 @@ napi_status GetValue(napi_env env, napi_value in, std::vector<std::string>& out)
 
 napi_status SetValue(napi_env env, const std::vector<std::string>& in, napi_value& out)
 {
-    LOG_DEBUG("napi_value <- std::vector<std::string>");
+    LOG_DEBUG("std::vector<std::string> -> napi_value");
     napi_status status = napi_create_array_with_length(env, in.size(), &out);
     CHECK_RETURN(status == napi_ok, "create array failed!", status);
     int index = 0;
@@ -669,7 +669,7 @@ napi_status Unwrap(napi_env env, napi_value in, void** out, napi_value construct
 bool Equals(napi_env env, napi_value value, napi_ref copy)
 {
     if (copy == nullptr) {
-        return (value == nullptr);
+        return value == nullptr? true : false;
     }
 
     napi_value copyValue = nullptr;
@@ -679,5 +679,4 @@ bool Equals(napi_env env, napi_value value, napi_ref copy)
     napi_strict_equals(env, value, copyValue, &isEquals);
     return isEquals;
 }
-
-} // namespace OHOS::DistributedData
+} // namespace OHOS::CalendarApi::NapiUtil
