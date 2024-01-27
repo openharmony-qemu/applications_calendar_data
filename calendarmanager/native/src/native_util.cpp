@@ -32,8 +32,8 @@ void DumpEvent(const Event &event)
     if (event.location) {
         auto location = event.location.value();
         LOG_DEBUG("location.location  :%{public}s", location.location.value_or("[null]").c_str());
-        LOG_DEBUG("location.longitude :%{public}d", location.longitude.value_or(-1));
-        LOG_DEBUG("location.latitude  :%{public}d", location.latitude.value_or(-1));
+        LOG_DEBUG("location.longitude :%{public}lf", location.longitude.value_or(-1));
+        LOG_DEBUG("location.latitude  :%{public}lf", location.latitude.value_or(-1));
     } else {
         LOG_DEBUG("location [null]");
     }
@@ -45,7 +45,6 @@ void DumpEvent(const Event &event)
     } else {
         LOG_DEBUG("service [null]");
     }
-    LOG_DEBUG("title    :%{public}s", event.title.value_or("").c_str());
     LOG_DEBUG("startTime    :%{public}s", std::to_string(event.startTime).c_str());
     LOG_DEBUG("endTime      :%{public}s", std::to_string(event.endTime).c_str());
     LOG_DEBUG("isAllDay :%{public}d", event.isAllDay.value_or(0));
@@ -223,20 +222,20 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
     auto ret = GetValue(resultSet, "eventLocation", value);
     out.location = std::make_optional<string>(value);
     ret = GetValue(resultSet, "location_longitude", value);
-    int longitudeValue = -1;
+    double longitudeValue = -1;
     std::stringstream str2digit;
     str2digit << value;
     str2digit >> longitudeValue;
     if (longitudeValue != -1) {
-        out.longitude = std::make_optional<int>(longitudeValue);
+        out.longitude = std::make_optional<double>(longitudeValue);
     }
     ret = GetValue(resultSet, "location_latitude", value);
-    int latitudeValue = -1;
+    double latitudeValue = -1;
     str2digit.clear();
     str2digit << value;
     str2digit >> latitudeValue;
     if (latitudeValue != -1) {
-        out.latitude = std::make_optional<int>(latitudeValue);
+        out.latitude = std::make_optional<double>(latitudeValue);
     }
     
     if (ret != DataShare::E_OK) {
