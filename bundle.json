@@ -12,7 +12,9 @@
     "component": {
         "name": "calendar_data",
         "subsystem": "applications",
-        "syscap": [],
+        "syscap": [
+            "SystemCapability.Applications.CalendarData"
+        ],
         "features": [],
         "adapted_system_type": [
             "standard"
