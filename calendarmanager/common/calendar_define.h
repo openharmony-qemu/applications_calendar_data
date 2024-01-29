@@ -44,8 +44,8 @@ enum EventType {
 
 struct Location {
     optional<string> location;
-    optional<int> longitude;
-    optional<int> latitude;
+    optional<double> longitude;
+    optional<double> latitude;
 
     bool operator==(const Location& other) const
     {
