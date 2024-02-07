@@ -26,6 +26,7 @@ ohos_unittest("calendarmanager_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "./calendardata_blocklist.txt"
   }
   module_out_path = "applications/calendardata"
   sources = [

@@ -70,6 +70,12 @@ ohos_shared_library("calendarmanager") {
 }
 
 ohos_static_library("calendarmanager_static") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "./native/src/calendar_env.cpp",
     "./native/src/data_share_helper_manager.cpp",
