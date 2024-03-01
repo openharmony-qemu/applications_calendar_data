@@ -17,31 +17,19 @@
 #define NAPI_CALENDAR_LOG_H
 
 #ifndef LOG_TAG
-#define LOG_TAG
+#define LOG_TAG "CalendarApi"
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0x050a
 #endif
 
 #include "hilog/log.h"
 
 namespace OHOS::CalendarApi {
-static const OHOS::HiviewDFX::HiLogLabel CALENDAR_LABEL = { LOG_APP, 0x050a, "CalendarApi" };
-
-#define __FILENAME__ (__builtin_strrchr(__FILE__, '/') ? __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)
-
-#define LOG_DEBUG(fmt, ...) \
-    (void)OHOS::HiviewDFX::HiLog::Debug(CALENDAR_LABEL, \
-    "[%{public}s(%{public}s:%{public}d)]" fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define LOG_INFO(fmt, ...) \
-    (void)OHOS::HiviewDFX::HiLog::Info(CALENDAR_LABEL, \
-    "[%{public}s(%{public}s:%{public}d)]" fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define LOG_WARN(fmt, ...) \
-    (void)OHOS::HiviewDFX::HiLog::Warn(CALENDAR_LABEL, \
-    "[%{public}s(%{public}s:%{public}d)]" fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define LOG_ERROR(fmt, ...) \
-    (void)OHOS::HiviewDFX::HiLog::Error(CALENDAR_LABEL, \
-    "[%{public}s(%{public}s:%{public}d)]" fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define LOG_FATAL(fmt, ...) \
-    (void)OHOS::HiviewDFX::HiLog::Fatal(CALENDAR_LABEL, \
-    "[%{public}s(%{public}s:%{public}d)]" fmt, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define LOG_DEBUG(fmt, ...) HILOG_DEBUG(LOG_APP, fmt, ##__VA_ARGS__)
+#define LOG_INFO(fmt, ...) HILOG_INFO(LOG_APP, fmt, ##__VA_ARGS__)
+#define LOG_WARN(fmt, ...) HILOG_WARN(LOG_APP, fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...) HILOG_ERROR(LOG_APP, fmt, ##__VA_ARGS__)
+#define LOG_FATAL(fmt, ...) HILOG_FATAL(LOG_APP, fmt, ##__VA_ARGS__)
 } // namespace OHOS::CalendarApi
 #endif
 
