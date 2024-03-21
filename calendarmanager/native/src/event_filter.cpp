@@ -65,7 +65,7 @@ std::shared_ptr<EventFilter> FilterByTime(int64_t start, int64_t end)
     predicates->And();
     predicates->GreaterThanOrEqualTo("dtstart", start);
     predicates->EndWrap();
-    predicates->Or();
+    predicates->And();
     predicates->BeginWrap();
     predicates->LessThanOrEqualTo("dtend", end);
     predicates->And();
