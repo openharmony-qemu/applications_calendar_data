@@ -102,6 +102,16 @@ export default class DataShareExtAbility extends Extension {
     Log.info(TAG, '[insert] leave');
   }
 
+  doBachInsert(uri: string, value: relationalStore.ValuesBucket, callback: Function) {
+    Log.info(TAG, '[insert] enter');
+    try {
+      dataShareProxy.insertByProxy(uri, value, WRITE_CALENDAR, callback);
+    } catch (err) {
+      Log.error(TAG, `err=${err?.message}`);
+    }
+    Log.info(TAG, '[insert] leave');
+  }
+
   doDelete(uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     Log.info(TAG, '[delete] enter');
     try {

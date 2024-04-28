@@ -67,8 +67,18 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
     this.doInsert(rdbStore, uri, values, callback);
   }
 
+  batchInsertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket[],
+                             callback: Function) {
+    this.doBatchInsert(rdbStore, uri, values, callback);
+  }
+
   insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     this.doInsert(rdbStore, uri, values, callback);
+  }
+
+  batchInsertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket[],
+                            callback: Function) {
+    this.doBatchInsert(rdbStore, uri, values, callback);
   }
 
   deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
@@ -106,6 +116,31 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
   doInsert(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     const table = getTableByUri(uri);
     rdbStore.insert(table, values, (err, rowId) => {
+      Log.log(this.logTag, `insert ${table} before callback`);
+      callback(err, rowId);
+      if (hasNoError(err)) {
+        Log.log(this.logTag, `insert ${table} after callback: rowId = ` + rowId);
+        if (!this.isFromMigrate) {
+          notifyProviderChange(table, OPERATION_INSERT);
+          this.notifyAlertsChanges(INSERT_OPERATION_NAME, table, values);
+        }
+      } else {
+        Log.warn(this.logTag, `insert get err:${err?.code}, ${err?.message}`);
+      }
+    });
+  }
+
+  /**
+   * 批量插入的公共方法
+   *
+   * @param rdbStore rdb数据库
+   * @param uri DataShare的uri
+   * @param values 插入的数据
+   * @param callback 回调方法
+   */
+  doBatchInsert(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket[], callback: Function) {
+    const table = getTableByUri(uri);
+    rdbStore.batchInsert(table, values, (err, rowId) => {
       Log.log(this.logTag, `insert ${table} before callback`);
       callback(err, rowId);
       if (hasNoError(err)) {
@@ -215,7 +250,7 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
     })
   }
 
-  notifyAlertsChanges(operationName: string, table: string, values?: data_rdb.ValuesBucket) {
+  notifyAlertsChanges(operationName: string, table: string, values?: data_rdb.ValuesBucket | data_rdb.ValuesBucket[]) {
     let message = new AlertsMessage();
     message.setOperationName(operationName);
     message.setTableName(table);

@@ -34,6 +34,17 @@ public:
      * @return Returns the index of the inserted data record.
      */
     int Insert(const Uri &uri, const DataShare::DataShareValuesBucket &value);
+    
+     /**
+     * @brief batch insert data records into the database.
+     *
+     * @param uri Indicates the path of the data to operate.
+     * @param values  Indicates the data records to insert. If this parameter is null, a blank row will be inserted.
+     *
+     * @return Returns the index of the inserted data count.
+     */
+    int BatchInsert(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values);
+    
     /**
      * @brief Updates data records in the database.
      *

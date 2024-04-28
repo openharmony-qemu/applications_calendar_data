@@ -38,6 +38,15 @@ int DataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket &
     return dataShareHelper->Insert(const_cast<Uri &>(uri), value);
 }
 
+int DataShareHelperManager::BatchInsert(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values)
+{
+    if (!dataShareHelper) {
+        LOG_ERROR("dataShareHelper null");
+        return -1;
+    }
+    return dataShareHelper->BatchInsert(const_cast<Uri &>(uri), values);
+}
+
 int DataShareHelperManager::Update(const Uri &uri, const DataSharePredicates &predicates,
     const DataShareValuesBucket &value)
 {

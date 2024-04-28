@@ -136,7 +136,7 @@ function isNeedToUpdateAlerts(message: AlertsMessage): boolean {
   // 传入的参数为操作名称和具体操作细节
   let operationName: string = message.getOperationName();
   let tableName: string = message.getTableName();
-  let values: data_rdb.ValuesBucket = message.getValues();
+  let values: data_rdb.ValuesBucket | data_rdb.ValuesBucket[] = message.getValues();
 
   // 策略模式+工厂模式:根据operationName使用不同的判断逻辑生产不同实例,扩展不同场景只需要额外增加多的AlarmNeedUpdateJudger类即可
   let alarmNeedUpdateJudgerFactory = new AlertsUpdateJudgerFactory();
