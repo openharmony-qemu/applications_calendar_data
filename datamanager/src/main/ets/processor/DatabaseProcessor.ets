@@ -34,6 +34,17 @@ export interface DatabaseProcessor {
   insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function);
 
   /**
+   * 高权限批量插入接口
+   *
+   * @param rdbStore rdb数据库
+   * @param uri DataShare的uri
+   * @param values 插入的数据
+   * @param callback 回调方法
+   */
+  batchInsertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             values: data_rdb.ValuesBucket[], callback: Function): void;
+
+  /**
    * 低权限插入接口
    *
    * @param rdbStore rdb数据库
@@ -42,6 +53,17 @@ export interface DatabaseProcessor {
    * @param callback 回调方法
    */
   insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function);
+
+  /**
+   * 低权限批量插入接口
+   *
+   * @param rdbStore rdb数据库
+   * @param uri DataShare的uri
+   * @param values 插入的数据
+   * @param callback 回调方法
+   */
+  batchInsertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                            values: data_rdb.ValuesBucket[], callback: Function): void;
 
   /**
    * 高权限删除接口

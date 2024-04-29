@@ -25,7 +25,7 @@ import { ObserverMessage } from '@ohos/common/src/main/ets/observer/Observer';
 export class AlertsMessage extends ObserverMessage {
   private mOperationName: string;
   private mTableName: string;
-  private mValues: data_rdb.ValuesBucket;
+  private mValues: data_rdb.ValuesBucket | data_rdb.ValuesBucket[];
 
   constructor() {
     super();
@@ -42,7 +42,7 @@ export class AlertsMessage extends ObserverMessage {
     this.mTableName = mTableName;
   }
 
-  setValues(mValues: data_rdb.ValuesBucket) {
+  setValues(mValues: data_rdb.ValuesBucket | data_rdb.ValuesBucket[]) {
     this.mValues = mValues;
   }
 
@@ -54,7 +54,7 @@ export class AlertsMessage extends ObserverMessage {
     return this.mTableName;
   }
 
-  getValues(): data_rdb.ValuesBucket {
+  getValues(): data_rdb.ValuesBucket | data_rdb.ValuesBucket[] {
     return this.mValues;
   }
 }

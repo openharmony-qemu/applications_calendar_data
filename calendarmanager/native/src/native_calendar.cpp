@@ -71,11 +71,14 @@ int Calendar::AddEvent(const Event& event)
         return eventId;
     }
     // insert attendee
+    auto valueAttendees = std::vector<DataShare::DataShareValuesBucket>();
     for (const auto &attendee : event.attendees) {
         auto valueAttendee = BuildAttendeeValue(attendee, eventId);
-        auto index = DataShareHelperManager::GetInstance().Insert(*(m_attendeeUri.get()), valueAttendee);
-        LOG_INFO("Insert attendee index %{public}d", index);
+        valueAttendees.emplace_back(valueAttendee);
     }
+    auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
+    LOG_INFO("batchInsert attendees count %{public}d", count);
+    
     // insert reminder
     if (event.reminderTime.has_value()) {
         InsertReminders(eventId, event.reminderTime.value());
@@ -176,12 +179,14 @@ bool Calendar::UpdateEvent(const Event& event)
         auto ret = DataShareHelperManager::GetInstance().Delete(*(m_attendeeUri.get()), predicates);
         LOG_INFO("Delete attendee num %{public}d", ret);
     }
+    auto valueAttendees = std::vector<DataShare::DataShareValuesBucket>();
     for (const auto &attendee : event.attendees) {
         auto valueAttendee = BuildAttendeeValue(attendee, eventId);
-        auto index = DataShareHelperManager::GetInstance().Insert(*(m_attendeeUri.get()), valueAttendee);
-        LOG_INFO("Update attendee index %{public}d", index);
+        valueAttendees.emplace_back(valueAttendee);
     }
-
+    auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
+    LOG_INFO("batchInsert attendees count %{public}d", count);
+    
     {
         // delete reminder
         DataShare::DataSharePredicates predicates;

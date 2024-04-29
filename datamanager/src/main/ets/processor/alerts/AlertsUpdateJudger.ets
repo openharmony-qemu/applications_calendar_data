@@ -29,5 +29,5 @@ export default interface AlertsUpdateJudger {
    * @Param values 修改操作的更新值
    * @Return 是否需要更新 Alerts 表
    */
-  isNeedToUpdateAlerts(tableName: string, values: data_rdb.ValuesBucket): boolean;
+  isNeedToUpdateAlerts(tableName: string, values: data_rdb.ValuesBucket | data_rdb.ValuesBucket[]): boolean;
 }

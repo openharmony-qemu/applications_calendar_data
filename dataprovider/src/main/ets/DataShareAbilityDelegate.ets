@@ -63,6 +63,25 @@ class DataShareAbilityDelegate {
     }
   }
 
+  batchInsertByHighAuthority(uri: string, value: data_rdb.ValuesBucket[], callback: Function) {
+    if (!rdbStore) {
+      this.getDb();
+      Log.warn(TAG, `insert uri: ${uri} rdbStore is null`)
+      return;
+    }
+    Log.info(TAG, `insert uri: ${uri}`);
+    let table = getTableByUri(uri);
+    Log.info(TAG, `insert table: ${table}`);
+
+    const processor = factory.getDatabaseProcessor(table);
+    if (processor !== null && processor !== undefined) {
+      processor.batchInsertByHighAuthority(rdbStore, uri, value, callback);
+      return;
+    } else {
+      Log.error(TAG, 'insert with invalid processor');
+    }
+  }
+
   async getDb() {
     rdbStore = await CalendarDataHelper.getInstance().getRdbStore() as data_rdb.RdbStore;
   }
@@ -83,6 +102,26 @@ class DataShareAbilityDelegate {
       return;
     } else {
       Log.error(TAG, 'insertByLowAuthority with invalid processor');
+    }
+  }
+
+  batchInsertByLowAuthority(uri: string, value: data_rdb.ValuesBucket[], callback: Function) {
+
+    if (!rdbStore) {
+      Log.warn(TAG, `insert uri: ${uri} rdbStore is null`)
+      this.getDb();
+      return;
+    }
+    Log.info(TAG, `insert uri: ${uri}`);
+    let table = getTableByUri(uri);
+    Log.info(TAG, `insert table: ${table}`);
+
+    const processor = factory.getDatabaseProcessor(table);
+    if (processor !== null && processor !== undefined) {
+      processor.batchInsertByLowAuthority(rdbStore, uri, value, callback);
+      return;
+    } else {
+      Log.error(TAG, 'insert with invalid processor');
     }
   }
 

@@ -27,6 +27,7 @@ import delegate from './DataShareAbilityDelegate'
 import data_rdb from '@ohos.data.relationalStore';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
 import { BusinessError } from '@ohos.base';
+import { ValuesBucket } from '@ohos.data.ValuesBucket';
 
 const TAG = "DataShareAbilityAuthenticateProxy";
 
@@ -60,7 +61,7 @@ class DataShareAbilityAuthenticateProxy {
     return isDatabaseInitComplete;
   }
 
-  async insertByProxy(uri: string, value: data_rdb.ValuesBucket, permission: Permissions, callback: Function) {
+  async insertByProxy(uri: string, value: data_rdb.ValuesBucket | data_rdb.ValuesBucket[], permission: Permissions, callback: Function) {
     let insertDataParameter = new InsertDataParameter(value);
     insertDataParameter.operationName = INSERT_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, insertDataParameter, PERMISSIONS_WRITE_WHOLE_CALENDAR,
@@ -204,10 +205,14 @@ async function dataOperateSelectorByHighAuthority(uri: string, dataParameter: Da
   let callback = dataParameter.callback;
   switch (operationName) {
     case INSERT_BY_PROXY_OPERATION_NAME:
-      delegate.insertByHighAuthority(uri, value, callback);
+      if (value instanceof Array) {
+        delegate.batchInsertByHighAuthority(uri, value as ValuesBucket[], callback);
+        break;
+      }
+      delegate.insertByHighAuthority(uri, value as ValuesBucket, callback);
       break;
     case UPDATE_BY_PROXY_OPERATION_NAME:
-      delegate.updateByHighAuthority(uri, value, predicates, callback);
+      delegate.updateByHighAuthority(uri, value as ValuesBucket, predicates, callback);
       break;
     case DELETE_BY_PROXY_OPERATION_NAME:
       delegate.deleteByHighAuthority(uri, predicates, callback);
@@ -234,10 +239,14 @@ async function dataOperateSelectorByLowAuthority(uri: string, dataParameter: Dat
   let callback = dataParameter.callback;
   switch (operationName) {
     case INSERT_BY_PROXY_OPERATION_NAME:
-      delegate.insertByLowAuthority(uri, value, callback);
+      if (value instanceof Array) {
+        delegate.batchInsertByLowAuthority(uri, value as ValuesBucket[], callback);
+        break;
+      }
+      delegate.insertByLowAuthority(uri, value as ValuesBucket, callback);
       break;
     case UPDATE_BY_PROXY_OPERATION_NAME:
-      delegate.updateByLowAuthority(uri, value, predicates, callback);
+      delegate.updateByLowAuthority(uri, value as ValuesBucket, predicates, callback);
       break;
     case DELETE_BY_PROXY_OPERATION_NAME:
       delegate.deleteByLowAuthority(uri, predicates, callback);
@@ -258,7 +267,7 @@ async function dataOperateSelectorByLowAuthority(uri: string, dataParameter: Dat
 abstract class DataParameter {
   operationName: string = '';
 
-  value: data_rdb.ValuesBucket = {} as data_rdb.ValuesBucket;
+  value: data_rdb.ValuesBucket | data_rdb.ValuesBucket[] = {};
 
   columns: Array<string> = [];
 
@@ -274,7 +283,7 @@ abstract class DataParameter {
  * @since 2022-12-28
  */
 class InsertDataParameter extends DataParameter {
-  constructor(value: data_rdb.ValuesBucket) {
+  constructor(value: data_rdb.ValuesBucket | data_rdb.ValuesBucket[]) {
     super();
     this.value = value;
   }
