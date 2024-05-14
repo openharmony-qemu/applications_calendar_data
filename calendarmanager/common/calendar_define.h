@@ -41,7 +41,6 @@ enum EventType {
     Important = 1
 };
 
-
 struct Location {
     optional<string> location;
     optional<double> longitude;
@@ -56,9 +55,10 @@ struct Location {
 struct Attendee {
     string name;
     string email;
+    optional<AttendeeRole> role;
     bool operator==(const Attendee& other) const
     {
-        return name == other.name && email == other.email;
+        return name == other.name && email == other.email && role == role;
     }
 };
 
@@ -69,10 +69,18 @@ enum RecurrenceType {
     DAILY = 3,
 };
 
+enum AttendeeRole  {
+    ORGANIZER = 'organizer',
+    PARTICIPANT = 'participant'
+};
+
 struct RecurrenceRule {
     RecurrenceType recurrenceFrequency;
     optional<bool> enable;
-    optional<int> expire;
+    optional<int64_t> expire;
+    optional<int64_t> count;
+    optional<int64_t> interval;
+    optional<vector<int64_t>> excludedDates;
 };
 
 struct EventService {
@@ -95,6 +103,7 @@ struct Event {
     optional<RecurrenceRule> recurrenceRule;
     optional<string> description;
     optional<EventService> service;
+    optional<string> identifier;
 };
 
 
