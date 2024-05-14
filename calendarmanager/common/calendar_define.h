@@ -52,13 +52,18 @@ struct Location {
     }
 };
 
+enum AttendeeRole  {
+    ORGANIZER = "organizer",
+    PARTICIPANT = "participant",
+};
+
 struct Attendee {
     string name;
     string email;
     optional<AttendeeRole> role;
     bool operator==(const Attendee& other) const
     {
-        return name == other.name && email == other.email && role == role;
+        return name == other.name && email == other.email && role.value_or(nullptr) == other.role.value_or(nullptr);
     }
 };
 
@@ -67,11 +72,6 @@ enum RecurrenceType {
     MONTHLY = 1,
     WEEKLY = 2,
     DAILY = 3,
-};
-
-enum AttendeeRole  {
-    ORGANIZER = 'organizer',
-    PARTICIPANT = 'participant'
 };
 
 struct RecurrenceRule {

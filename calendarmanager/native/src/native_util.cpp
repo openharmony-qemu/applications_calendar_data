@@ -122,7 +122,7 @@ std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
     for (int i = 0; i <= timeLen; i++) {
         out << GetUTCTime(timeValues[i]);
         if (i != 0 && i == timeLen) {
-             out << ","
+            out << ","
         }
     }
 
@@ -163,15 +163,15 @@ void BuildEventRecurrenceRule(DataShare::DataShareValuesBucket &valuesBucket, co
         rrule += GetUTCTime(event.recurrenceRule.value().expire);
     }
     if (event.recurrenceRule.value().count.has_value()) {
-         rrule += ";COUNT=" + std::to_string(event.recurrenceRule.value().count);
+        rrule += ";COUNT=" + std::to_string(event.recurrenceRule.value().count);
     }
     if (event.recurrenceRule.value().interval.has_value()) {
-         rrule += ";INTERVAL=" + std::to_string(event.recurrenceRule.value().interval);
+        rrule += ";INTERVAL=" + std::to_string(event.recurrenceRule.value().interval);
     }
     valuesBucket.Put("rrule", rrule);
     if (event.recurrenceRule.value().excludedDates.has_value()) {
-         const auto excludedDateStr = GetUTCTimes(event.recurrenceRule.value().excludedDates);
-         valuesBucket.Put("exdate", excludedDateStr)
+        const auto excludedDateStr = GetUTCTimes(event.recurrenceRule.value().excludedDates);
+        valuesBucket.Put("exdate", excludedDateStr)
     }
 }
 
@@ -362,21 +362,29 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
     return std::make_optional<EventService>(out);
 }
 
-std::time_t timeToUTC(std::string strtime)
+std::time_t timeToUTC(std::string strTime)
 {
-    int baseyear = 1900;
-    std::tm *expireTime;
-    expireTime->tm_year = std::stoi(strtime.substr(0, 4)) - baseyear;
-    expireTime->tm_mon = (std::stoi(strtime.substr(5, 2)) + 11) % 12;
-    expireTime->tm_mday = std::stoi(strtime.substr(8, 2));
+    int baseYear = 1900;
+    int offset = 2;
+    int yearOffset = 4;
+    int monBase = 5;
+    int dayBase = 8;
+    int hourBase = 11;
+    int minBase = 14;
+    int secBase = 17;
+    int monCount = 12;
+    int monRectify = 11;
     
-    if (strtime.find("T") != std::string::npos)
-    {
-        expireTime->tm_hour = std::stoi(strtime.substr(11, 2));
-        expireTime->tm_min = std::stoi(strtime.substr(14, 2));
-        expireTime->tm_sec = std::stoi(strtime.substr(17, 2));
-
-    }else{
+    std::tm *expireTime;
+    expireTime->tm_year = std::stoi(strtime.substr(0, yearOffset)) - baseYear;
+    expireTime->tm_mon = (std::stoi(strtime.substr(monBase, offset)) + monRectify) % monCount;
+    expireTime->tm_mday = std::stoi(strtime.substr(dayBase, offset));
+    
+    if (strTime.find("T") != std::string::npos) {
+        expireTime->tm_hour = std::stoi(strtime.substr(hourBase, offset));
+        expireTime->tm_min = std::stoi(strtime.substr(minBase, offset));
+        expireTime->tm_sec = std::stoi(strtime.substr(secBase,  offse));
+    } else {
         expireTime->tm_hour = 0;
         expireTime->tm_min = 0;
         expireTime->tm_sec = 0;
@@ -396,8 +404,7 @@ std::optional<vector<int64_t>> ResultSetToExcludedDates(DataShareResultSetPtr &r
     std::Stringsplit(value, ",", strListExDate);
 
     std::vector<int64_t> excludedDates;
-    for (auto str : strListExDate)
-    {
+    for (auto str : strListExDate) {
         auto exDate = timeToUTC(str);
         excludedDates.emplace_back(exDate);
     }
@@ -416,32 +423,30 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
     std::map<std::string, std::string> ruleMap;
     std::vector<string> strListRule;
     std::Stringsplit(currentTime, ";", strListRule);
-
-     for (auto str : strListRule)
-    {
+    for (auto str : strListRule) {
         std::vector keyAndValue;
         std::Stringsplit(str, "=", keyAndValue);
         ruleMap.insert(std::pair<std::string, std::string>(keyAndValue[0], keyAndValue[1]));
     }
 
-     map<std::string,std::string>::iterator iter;
-    for(iter = ruleMap.begin(); iter!= ruleMap.end(); iter++){
-        if(iter->first == "FREQ") {
+    map<std::string, std::string>::iterator iter;
+    for(iter = ruleMap.begin(); iter!= ruleMap.end(); iter++) {
+        if (iter->first == "FREQ") {
             out.value().recurrenceFrequency = iter->second;
             continue;
         }
 
-        if(iter->first == "COUNT") {
+        if (iter->first == "COUNT") {
             out.value().count = iter->second - '0';
             continue;
         }
 
-        if(iter->first == "INTERVAL") {
+        if (iter->first == "INTERVAL") {
             out.value().interval = iter->second - '0';
             continue;
         }
 
-        if(iter->first == "UNTIL") {
+        if (iter->first == "UNTIL") {
             out.value().expire = timeToUTC(iter->second)
             continue;
         }
@@ -486,13 +491,13 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
         event.service = ResultSetToEventService(resultSet);
     }
     if (columns.count("rrule")) {
-       resultSet.recurrenceRule = ResultSetToRecurrenceRule(resultSet);
+        resultSet.recurrenceRule = ResultSetToRecurrenceRule(resultSet);
     }
     if (columns.count("exdate") && event.recurrenceRule.has_value()) {
-      event.recurrenceRule.value().excludedDates = ResultSetToExcludedDates(resultSet);
+        event.recurrenceRule.value().excludedDates = ResultSetToExcludedDates(resultSet);
     }
     if (columns.count("identifier")) {
-       GetValueOptional(resultSet, "identifier", event.identifier);
+        GetValueOptional(resultSet, "identifier", event.identifier);
     }
 }
 
@@ -540,7 +545,6 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         GetValue(resultSet, "attendeeRelationship", attendeeRelationship);
         if (attendeeRelationship == organizer) {
             attendee.role = ORGANIZER;
-                
         } else {
             attendee.role = PARTICIPANT;
         }
