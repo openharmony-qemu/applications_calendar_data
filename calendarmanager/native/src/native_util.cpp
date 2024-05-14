@@ -46,7 +46,7 @@ void DumpEvent(const Event &event)
     } else {
         LOG_DEBUG("service [null]");
     }
-     if (event.recurrenceRule.has_value()) {
+    if (event.recurrenceRule.has_value()) {
         int64_t errCode = 1101;
         LOG_DEBUG("recurrenceRule.recurrenceFrequency: %{public}d", event.recurrenceRule.value().recurrenceFrequency);
         LOG_DEBUG("recurrenceRule.expire: %{public}lld", event.recurrenceRule.value().expire.value_or(errCode));
@@ -213,7 +213,7 @@ DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, in
     LOG_DEBUG("attendeeEmail %{public}s", attendee.email.c_str());
     int organizer = 2;
     if (attendee.role == ORGANIZER) {
-        valuesBucket.Put("attendeeRelationship", organizer); 
+        valuesBucket.Put("attendeeRelationship", organizer);
     } else if (attendee.role == PARTICIPANT) {
         valuesBucket.Put("attendeeRelationship", 1);
     }
@@ -430,7 +430,7 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
     }
 
     map<std::string, std::string>::iterator iter;
-    for(iter = ruleMap.begin(); iter!= ruleMap.end(); iter++) {
+    for(iter = ruleMap.begin(); iter != ruleMap.end(); iter++) {
         if (iter->first == "FREQ") {
             out.value().recurrenceFrequency = iter->second;
             continue;
