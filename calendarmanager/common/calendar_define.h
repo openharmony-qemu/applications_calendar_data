@@ -53,6 +53,7 @@ struct Location {
 };
 
 enum AttendeeRole  {
+    NONE = 0,
     PARTICIPANT = 1,
     ORGANIZER = 2,
 };

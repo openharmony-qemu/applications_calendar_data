@@ -450,8 +450,7 @@ napi_status GetValue(napi_env env, napi_value in, Attendee& out)
     } else {
         out.role = PARTICIPANT;
     }
-
-    return napi_ok;  
+    return napi_ok;
 }
 
 napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
@@ -468,12 +467,11 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     status = SetValue(env, in.email, emailValue);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     napi_set_named_property(env, out, "email", emailValue);
-    std::string value;
     if (!in.role.has_value()) {
         return napi_ok;
     }
-
-    if (in.role == 1) {
+    std::string value;
+    if (in.role == PARTICIPANT) {
         value = "organizer";
     } else {
         value = "participant";
