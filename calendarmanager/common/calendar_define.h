@@ -53,8 +53,8 @@ struct Location {
 };
 
 enum AttendeeRole  {
-    ORGANIZER = "organizer",
-    PARTICIPANT = "participant",
+    PARTICIPANT = 1,
+    ORGANIZER = 2,
 };
 
 struct Attendee {
@@ -63,7 +63,7 @@ struct Attendee {
     optional<AttendeeRole> role;
     bool operator==(const Attendee& other) const
     {
-        return name == other.name && email == other.email && role.value_or(nullptr) == other.role.value_or(nullptr);
+        return name == other.name && email == other.email && role.value_or(0) == other.role.value_or(0);
     }
 };
 

@@ -211,12 +211,7 @@ DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, in
     LOG_DEBUG("attendeeName %{public}s", attendee.name.c_str());
     valuesBucket.Put("attendeeEmail", attendee.email);
     LOG_DEBUG("attendeeEmail %{public}s", attendee.email.c_str());
-    int organizer = 2;
-    if (attendee.role == ORGANIZER) {
-        valuesBucket.Put("attendeeRelationship", organizer);
-    } else if (attendee.role == PARTICIPANT) {
-        valuesBucket.Put("attendeeRelationship", 1);
-    }
+    valuesBucket.Put("attendeeRelationship", attendee.role);
     return valuesBucket;
 }
 
@@ -430,19 +425,19 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
     }
 
     map<std::string, std::string>::iterator iter;
-    for(iter = ruleMap.begin(); iter != ruleMap.end(); iter++) {
+    for (iter = ruleMap.begin(); iter != ruleMap.end(); iter++) {
         if (iter->first == "FREQ") {
             out.value().recurrenceFrequency = iter->second;
             continue;
         }
 
         if (iter->first == "COUNT") {
-            out.value().count = iter->second - '0';
+            out.value().count = std::stoi(iter->second);
             continue;
         }
 
         if (iter->first == "INTERVAL") {
-            out.value().interval = iter->second - '0';
+            out.value().interval = std::stoi(iter->second);
             continue;
         }
 
@@ -526,7 +521,6 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
 int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet)
 {
     int rowCount = 0;
-    int organizer = 2;
     resultSet->GetRowCount(rowCount);
     LOG_INFO("GetRowCount is %{public}d", rowCount);
     if (rowCount <= 0) {
@@ -541,13 +535,7 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         Attendee attendee;
         GetValue(resultSet, "attendeeName", attendee.name);
         GetValue(resultSet, "attendeeEmail", attendee.email);
-        int attendeeRelationship = 0;
-        GetValue(resultSet, "attendeeRelationship", attendeeRelationship);
-        if (attendeeRelationship == organizer) {
-            attendee.role = ORGANIZER;
-        } else {
-            attendee.role = PARTICIPANT;
-        }
+        GetValue(resultSet, "attendeeRelationship",  attendee.role);
         attendees.emplace_back(attendee);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
