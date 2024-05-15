@@ -476,7 +476,10 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     } else {
         value = "participant";
     }
-    napi_set_named_property(env, out, "role", value);
+    napi_value roleValue = nullptr;
+    status = SetValue(env, value, roleValue);
+    CHECK_RETURN((status == napi_ok), "invalid role", status);
+    napi_set_named_property(env, out, "role", roleValue);
     return napi_ok;
 }
 

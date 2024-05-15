@@ -64,7 +64,7 @@ struct Attendee {
     optional<AttendeeRole> role;
     bool operator==(const Attendee& other) const
     {
-        return name == other.name && email == other.email && role.value_or(0) == other.role.value_or(0);
+        return name == other.name && email == other.email && role.value_or(NONE) == other.role.value_or(NONE);
     }
 };
 
