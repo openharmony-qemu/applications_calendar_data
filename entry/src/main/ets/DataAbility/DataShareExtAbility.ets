@@ -59,6 +59,20 @@ export default class DataShareExtAbility extends Extension {
     }
   }
 
+ batchInsert(uri: string, value: relationalStore.ValuesBucket[], callback: Function) {
+    if (isDatabaseInitComplete) {
+      // If the database has been created, perform data operations directly
+      this.doBachInsert(uri, value, callback);
+    } else {
+      // If the table is not created, try to create the database
+      this.tryInitDatabase();
+      // Recursively check whether the database is built, per 100ms
+      setTimeout(() => {
+        this.batchInsert(uri, value, callback);
+      }, 100);
+    }
+  }
+  
   update(uri: string, predicates: dataSharePredicates.DataSharePredicates, value: relationalStore.ValuesBucket, callback: Function) {
     if (isDatabaseInitComplete) {
       this.doUpdate(uri, predicates, value, callback);
