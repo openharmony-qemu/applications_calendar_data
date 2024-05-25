@@ -96,9 +96,9 @@ void BuildEventService(DataShare::DataShareValuesBucket &valuesBucket, const Eve
 
 std::string GetUTCTime(const int64_t &timeValue)
 {
-    int monOffset = 1;
-    int strLen = 2;
-    int baseYear = 1900;
+    const int monOffset = 1;
+    const int strLen = 2;
+    const int baseYear = 1900;
     time_t expire = timeValue / 1000;
     std::tm* expireTime = std::gmtime(&expire);
     std::stringstream out;
@@ -117,7 +117,7 @@ std::string GetUTCTime(const int64_t &timeValue)
 std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
 {
     std::stringstream out;
-    int timeLen = timeValues.size() - 1;
+    auto timeLen = timeValues.size() - 1;
     if (timeLen == 0) {
         out << GetUTCTime(timeValues[0]);
         return out.str();
@@ -139,16 +139,20 @@ std::string GetRule(const Event &event)
     std::tm* time = std::localtime(&now);
     std::string rrule;
     int monOffset = 1;
-    const std::vector<string> v = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
-    if (event.recurrenceRule.value().recurrenceFrequency == DAILY) {
+    const std::vector<string> weekList = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
+    const int weekSize = 7;
+    RecurrenceType recurrenceFrequency = event.recurrenceRule.value().recurrenceFrequency;
+    if (recurrenceFrequency == DAILY) {
         rrule = "FREQ=DAILY;WKST=SU";
-    } else if (event.recurrenceRule.value().recurrenceFrequency == WEEKLY) {
+    } else if (recurrenceFrequency == WEEKLY) {
         rrule = "FREQ=WEEKLY;WKST=SU;BYDAY=";
-        rrule += v[time->tm_wday];
-    } else if (event.recurrenceRule.value().recurrenceFrequency == MONTHLY) {
+        if (time->tm_wday < weekSize) {
+            rrule += weekList[time->tm_wday];
+        }  
+    } else if (recurrenceFrequency == MONTHLY) {
         rrule = "FREQ=MONTHLY;WKST=SU;BYMONTHDAY=";
         rrule += std::to_string(time->tm_mday);
-    } else if (event.recurrenceRule.value().recurrenceFrequency == YEARLY) {
+    } else if (recurrenceFrequency == YEARLY) {
         rrule = "FREQ=YEARLY;WKST=SU;BYMONTHDAY=";
         rrule += std::to_string(time->tm_mday);
         rrule += ";BYMONTH=";
@@ -374,18 +378,18 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
     return std::make_optional<EventService>(out);
 }
 
-std::time_t TimeToUTC(std::string strTime)
+std::time_t TimeToUTC(const std::string &strTime)
 {
-    int baseYear = 1900;
-    int offset = 2;
-    int yearOffset = 4;
-    int monBase = 4;
-    int dayBase = 6;
-    int hourBase = 9;
-    int minBase = 11;
-    int secBase = 13;
-    int monCount = 12;
-    int monRectify = 11;
+    const int baseYear = 1900;
+    const int offset = 2;
+    const int yearOffset = 4;
+    const int monBase = 4;
+    const int dayBase = 6;
+    const int hourBase = 9;
+    const int minBase = 11;
+    const int secBase = 13;
+    const int monCount = 12;
+    const int monRectify = 11;
     
     std::tm expireTime = { 0 };
     expireTime.tm_year = std::stoi(strTime.substr(0, yearOffset)) - baseYear;
@@ -432,7 +436,7 @@ std::optional<vector<int64_t>> ResultSetToExcludedDates(DataShareResultSetPtr &r
     std::vector<string> strListExDate = SplitString(value, ",");
 
     std::vector<int64_t> excludedDates;
-    for (auto str : strListExDate) {
+    for (const auto &str : strListExDate) {
         auto exDate = TimeToUTC(str);
         excludedDates.emplace_back(exDate);
     }
@@ -440,7 +444,7 @@ std::optional<vector<int64_t>> ResultSetToExcludedDates(DataShareResultSetPtr &r
     return std::make_optional<vector<int64_t>>(excludedDates);
 }
 
-void ConvertRecurrenceFrequency(const std::string frequency, RecurrenceRule &rule)
+void ConvertRecurrenceFrequency(const std::string &frequency, RecurrenceRule &rule)
 {
     if (frequency == "YEARLY") {
         rule.recurrenceFrequency = YEARLY;
@@ -469,7 +473,7 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
     }
     std::map<std::string, std::string> ruleMap;
     std::vector<std::string> strListRule = SplitString(value, ";");
-    for (auto str : strListRule) {
+    for (const auto &str : strListRule) {
         std::vector<std::string> keyAndValue = SplitString(str, "=");
         ruleMap.insert(std::pair<std::string, std::string>(keyAndValue[0], keyAndValue[1]));
     }
