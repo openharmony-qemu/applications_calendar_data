@@ -123,7 +123,7 @@ std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
         return out.str();
     }
     
-    for (int i = 0; i <= timeLen; i++) {
+    for (unsigned int i = 0; i <= timeLen; i++) {
         out << GetUTCTime(timeValues[i]);
         if (i != timeLen) {
             out << ",";
@@ -148,7 +148,7 @@ std::string GetRule(const Event &event)
         rrule = "FREQ=WEEKLY;WKST=SU;BYDAY=";
         if (time->tm_wday < weekSize) {
             rrule += weekList[time->tm_wday];
-        }  
+        }
     } else if (recurrenceFrequency == MONTHLY) {
         rrule = "FREQ=MONTHLY;WKST=SU;BYMONTHDAY=";
         rrule += std::to_string(time->tm_mday);
