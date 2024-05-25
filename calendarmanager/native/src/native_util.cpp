@@ -118,10 +118,10 @@ std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
 {
     std::stringstream out;
     int timeLen = timeValues.size() - 1;
-    if(timeLen == 0) {
-		out << GetUTCTime(timeValues[0]);
-		return out.str();
-	}
+    if (timeLen == 0) {
+        out << GetUTCTime(timeValues[0]);
+        return out.str();
+    }
     
     for (int i = 0; i <= timeLen; i++) {
         out << GetUTCTime(timeValues[i]);
@@ -166,7 +166,6 @@ std::string GetRule(const Event &event)
     }
 
     return rrule;
-
 }
 
 void BuildEventRecurrenceRule(DataShare::DataShareValuesBucket &valuesBucket, const Event &event)
@@ -177,7 +176,7 @@ void BuildEventRecurrenceRule(DataShare::DataShareValuesBucket &valuesBucket, co
     
     std::string rrule = GetRule(event);
     if (!rrule.empty()) {
-         valuesBucket.Put("rrule", rrule);
+        valuesBucket.Put("rrule", rrule);
     }
    
     if (event.recurrenceRule.value().excludedDates.has_value()) {
@@ -442,7 +441,7 @@ std::optional<vector<int64_t>> ResultSetToExcludedDates(DataShareResultSetPtr &r
 }
 
 void ConvertRecurrenceFrequency(const std::string frequency, RecurrenceRule &rule)
-{ 
+{
     if (frequency == "YEARLY") {
         rule.recurrenceFrequency = YEARLY;
         return;
