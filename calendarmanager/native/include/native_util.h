@@ -46,6 +46,11 @@ namespace OHOS::CalendarApi::Native {
 
     bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue);
 
+    std::string GetUTCTime(const int64_t &timeValue);
+    std::string GetUTCTimes(const std::vector<int64_t> &timeValues);
+    std::string GetRule(const Event &event);
+    std::time_t TimeToUTC(std::string strTime);
+
     template<typename T>
     int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, T& out)
     {

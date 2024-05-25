@@ -39,6 +39,7 @@ ohos_unittest("calendarmanager_test") {
     "unittest/src/event_reminder_test.cpp",
     "unittest/src/event_service_test.cpp",
     "unittest/src/get_self_permissions.cpp",
+    "unittest/src/event_recurrence_rule_test.cpp",
     "unittest/src/test_main.cpp",
   ]
   deps = [

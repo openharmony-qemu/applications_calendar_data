@@ -263,8 +263,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
         setField(eventKey, queryField, resultSetField);
     } else {
         resultSetField = {"type", "title", "startTime", "endTime", "isAllDay", "description",
-        "timeZone", "location", "service", "attendee", "reminderTime",
-        "rrule", "identifier"};
+        "timeZone", "location", "service", "attendee", "reminderTime"};
     }
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),
