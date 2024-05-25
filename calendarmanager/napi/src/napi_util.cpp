@@ -408,6 +408,7 @@ napi_status SetValue(napi_env env, const Location& in, napi_value& out)
 /* napi_value <-> RecurrenceRule */
 napi_status GetValue(napi_env env, napi_value in, RecurrenceRule& out)
 {
+    LOG_DEBUG("napi_value -> RecurrenceRule ");
     int recurrence = -1;
     NapiUtil::GetNamedProperty(env, in, "recurrenceFrequency", recurrence);
     out.recurrenceFrequency = static_cast<RecurrenceType>(recurrence);
@@ -415,13 +416,12 @@ napi_status GetValue(napi_env env, napi_value in, RecurrenceRule& out)
     NapiUtil::GetNamedPropertyOptional(env, in, "count", out.count);
     NapiUtil::GetNamedPropertyOptional(env, in, "interval", out.interval);
     NapiUtil::GetNamedPropertyOptional(env, in, "excludedDates", out.excludedDates);
-    LOG_DEBUG("napi_value -> RecurrenceRule ");
-
     return napi_ok;
 }
 
 napi_status SetValue(napi_env env, const RecurrenceRule& in, napi_value& out)
 {
+    LOG_DEBUG("RecurrenceRule -> napi_value ");
     napi_status status = napi_create_object(env, &out);
     CHECK_RETURN((status == napi_ok), "invalid recurrenceRule", status);
     status = SetNamedProperty(env, "recurrenceFrequency", in.recurrenceFrequency, out);
