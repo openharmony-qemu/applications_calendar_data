@@ -395,6 +395,7 @@ std::time_t TimeToUTC(const std::string &strTime)
     const int monCount = 12;
     const int monRectify = 11;
     
+    std::time_t utcTime;
     std::tm expireTime = { 0 };
     try {
         expireTime.tm_year = std::stoi(strTime.substr(0, yearOffset)) - baseYear;
@@ -409,15 +410,15 @@ std::time_t TimeToUTC(const std::string &strTime)
             expireTime.tm_min = 0;
             expireTime.tm_sec = 0;
         }
+        utcTime = mktime(&expireTime) * 1000; //精确到微秒
     } catch (const std::out_of_range &e) {
         LOG_ERROR("out_of_range");
-        return 0;
+        utcTime = 0;
     } catch (const std::invalid_argument &e) {
         LOG_ERROR("invalid_argument");
-        return 0;
+        utcTime = 0;
     }
    
-    std::time_t utcTime = mktime(&expireTime) * 1000; //精确到微秒
     return utcTime;
 }
 
@@ -517,7 +518,7 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
             LOG_ERROR("out_of_range");
         } catch (const std::invalid_argument &e) {
             LOG_ERROR("invalid_argument");
-        }   
+        }
     }
 
     out.excludedDates = ResultSetToExcludedDates(resultSet);
