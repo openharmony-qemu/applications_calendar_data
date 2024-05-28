@@ -382,6 +382,19 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
     return std::make_optional<EventService>(out);
 }
 
+int StringToInt(const std::string &str)
+{
+    try {
+        return std::stoi(str); 
+    } catch (const std::invalid_argument &e) {
+        LOG_ERROR("string to int fail, invalid_argument");
+    } catch (const std::out_of_range &e) {
+        LOG_ERROR("string to int fail, out_of_range");
+    }
+
+    return 0;
+}
+
 std::time_t TimeToUTC(const std::string &strTime)
 {
     const int baseYear = 1900;
@@ -396,29 +409,21 @@ std::time_t TimeToUTC(const std::string &strTime)
     const int monRectify = 11;
     const int micSecond = 1000;
     
-    std::time_t utcTime;
     std::tm expireTime = { 0 };
-    try {
-        expireTime.tm_year = std::stoi(strTime.substr(0, yearOffset)) - baseYear;
-        expireTime.tm_mon = (std::stoi(strTime.substr(monBase, offset)) + monRectify) % monCount;
-        expireTime.tm_mday = std::stoi(strTime.substr(dayBase, offset));
-        if (strTime.find("T") != std::string::npos) {
-            expireTime.tm_hour = std::stoi(strTime.substr(hourBase, offset));
-            expireTime.tm_min = std::stoi(strTime.substr(minBase, offset));
-            expireTime.tm_sec = std::stoi(strTime.substr(secBase,  offset));
-        } else {
-            expireTime.tm_hour = 0;
-            expireTime.tm_min = 0;
-            expireTime.tm_sec = 0;
-        }
-        utcTime = mktime(&expireTime) * micSecond; //精确到微秒
-    } catch (std::out_of_range const &e) {
-        LOG_ERROR("out_of_range");
-        utcTime = 0;
-    } catch (std::invalid_argument const &e) {
-        LOG_ERROR("invalid_argument");
-        utcTime = 0;
+    expireTime.tm_year = StringToInt(strTime.substr(0, yearOffset)) - baseYear;
+    expireTime.tm_mon = (StringToInt(strTime.substr(monBase, offset)) + monRectify) % monCount;
+    expireTime.tm_mday = StringToInt(strTime.substr(dayBase, offset));
+    if (strTime.find("T") != std::string::npos) {
+        expireTime.tm_hour = StringToInt(strTime.substr(hourBase, offset));
+        expireTime.tm_min = StringToInt(strTime.substr(minBase, offset));
+        expireTime.tm_sec = StringToInt(strTime.substr(secBase,  offset));
+    } else {
+        expireTime.tm_hour = 0;
+        expireTime.tm_min = 0;
+        expireTime.tm_sec = 0;
     }
+
+    std::time_t utcTime = mktime(&expireTime) * micSecond; //精确到微秒
    
     return utcTime;
 }
@@ -501,24 +506,19 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
             ConvertRecurrenceFrequency(iter->second, out);
             continue;
         }
-        try {
-            if (iter->first == "COUNT") {
-                out.count = std::make_optional<int64_t>(std::stoi(iter->second));
-                continue;
-            }
 
-            if (iter->first == "INTERVAL") {
-                out.interval = std::make_optional<int64_t>(std::stoi(iter->second));
-                continue;
-            }
+        if (iter->first == "COUNT") {
+            out.count = std::make_optional<int64_t>(std::stoi(iter->second));
+            continue;
+        }
 
-            if (iter->first == "UNTIL") {
-                out.expire = std::make_optional<int64_t>(TimeToUTC(iter->second));
-            }
-        } catch (std::out_of_range const &e) {
-            LOG_ERROR("out_of_range");
-        } catch (std::invalid_argument const &e) {
-            LOG_ERROR("invalid_argument");
+        if (iter->first == "INTERVAL") {
+            out.interval = std::make_optional<int64_t>(std::stoi(iter->second));
+            continue;
+        }
+
+        if (iter->first == "UNTIL") {
+            out.expire = std::make_optional<int64_t>(TimeToUTC(iter->second));
         }
     }
 
