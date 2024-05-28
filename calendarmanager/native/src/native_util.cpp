@@ -397,10 +397,10 @@ std::time_t TimeToUTC(const std::string &strTime)
     
     std::tm expireTime = { 0 };
     try {
-         expireTime.tm_year = std::stoi(strTime.substr(0, yearOffset)) - baseYear;
-         expireTime.tm_mon = (std::stoi(strTime.substr(monBase, offset)) + monRectify) % monCount;
-         expireTime.tm_mday = std::stoi(strTime.substr(dayBase, offset));
-         if (strTime.find("T") != std::string::npos) {
+        expireTime.tm_year = std::stoi(strTime.substr(0, yearOffset)) - baseYear;
+        expireTime.tm_mon = (std::stoi(strTime.substr(monBase, offset)) + monRectify) % monCount;
+        expireTime.tm_mday = std::stoi(strTime.substr(dayBase, offset));
+        if (strTime.find("T") != std::string::npos) {
             expireTime.tm_hour = std::stoi(strTime.substr(hourBase, offset));
             expireTime.tm_min = std::stoi(strTime.substr(minBase, offset));
             expireTime.tm_sec = std::stoi(strTime.substr(secBase,  offset));
@@ -409,11 +409,11 @@ std::time_t TimeToUTC(const std::string &strTime)
             expireTime.tm_min = 0;
             expireTime.tm_sec = 0;
         }
-    } catch (const std::invalid_argument& e) {
-        LOG_ERROR("invalid_argument");
-        return 0;
-    } catch (const std::out_of_range& e) {
+    } catch (const std::out_of_range &e) {
         LOG_ERROR("out_of_range");
+        return 0;
+    } catch (const std::invalid_argument &e) {
+        LOG_ERROR("invalid_argument");
         return 0;
     }
    
@@ -490,7 +490,7 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
         std::vector<std::string> keyAndValue = SplitString(str, "=");
         if (keyAndValue.size() == strListSize) {
             ruleMap.insert(std::pair<std::string, std::string>(keyAndValue[0], keyAndValue[1]));
-        } 
+        }
     }
 
     std::map<std::string, std::string>::iterator iter;
@@ -500,7 +500,7 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
             continue;
         }
         try {
-             if (iter->first == "COUNT") {
+            if (iter->first == "COUNT") {
                 out.count = std::make_optional<int64_t>(std::stoi(iter->second));
                 continue;
             }
@@ -513,10 +513,10 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
             if (iter->first == "UNTIL") {
                 out.expire = std::make_optional<int64_t>(TimeToUTC(iter->second));
             }
-        } catch (const std::invalid_argument& e) {
-            LOG_ERROR("invalid_argument");
-        } catch (const std::out_of_range& e) {
+        } catch (const std::out_of_range &e) {
             LOG_ERROR("out_of_range");
+        } catch (const std::invalid_argument &e) {
+            LOG_ERROR("invalid_argument");
         }   
     }
 
