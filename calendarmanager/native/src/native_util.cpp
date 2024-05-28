@@ -394,6 +394,7 @@ std::time_t TimeToUTC(const std::string &strTime)
     const int secBase = 13;
     const int monCount = 12;
     const int monRectify = 11;
+    const int micSecond = 1000;
     
     std::time_t utcTime;
     std::tm expireTime = { 0 };
@@ -410,11 +411,11 @@ std::time_t TimeToUTC(const std::string &strTime)
             expireTime.tm_min = 0;
             expireTime.tm_sec = 0;
         }
-        utcTime = mktime(&expireTime) * 1000; //精确到微秒
-    } catch (const std::out_of_range &e) {
+        utcTime = mktime(&expireTime) * micSecond; //精确到微秒
+    } catch (std::out_of_range const &e) {
         LOG_ERROR("out_of_range");
         utcTime = 0;
-    } catch (const std::invalid_argument &e) {
+    } catch (std::invalid_argument const &e) {
         LOG_ERROR("invalid_argument");
         utcTime = 0;
     }
@@ -514,9 +515,9 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
             if (iter->first == "UNTIL") {
                 out.expire = std::make_optional<int64_t>(TimeToUTC(iter->second));
             }
-        } catch (const std::out_of_range &e) {
+        } catch (std::out_of_range const &e) {
             LOG_ERROR("out_of_range");
-        } catch (const std::invalid_argument &e) {
+        } catch (std::invalid_argument const &e) {
             LOG_ERROR("invalid_argument");
         }
     }
