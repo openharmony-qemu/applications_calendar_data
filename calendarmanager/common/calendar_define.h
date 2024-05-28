@@ -52,7 +52,7 @@ struct Location {
     }
 };
 
-enum AttendeeRole  {
+enum RoleType  {
     NONE = 0,
     PARTICIPANT = 1,
     ORGANIZER = 2,

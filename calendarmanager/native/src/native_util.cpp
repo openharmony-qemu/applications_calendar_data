@@ -117,7 +117,7 @@ std::string GetUTCTime(const int64_t &timeValue)
 std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
 {
     std::stringstream out;
-    auto timeLen = timeValues.size() - 1;
+    const auto timeLen = timeValues.size() - 1;
     if (timeLen == 0) {
         out << GetUTCTime(timeValues[0]);
         return out.str();
@@ -135,12 +135,12 @@ std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
 
 std::string GetRule(const Event &event)
 {
-    time_t now = event.startTime / 1000;
-    std::tm* time = std::localtime(&now);
-    std::string rrule;
-    int monOffset = 1;
+    const time_t now = event.startTime / 1000;
+    const std::tm* time = std::localtime(&now);
+    const int monOffset = 1;
     const std::vector<string> weekList = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
     const int weekSize = 7;
+    std::string rrule;
     RecurrenceType recurrenceFrequency = event.recurrenceRule.value().recurrenceFrequency;
     if (recurrenceFrequency == DAILY) {
         rrule = "FREQ=DAILY;WKST=SU";
@@ -592,9 +592,9 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         GetValue(resultSet, "attendeeEmail", attendee.email);
         GetValue(resultSet, "attendeeRelationship",  roleValue);
         if (roleValue == PARTICIPANT) {
-            attendee.role = std::make_optional<AttendeeRole>(PARTICIPANT);
+            attendee.role = std::make_optional<RoleType>(PARTICIPANT);
         } else if (roleValue == ORGANIZER) {
-            attendee.role = std::make_optional<AttendeeRole>(ORGANIZER);
+            attendee.role = std::make_optional<RoleType>(ORGANIZER);
         }
         
         attendees.emplace_back(attendee);
