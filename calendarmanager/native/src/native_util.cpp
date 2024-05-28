@@ -384,15 +384,7 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
 
 int StringToInt(const std::string &str)
 {
-    try {
-        return std::stoi(str); 
-    } catch (const std::invalid_argument &e) {
-        LOG_ERROR("string to int fail, invalid_argument");
-    } catch (const std::out_of_range &e) {
-        LOG_ERROR("string to int fail, out_of_range");
-    }
-
-    return 0;
+    return std::atoi(str.c_str());
 }
 
 std::time_t TimeToUTC(const std::string &strTime)
