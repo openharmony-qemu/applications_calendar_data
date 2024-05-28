@@ -117,6 +117,10 @@ std::string GetUTCTime(const int64_t &timeValue)
 std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
 {
     std::stringstream out;
+    if (timeValues.size() == 0) {
+        return out.str();
+    }
+    
     const auto timeLen = timeValues.size() - 1;
     if (timeLen == 0) {
         out << GetUTCTime(timeValues[0]);
@@ -392,24 +396,32 @@ std::time_t TimeToUTC(const std::string &strTime)
     const int monRectify = 11;
     
     std::tm expireTime = { 0 };
-    expireTime.tm_year = std::stoi(strTime.substr(0, yearOffset)) - baseYear;
-    expireTime.tm_mon = (std::stoi(strTime.substr(monBase, offset)) + monRectify) % monCount;
-    expireTime.tm_mday = std::stoi(strTime.substr(dayBase, offset));
-    
-    if (strTime.find("T") != std::string::npos) {
-        expireTime.tm_hour = std::stoi(strTime.substr(hourBase, offset));
-        expireTime.tm_min = std::stoi(strTime.substr(minBase, offset));
-        expireTime.tm_sec = std::stoi(strTime.substr(secBase,  offset));
-    } else {
-        expireTime.tm_hour = 0;
-        expireTime.tm_min = 0;
-        expireTime.tm_sec = 0;
+    try {
+         expireTime.tm_year = std::stoi(strTime.substr(0, yearOffset)) - baseYear;
+         expireTime.tm_mon = (std::stoi(strTime.substr(monBase, offset)) + monRectify) % monCount;
+         expireTime.tm_mday = std::stoi(strTime.substr(dayBase, offset));
+         if (strTime.find("T") != std::string::npos) {
+            expireTime.tm_hour = std::stoi(strTime.substr(hourBase, offset));
+            expireTime.tm_min = std::stoi(strTime.substr(minBase, offset));
+            expireTime.tm_sec = std::stoi(strTime.substr(secBase,  offset));
+        } else {
+            expireTime.tm_hour = 0;
+            expireTime.tm_min = 0;
+            expireTime.tm_sec = 0;
+        }
+    } catch (const std::invalid_argument& e) {
+        LOG_ERROR("invalid_argument");
+        return 0;
+    } catch (const std::out_of_range& e) {
+        LOG_ERROR("out_of_range");
+        return 0;
     }
+   
     std::time_t utcTime = mktime(&expireTime) * 1000; //精确到微秒
     return utcTime;
 }
 
-std::vector<std::string> SplitString(const std::string str, const std::string flag)
+std::vector<std::string> SplitString(const std::string &str, const std::string &flag)
 {
     std::vector<std::string> result;
     std::string::size_type pos1 = 0;
@@ -465,6 +477,7 @@ void ConvertRecurrenceFrequency(const std::string &frequency, RecurrenceRule &ru
 
 std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &resultSet)
 {
+    const int strListSize = 2;
     RecurrenceRule out;
     std::string value;
     auto ret = GetValue(resultSet, "rrule", value);
@@ -475,7 +488,9 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
     std::vector<std::string> strListRule = SplitString(value, ";");
     for (const auto &str : strListRule) {
         std::vector<std::string> keyAndValue = SplitString(str, "=");
-        ruleMap.insert(std::pair<std::string, std::string>(keyAndValue[0], keyAndValue[1]));
+        if (keyAndValue.size() == strListSize) {
+            ruleMap.insert(std::pair<std::string, std::string>(keyAndValue[0], keyAndValue[1]));
+        } 
     }
 
     std::map<std::string, std::string>::iterator iter;
@@ -484,20 +499,25 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
             ConvertRecurrenceFrequency(iter->second, out);
             continue;
         }
+        try {
+             if (iter->first == "COUNT") {
+                out.count = std::make_optional<int64_t>(std::stoi(iter->second));
+                continue;
+            }
 
-        if (iter->first == "COUNT") {
-            out.count = std::make_optional<int64_t>(std::stoi(iter->second));
-            continue;
-        }
+            if (iter->first == "INTERVAL") {
+                out.interval = std::make_optional<int64_t>(std::stoi(iter->second));
+                continue;
+            }
 
-        if (iter->first == "INTERVAL") {
-            out.interval = std::make_optional<int64_t>(std::stoi(iter->second));
-            continue;
-        }
-
-        if (iter->first == "UNTIL") {
-            out.expire = std::make_optional<int64_t>(TimeToUTC(iter->second));
-        }
+            if (iter->first == "UNTIL") {
+                out.expire = std::make_optional<int64_t>(TimeToUTC(iter->second));
+            }
+        } catch (const std::invalid_argument& e) {
+            LOG_ERROR("invalid_argument");
+        } catch (const std::out_of_range& e) {
+            LOG_ERROR("out_of_range");
+        }   
     }
 
     out.excludedDates = ResultSetToExcludedDates(resultSet);
