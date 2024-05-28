@@ -61,7 +61,7 @@ enum RoleType  {
 struct Attendee {
     string name;
     string email;
-    optional<AttendeeRole> role;
+    optional<RoleType> role;
     bool operator==(const Attendee& other) const
     {
         return name == other.name && email == other.email && role.value_or(NONE) == other.role.value_or(NONE);
