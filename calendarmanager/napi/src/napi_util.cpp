@@ -409,12 +409,27 @@ napi_status SetValue(napi_env env, const Location& in, napi_value& out)
 napi_status GetValue(napi_env env, napi_value in, RecurrenceRule& out)
 {
     LOG_DEBUG("napi_value -> RecurrenceRule ");
+    int recurrence = -1;
+    NapiUtil::GetNamedProperty(env, in, "recurrenceFrequency", recurrence);
+    out.recurrenceFrequency = static_cast<RecurrenceType>(recurrence);
+    NapiUtil::GetNamedPropertyOptional(env, in, "expire", out.expire);
+    NapiUtil::GetNamedPropertyOptional(env, in, "count", out.count);
+    NapiUtil::GetNamedPropertyOptional(env, in, "interval", out.interval);
+    NapiUtil::GetNamedPropertyOptional(env, in, "excludedDates", out.excludedDates);
     return napi_ok;
 }
 
 napi_status SetValue(napi_env env, const RecurrenceRule& in, napi_value& out)
 {
     LOG_DEBUG("RecurrenceRule -> napi_value ");
+    napi_status status = napi_create_object(env, &out);
+    CHECK_RETURN((status == napi_ok), "invalid recurrenceRule", status);
+    status = SetNamedProperty(env, "recurrenceFrequency", in.recurrenceFrequency, out);
+    CHECK_RETURN((status == napi_ok), "invalid recurrenceFrequency", status);
+    SetNamedPropertyOptional(env, "expire", in.expire, out);
+    SetNamedPropertyOptional(env, "count", in.count, out);
+    SetNamedPropertyOptional(env, "interval", in.interval, out);
+    SetNamedPropertyOptional(env, "excludedDates", in.excludedDates, out);
     return napi_ok;
 }
 
@@ -424,6 +439,17 @@ napi_status GetValue(napi_env env, napi_value in, Attendee& out)
     LOG_DEBUG("Attendee -> napi_value ");
     NapiUtil::GetNamedProperty(env, in, "name", out.name);
     NapiUtil::GetNamedProperty(env, in, "email", out.email);
+    optional<std::string> value;
+    NapiUtil::GetNamedPropertyOptional(env, in, "role", value);
+    if (!value.has_value()) {
+        return napi_ok;
+    }
+   
+    if (value == "organizer") {
+        out.role = ORGANIZER;
+    } else {
+        out.role = PARTICIPANT;
+    }
     return napi_ok;
 }
 
@@ -441,6 +467,19 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     status = SetValue(env, in.email, emailValue);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     napi_set_named_property(env, out, "email", emailValue);
+    if (!in.role.has_value()) {
+        return napi_ok;
+    }
+    std::string value;
+    if (in.role == PARTICIPANT) {
+        value = "organizer";
+    } else {
+        value = "participant";
+    }
+    napi_value roleValue = nullptr;
+    status = SetValue(env, value, roleValue);
+    CHECK_RETURN((status == napi_ok), "invalid role", status);
+    napi_set_named_property(env, out, "role", roleValue);
     return napi_ok;
 }
 
@@ -541,6 +580,7 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
     GetNamedPropertyOptional(env, in, "recurrenceRule", out.recurrenceRule);
     GetNamedPropertyOptional(env, in, "description", out.description);
     GetNamedPropertyOptional(env, in, "service", out.service);
+    GetNamedPropertyOptional(env, in, "identifier", out.identifier);
     return status;
 }
 
@@ -574,6 +614,8 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
     SetNamedPropertyOptional(env, "reminderTime", in.reminderTime, out);
     SetNamedPropertyOptional(env, "description", in.description, out);
     SetNamedPropertyOptional(env, "service", in.service, out);
+    SetNamedPropertyOptional(env, "recurrenceRule", in.recurrenceRule, out);
+    SetNamedPropertyOptional(env, "identifier", in.identifier, out);
     return status;
 }
 

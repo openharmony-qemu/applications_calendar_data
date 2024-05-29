@@ -65,6 +65,11 @@ static const std::vector<struct JsEnumString> g_serviceType = {
     { "SPORTS_EXERCISE", "SportsExercise" },
 };
 
+static const std::vector<struct JsEnumString> g_attendeeRole = {
+    { "ORGANIZER", "organizer" },
+    { "PARTICIPANT", "participant" },
+};
+
 static const std::map<std::string_view, const std::vector<struct JsEnumInt>&> g_intEnumClassMap = {
     { "EventType", g_eventType},
     { "RecurrenceFrequency", g_recurrenceFrequency},
@@ -73,6 +78,7 @@ static const std::map<std::string_view, const std::vector<struct JsEnumInt>&> g_
 static const std::map<std::string_view, const std::vector<struct JsEnumString>&> g_stringEnumClassMap = {
     { "CalendarType", g_calendarTypeKey },
     { "ServiceType", g_serviceType },
+    { "AttendeeRole", g_attendeeRole },
 };
 
 napi_value CalendarEnumNapi::JsEnumIntInit(napi_env env, napi_value exports)

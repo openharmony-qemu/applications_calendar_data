@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include <sstream>
+#include <iomanip>
 #include "calendar_log.h"
 #include "native_util.h"
 
@@ -44,6 +45,9 @@ void DumpEvent(const Event &event)
         LOG_DEBUG("service.uri  :%{public}s", service.uri.c_str());
     } else {
         LOG_DEBUG("service [null]");
+    }
+    if (event.recurrenceRule.has_value()) {
+        LOG_DEBUG("recurrenceRule.recurrenceFrequency: %{public}d", event.recurrenceRule.value().recurrenceFrequency);
     }
     LOG_DEBUG("startTime    :%{public}s", std::to_string(event.startTime).c_str());
     LOG_DEBUG("endTime      :%{public}s", std::to_string(event.endTime).c_str());
@@ -90,6 +94,105 @@ void BuildEventService(DataShare::DataShareValuesBucket &valuesBucket, const Eve
     valuesBucket.Put("service_cp_bz_uri", service.uri);
 }
 
+std::string GetUTCTime(const int64_t &timeValue)
+{
+    const int monOffset = 1;
+    const int strLen = 2;
+    const int baseYear = 1900;
+    time_t expire = timeValue / 1000;
+    std::tm* expireTime = std::gmtime(&expire);
+    std::stringstream out;
+    out << (expireTime->tm_year + baseYear);
+    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_mon + monOffset;
+    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_mday;
+    out << "T";
+    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_hour;
+    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_min;
+    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_sec;
+    out << "Z";
+
+    return out.str();
+}
+
+std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
+{
+    std::stringstream out;
+    if (timeValues.size() == 0) {
+        return out.str();
+    }
+    
+    const auto timeLen = timeValues.size() - 1;
+    if (timeLen == 0) {
+        out << GetUTCTime(timeValues[0]);
+        return out.str();
+    }
+    
+    for (unsigned int i = 0; i <= timeLen; i++) {
+        out << GetUTCTime(timeValues[i]);
+        if (i != timeLen) {
+            out << ",";
+        }
+    }
+
+    return out.str();
+}
+
+std::string GetRule(const Event &event)
+{
+    const time_t now = event.startTime / 1000;
+    const std::tm* time = std::localtime(&now);
+    const int monOffset = 1;
+    const std::vector<string> weekList = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
+    const int weekSize = 7;
+    std::string rrule;
+    RecurrenceType recurrenceFrequency = event.recurrenceRule.value().recurrenceFrequency;
+    if (recurrenceFrequency == DAILY) {
+        rrule = "FREQ=DAILY;WKST=SU";
+    } else if (recurrenceFrequency == WEEKLY) {
+        rrule = "FREQ=WEEKLY;WKST=SU;BYDAY=";
+        if (time->tm_wday < weekSize) {
+            rrule += weekList[time->tm_wday];
+        }
+    } else if (recurrenceFrequency == MONTHLY) {
+        rrule = "FREQ=MONTHLY;WKST=SU;BYMONTHDAY=";
+        rrule += std::to_string(time->tm_mday);
+    } else if (recurrenceFrequency == YEARLY) {
+        rrule = "FREQ=YEARLY;WKST=SU;BYMONTHDAY=";
+        rrule += std::to_string(time->tm_mday);
+        rrule += ";BYMONTH=";
+        rrule += std::to_string(time->tm_mon + monOffset);
+    }
+    if (event.recurrenceRule.value().expire.has_value() && event.recurrenceRule.value().expire.value() > 0) {
+        rrule += ";UNTIL=";
+        rrule += GetUTCTime(event.recurrenceRule.value().expire.value());
+    }
+    if (event.recurrenceRule.value().count.has_value() && event.recurrenceRule.value().count.value() > 0) {
+        rrule += ";COUNT=" + std::to_string(event.recurrenceRule.value().count.value());
+    }
+    if (event.recurrenceRule.value().interval.has_value() && event.recurrenceRule.value().interval.value() > 0) {
+        rrule += ";INTERVAL=" + std::to_string(event.recurrenceRule.value().interval.value());
+    }
+
+    return rrule;
+}
+
+void BuildEventRecurrenceRule(DataShare::DataShareValuesBucket &valuesBucket, const Event &event)
+{
+    if (!event.recurrenceRule.has_value()) {
+        return;
+    }
+    
+    std::string rrule = GetRule(event);
+    if (!rrule.empty()) {
+        valuesBucket.Put("rrule", rrule);
+    }
+   
+    if (event.recurrenceRule.value().excludedDates.has_value()) {
+        const auto excludedDateStr = GetUTCTimes(event.recurrenceRule.value().excludedDates.value());
+        valuesBucket.Put("exdate", excludedDateStr);
+    }
+}
+
 DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId)
 {
     DataShare::DataShareValuesBucket valuesBucket;
@@ -103,6 +206,7 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
 
     BuildEventLocation(valuesBucket, event);
     BuildEventService(valuesBucket, event);
+    BuildEventRecurrenceRule(valuesBucket, event);
     
     LOG_DEBUG("description %{public}s", event.description.value_or("").c_str());
 
@@ -115,6 +219,9 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     if (event.isAllDay.has_value()) {
         valuesBucket.Put("allDay", event.isAllDay.value());
     }
+    if (event.identifier.has_value()) {
+        valuesBucket.Put("identifier", event.identifier.value());
+    }
     return valuesBucket;
 }
 
@@ -126,6 +233,10 @@ DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, in
     LOG_DEBUG("attendeeName %{public}s", attendee.name.c_str());
     valuesBucket.Put("attendeeEmail", attendee.email);
     LOG_DEBUG("attendeeEmail %{public}s", attendee.email.c_str());
+    if (attendee.role.has_value()) {
+        valuesBucket.Put("attendeeRelationship", attendee.role.value());
+    }
+    
     return valuesBucket;
 }
 
@@ -271,6 +382,143 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
     return std::make_optional<EventService>(out);
 }
 
+int StringToInt(const std::string &str)
+{
+    return std::atoi(str.c_str());
+}
+
+std::time_t TimeToUTC(const std::string &strTime)
+{
+    const int baseYear = 1900;
+    const int offset = 2;
+    const int yearOffset = 4;
+    const int monBase = 4;
+    const int dayBase = 6;
+    const int hourBase = 9;
+    const int minBase = 11;
+    const int secBase = 13;
+    const int monCount = 12;
+    const int monRectify = 11;
+    const int micSecond = 1000;
+    
+    std::tm expireTime = { 0 };
+    expireTime.tm_year = StringToInt(strTime.substr(0, yearOffset)) - baseYear;
+    expireTime.tm_mon = (StringToInt(strTime.substr(monBase, offset)) + monRectify) % monCount;
+    expireTime.tm_mday = StringToInt(strTime.substr(dayBase, offset));
+    if (strTime.find("T") != std::string::npos) {
+        expireTime.tm_hour = StringToInt(strTime.substr(hourBase, offset));
+        expireTime.tm_min = StringToInt(strTime.substr(minBase, offset));
+        expireTime.tm_sec = StringToInt(strTime.substr(secBase,  offset));
+    } else {
+        expireTime.tm_hour = 0;
+        expireTime.tm_min = 0;
+        expireTime.tm_sec = 0;
+    }
+
+    std::time_t utcTime = mktime(&expireTime) * micSecond; //精确到微秒
+   
+    return utcTime;
+}
+
+std::vector<std::string> SplitString(const std::string &str, const std::string &flag)
+{
+    std::vector<std::string> result;
+    std::string::size_type pos1 = 0;
+    std::string::size_type pos2 = str.find(flag);
+    while (std::string::npos != pos2) {
+        result.push_back(str.substr(pos1, pos2 - pos1));
+        pos1 = pos2 + flag.size();
+        pos2 = str.find(flag, pos1);
+    }
+    if (pos1 != str.length()) {
+        result.push_back(str.substr(pos1));
+    }
+
+    return result;
+}
+
+std::optional<vector<int64_t>> ResultSetToExcludedDates(DataShareResultSetPtr &resultSet)
+{
+    std::string value;
+    auto ret = GetValue(resultSet, "exdate", value);
+    if (ret != DataShare::E_OK) {
+        return std::nullopt;
+    }
+    std::vector<string> strListExDate = SplitString(value, ",");
+
+    std::vector<int64_t> excludedDates;
+    for (const auto &str : strListExDate) {
+        auto exDate = TimeToUTC(str);
+        excludedDates.emplace_back(exDate);
+    }
+
+    return std::make_optional<vector<int64_t>>(excludedDates);
+}
+
+void ConvertRecurrenceFrequency(const std::string &frequency, RecurrenceRule &rule)
+{
+    if (frequency == "YEARLY") {
+        rule.recurrenceFrequency = YEARLY;
+        return;
+    }
+    if (frequency == "MONTHLY") {
+        rule.recurrenceFrequency = MONTHLY;
+        return;
+    }
+    if (frequency == "WEEKLY") {
+        rule.recurrenceFrequency = WEEKLY;
+        return;
+    }
+    if (frequency == "DAILY") {
+        rule.recurrenceFrequency = DAILY;
+    }
+}
+
+std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &resultSet)
+{
+    const int strListSize = 2;
+    RecurrenceRule out;
+    std::string value;
+    auto ret = GetValue(resultSet, "rrule", value);
+    if (ret != DataShare::E_OK) {
+        return std::nullopt;
+    }
+    std::map<std::string, std::string> ruleMap;
+    std::vector<std::string> strListRule = SplitString(value, ";");
+    for (const auto &str : strListRule) {
+        std::vector<std::string> keyAndValue = SplitString(str, "=");
+        if (keyAndValue.size() == strListSize) {
+            ruleMap.insert(std::pair<std::string, std::string>(keyAndValue[0], keyAndValue[1]));
+        }
+    }
+
+    std::map<std::string, std::string>::iterator iter;
+    for (iter = ruleMap.begin(); iter != ruleMap.end(); iter++) {
+        if (iter->first == "FREQ") {
+            ConvertRecurrenceFrequency(iter->second, out);
+            continue;
+        }
+
+        if (iter->first == "COUNT") {
+            out.count = std::make_optional<int64_t>(std::stoi(iter->second));
+            continue;
+        }
+
+        if (iter->first == "INTERVAL") {
+            out.interval = std::make_optional<int64_t>(std::stoi(iter->second));
+            continue;
+        }
+
+        if (iter->first == "UNTIL") {
+            out.expire = std::make_optional<int64_t>(TimeToUTC(iter->second));
+        }
+    }
+
+    out.excludedDates = ResultSetToExcludedDates(resultSet);
+
+    return std::make_optional<RecurrenceRule>(out);
+}
+
 void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std::set<std::string>& columns)
 {
     GetValueOptional(resultSet, "_id", event.id);
@@ -306,6 +554,13 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
     }
     if (columns.count("service")) {
         event.service = ResultSetToEventService(resultSet);
+    }
+    if (columns.count("recurrenceRule")) {
+        event.recurrenceRule = ResultSetToRecurrenceRule(resultSet);
+    }
+   
+    if (columns.count("identifier")) {
+        GetValueOptional(resultSet, "identifier", event.identifier);
     }
 }
 
@@ -344,10 +599,18 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         LOG_ERROR("Failed GoToFirstRow %{public}d", err);
         return -1;
     }
+    int roleValue = 0;
     do {
         Attendee attendee;
         GetValue(resultSet, "attendeeName", attendee.name);
         GetValue(resultSet, "attendeeEmail", attendee.email);
+        GetValue(resultSet, "attendeeRelationship",  roleValue);
+        if (roleValue == PARTICIPANT) {
+            attendee.role = std::make_optional<RoleType>(PARTICIPANT);
+        } else if (roleValue == ORGANIZER) {
+            attendee.role = std::make_optional<RoleType>(ORGANIZER);
+        }
+        
         attendees.emplace_back(attendee);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
@@ -432,7 +695,7 @@ void setField(const std::vector<string>& eventKey, std::vector<string>& queryFie
                                                   { "endTime", "dtend" },
                                                   { "isAllDay", "allDay" },
                                                   { "timeZone", "eventTimezone" },
-                                                  { "description", "description" } };
+                                                  { "description", "description" }};
     for (const auto& field : eventKey) {
         if (field == "location") {
             queryField.emplace_back("eventLocation");
@@ -453,6 +716,17 @@ void setField(const std::vector<string>& eventKey, std::vector<string>& queryFie
             continue;
         }
         if (field == "reminderTime") {
+            resultSetField.insert(field);
+            continue;
+        }
+        if (field == "identifier") {
+            queryField.emplace_back("identifier");
+            resultSetField.insert(field);
+            continue;
+        }
+        if (field == "recurrenceRule") {
+            queryField.emplace_back("rrule");
+            queryField.emplace_back("exdate");
             resultSetField.insert(field);
             continue;
         }

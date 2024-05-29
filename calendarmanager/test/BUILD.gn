@@ -36,6 +36,7 @@ ohos_unittest("calendarmanager_test") {
     "unittest/src/event_attendee_test.cpp",
     "unittest/src/event_filter_test.cpp",
     "unittest/src/event_location_test.cpp",
+    "unittest/src/event_recurrence_rule_test.cpp",
     "unittest/src/event_reminder_test.cpp",
     "unittest/src/event_service_test.cpp",
     "unittest/src/get_self_permissions.cpp",

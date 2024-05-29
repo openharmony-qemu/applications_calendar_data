@@ -217,7 +217,7 @@ std::vector<Attendee> Calendar::GetAttendeesByEventId(int id)
 {
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("event_id", id);
-    std::vector<std::string> columns = {"attendeeName", "attendeeEmail"};
+    std::vector<std::string> columns = {"attendeeName", "attendeeEmail", "attendeeRelationship"};
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_attendeeUri.get()), predicates, columns, &error);
     std::vector<Attendee> attendees;
@@ -263,7 +263,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
         setField(eventKey, queryField, resultSetField);
     } else {
         resultSetField = {"type", "title", "startTime", "endTime", "isAllDay", "description",
-                          "timeZone", "location", "service", "attendee", "reminderTime"};
+        "timeZone", "location", "service", "attendee", "reminderTime"};
     }
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),

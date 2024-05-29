@@ -41,11 +41,13 @@ std::shared_ptr<EventFilter> FilterById(const std::vector<int> &ids)
         LOG_ERROR("DataSharePredicates make failed");
         return nullptr;
     }
+    predicates->BeginWrap();
     predicates->EqualTo("_id", ids.at(0));
     for (size_t index = 1; index < ids.size(); ++index) {
         predicates->Or();
         predicates->EqualTo("_id", ids.at(index));
     }
+    predicates->EndWrap();
     return std::make_shared<EventFilter>(predicates);
 }
 
