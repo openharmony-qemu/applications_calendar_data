@@ -76,8 +76,10 @@ int Calendar::AddEvent(const Event& event)
         auto valueAttendee = BuildAttendeeValue(attendee, eventId);
         valueAttendees.emplace_back(valueAttendee);
     }
-    auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
-    LOG_INFO("batchInsert attendees count %{public}d", count);
+    if (valueAttendees.size() > 0) {
+        auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
+        LOG_INFO("batchInsert attendees count %{public}d", count);
+    }
     
     // insert reminder
     if (event.reminderTime.has_value()) {
@@ -184,8 +186,10 @@ bool Calendar::UpdateEvent(const Event& event)
         auto valueAttendee = BuildAttendeeValue(attendee, eventId);
         valueAttendees.emplace_back(valueAttendee);
     }
-    auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
-    LOG_INFO("batchInsert attendees count %{public}d", count);
+    if (valueAttendees.size() > 0) {
+        auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
+        LOG_INFO("batchInsert attendees count %{public}d", count);
+    }
     
     {
         // delete reminder
