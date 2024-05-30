@@ -187,8 +187,8 @@ bool Calendar::UpdateEvent(const Event& event)
         valueAttendees.emplace_back(valueAttendee);
     }
     if (valueAttendees.size() > 0) {
-         auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
-         LOG_INFO("batchInsert attendees count %{public}d", count);
+        auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
+        LOG_INFO("batchInsert attendees count %{public}d", count);
     }
     
     {
