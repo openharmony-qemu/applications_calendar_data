@@ -19,7 +19,6 @@ config("calendarmanager_public_config") {
     "./common",
     "./native/include",
     "./napi/include",
-    "//foundation/arkui/ace_engine/interfaces/inner_api/ace",
   ]
 }
 
@@ -100,6 +99,7 @@ ohos_shared_library("calendarmanager") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
+    "ace_engine:ace_uicontent",
   ]
 
   public_deps = []
