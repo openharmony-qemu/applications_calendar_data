@@ -27,7 +27,7 @@ jspath = "js/editor.js"
 # compile .js to .abc.
 action("gen_editor_abc") {
   visibility = [ ":*" ]
-  script = "//arkcompiler/ets_frontend/es2panda/scripts/generate_js_bytecode.py"
+  script = "../../../../arkcompiler/ets_frontend/es2panda/scripts/generate_js_bytecode.py"
 
   args = [
     "--src-js",
@@ -38,7 +38,7 @@ action("gen_editor_abc") {
     rebase_path("${es2abc_build_path}"),
     "--module",
   ]
-  deps = [ "//arkcompiler/ets_frontend/es2panda:es2panda_build" ]
+  deps = [ "../../../../arkcompiler/ets_frontend/es2panda:es2panda_build" ]
   inputs = [ jspath ]
   outputs = [ target_out_dir + "/editor.abc" ]
 }
