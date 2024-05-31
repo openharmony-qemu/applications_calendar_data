@@ -93,13 +93,13 @@ ohos_shared_library("calendarmanager") {
     "ability_runtime:abilitykit_native",
     "ability_runtime:data_ability_helper",
     "ability_runtime:napi_base_context",
+    "ace_engine:ace_uicontent",
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
-    "ace_engine:ace_uicontent",
   ]
 
   public_deps = []
