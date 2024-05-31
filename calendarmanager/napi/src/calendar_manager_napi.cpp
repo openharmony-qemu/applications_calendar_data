@@ -15,20 +15,13 @@
 
 #include "calendar_manager_napi.h"
 #include <optional>
-#include "calendar_log.h"
-#include "napi_util.h"
-#include "napi_queue.h"
-#include "calendar_napi.h"
-#include "native_calendar_manager.h"
-#include "napi_env.h"
-
-#include "abs_shared_result_set.h"
-#include "data_ability_helper.h"
-#include "data_ability_predicates.h"
-#include "values_bucket.h"
 
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::DataShare;
+static const int INVALID_EVENT_ID = -1;
+static const int ARGS_INDEX_ONE = 1;
+static const int ARGS_INDEX_TWO = 2;
+static const int ARGS_INDEX_THREE = 3;
 
 namespace {
     const std::string CALENDAR_MANAGER_CLASS_NAME = "CalendarManager";
@@ -241,6 +234,89 @@ napi_value GetCalendarManager(napi_env env, napi_callback_info info)
     return result;
 }
 
+napi_value CalendarManagerNapi::EditEvent(napi_env env, napi_callback_info info)
+{
+    LOG_INFO("editEvent called");
+    napi_value eventId = nullptr;
+    NapiUtil::SetValue(env, INVALID_EVENT_ID, eventId);
+    auto ctxt = std::make_shared<EditEventContext>();
+    auto input = [env, ctxt](size_t argc, napi_value* argv) {
+        CHECK_ARGS_RETURN_VOID(ctxt, argc == ARGS_INDEX_THREE, "invalid arguments!");
+        ctxt-> _jsContext = argv[0];
+        NapiUtil::GetValue(env, argv[ARGS_INDEX_ONE], ctxt->event);
+        NapiUtil::GetValue(env, argv[ARGS_INDEX_TWO], ctxt->caller);
+    };
+    ctxt->GetCbInfo(env, info, input, true);
+    
+    bool isStageMode = false;
+    auto jsContext = ctxt->_jsContext;
+    auto status = OHOS::AbilityRuntime::IsStageContext(env, jsContext, isStageMode);
+    if (status != napi_ok || !isStageMode) {
+        LOG_ERROR("editEvent No support FA Model");
+        return eventId;
+    }
+    auto stageContext = OHOS::AbilityRuntime::GetStageModeContext(env, jsContext);
+    if (stageContext == nullptr) {
+        LOG_ERROR("editEvent stageContext == nullptr.");
+        return eventId;
+    }
+    auto abilityContext = OHOS::AbilityRuntime::Context::ConvertTo<AbilityRuntime::AbilityContext>(stageContext);
+    if (abilityContext == nullptr) {
+        LOG_ERROR("editEvent only support for UIAbility Context.");
+        return eventId;
+    }
+    ctxt->_uiContent = abilityContext->GetUIContent();
+    return LaunchEditorPage(env, ctxt);
+}
+
+napi_value CalendarManagerNapi::LaunchEditorPage(napi_env env, std::shared_ptr<EditEventContext> ctxt) 
+{
+    napi_value promise = nullptr;
+    napi_deferred deferred = nullptr;
+    napi_create_promise(env, &deferred, &promise);
+    AAFwk::Want want;
+    want.SetElementName("com.huawei.hmos.calendardata", "EditorUIExtensionAbility");
+    const std::string uiExtType = "sys/commonUI";
+    want.SetParam("ability.want.params.uiExtensionType", uiExtType);
+    want.SetParam("event", ctxt->event);
+    want.SetParam("caller", ctxt->caller);
+    Ace::ModalUIExtensionCallbacks callbacks;
+    callbacks = {
+        .onRelease = [env, ctxt, deferred](int32_t code) {
+            LOG_INFO("editEvent onRelease callback.");
+            ctxt->_uiContent->CloseModalUIExtension(ctxt->_sessionId);
+            napi_resolve_deferred(env, deferred, ctxt->id);
+            LOG_INFO("editEvent onRelease done.");
+        },
+        .onResult = [env, ctxt, deferred](int32_t code, const AAFwk::Want &wantRes) {
+            auto eventId = wantRes.GetIntParam("eventId", INVALID_EVENT_ID);
+            LOG_INFO("editEvent onResult. eventId=%{public}d", eventId);
+            NapiUtil::SetValue(env, eventId, ctxt->id);
+        },
+        .onReceive = [env, ctxt](const AAFwk::WantParams &wantParams) {
+            LOG_INFO("editEvent onReceive.");
+        },
+        .onError = [env, ctxt, deferred](int32_t code, const std::string &event, const std::string &msg) {
+            LOG_ERROR("editEvent onError.%{public}s", msg.c_str());
+            ctxt->_uiContent->CloseModalUIExtension(ctxt->_sessionId);
+            napi_reject_deferred(env, deferred, ctxt->id);
+        },
+        .onRemoteReady = [env, ctxt, deferred](const std::shared_ptr<Ace::ModalUIExtensionProxy> &proxy) {
+            LOG_INFO("editEvent onRemoteReady.");
+        },
+        .onDestroy = [env, ctxt, deferred]{
+            LOG_INFO("editEvent onDestroy.");
+        },
+    };
+    Ace::ModalUIExtensionConfig config;
+    config = {
+        .isProhibitBack = false,
+    };
+    ctxt->_sessionId = ctxt->_uiContent->CreateModalUIExtension(want, callbacks, config);
+    LOG_INFO("editEvent CreateModalUI sessionId=%{public}d", ctxt->_sessionId);
+    return promise;
+}
+
 napi_value CalendarManagerNapi::New(napi_env env, napi_callback_info info)
 {
     auto ctxt = std::make_shared<ContextBase>();
@@ -274,6 +350,7 @@ napi_value CalendarManagerNapi::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("deleteCalendar", DeleteCalendar),
         DECLARE_NAPI_FUNCTION("getCalendar", GetCalendar),
         DECLARE_NAPI_FUNCTION("getAllCalendars", GetAllCalendars),
+        DECLARE_NAPI_FUNCTION("editEvent", EditEvent),
     };
     napi_value cons = nullptr;
     NAPI_CALL(env,

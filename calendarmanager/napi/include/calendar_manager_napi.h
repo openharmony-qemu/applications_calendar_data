@@ -22,15 +22,40 @@
 #include "napi/native_common.h"
 #include "napi/native_node_api.h"
 
+#include "calendar_log.h"
+#include "napi_util.h"
+#include "napi_queue.h"
+#include "calendar_napi.h"
+#include "native_calendar_manager.h"
+#include "napi_env.h"
+#include "abs_shared_result_set.h"
+#include "data_ability_helper.h"
+#include "data_ability_predicates.h"
+#include "values_bucket.h"
+
+#include <ui_content.h>
+#include "napi_base_context.h"
 namespace OHOS::CalendarApi {
 class CalendarManagerNapi {
 public:
+    struct EditEventContext : public ContextBase {
+        string event;
+        napi_value _jsContext;
+        string caller;
+        int32_t _sessionId;
+        Ace::UIContent *_uiContent = nullptr;
+        napi_value id;
+    };
+    
     static napi_value New(napi_env env, napi_callback_info info);
     static napi_value CreateCalendar(napi_env env, napi_callback_info info);
     static napi_value DeleteCalendar(napi_env env, napi_callback_info info);
     static napi_value GetCalendar(napi_env env, napi_callback_info info);
     static napi_value GetAllCalendars(napi_env env, napi_callback_info info);
+    static napi_value EditEvent(napi_env env, napi_callback_info info);
     static napi_value Init(napi_env env, napi_value exports);
+private:
+    static napi_value LaunchEditorPage(napi_env env, std::shared_ptr<EditEventContext> ctxt);
 };
 
 napi_value GetCalendarManager(napi_env env, napi_callback_info info);

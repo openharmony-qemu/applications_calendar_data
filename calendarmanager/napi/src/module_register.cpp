@@ -20,6 +20,12 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "calendar_log.h"
+
+extern const char _binary_editor_js_start[];
+extern const char _binary_editor_js_end[];
+extern const char _binary_editor_abc_start[];
+extern const char _binary_editor_abc_end[];
+
 namespace OHOS::CalendarApi {
 EXTERN_C_START
 /*
@@ -54,3 +60,27 @@ extern "C" __attribute__((constructor)) void RegisterModule(void)
     napi_module_register(&_module);
 }
 }  // namespace OHOS::CalendarApi
+
+extern "C" __attribute__((visibility("default"))) void NAPI_calendarManager_GetJSCode(const char** buf,
+    int* bufLen)
+{
+    if (buf != nullptr) {
+        *buf = _binary_editor_js_start;
+    }
+
+    if (bufLen != nullptr) {
+        *bufLen = _binary_editor_js_end - _binary_editor_js_start;
+    }
+}
+
+extern "C" __attribute__((visibility("default"))) void NAPI_calendarManager_GetABCCode(const char** buf,
+    int* bufLen)
+{
+    if (buf != nullptr) {
+        *buf = _binary_editor_abc_start;
+    }
+
+    if (bufLen != nullptr) {
+        *bufLen = _binary_editor_abc_end - _binary_editor_abc_start;
+    }
+}
