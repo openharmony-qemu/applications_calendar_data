@@ -32,8 +32,8 @@
 			  "ipc",
 			  "napi",
 			  "safwk",
-              "samgr",
-              "ace_engine"
+        "samgr",
+        "ace_engine"
 			],
             "third_party": []
         },
