@@ -269,7 +269,7 @@ napi_value CalendarManagerNapi::EditEvent(napi_env env, napi_callback_info info)
     return LaunchEditorPage(env, ctxt);
 }
 
-napi_value CalendarManagerNapi::LaunchEditorPage(napi_env env, std::shared_ptr<EditEventContext> ctxt) 
+napi_value CalendarManagerNapi::LaunchEditorPage(napi_env env, std::shared_ptr<EditEventContext> ctxt)
 {
     napi_value promise = nullptr;
     napi_deferred deferred = nullptr;

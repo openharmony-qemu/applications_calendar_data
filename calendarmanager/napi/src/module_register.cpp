@@ -61,7 +61,7 @@ extern "C" __attribute__((constructor)) void RegisterModule(void)
 }
 }  // namespace OHOS::CalendarApi
 
-extern "C" __attribute__((visibility("default"))) void NAPI_calendarManager_GetJSCode(const char** buf,
+extern "C" __attribute__((visibility("default"))) void NAPI_CalendarManager_GetJSCode(const char** buf,
     int* bufLen)
 {
     if (buf != nullptr) {
@@ -73,7 +73,7 @@ extern "C" __attribute__((visibility("default"))) void NAPI_calendarManager_GetJ
     }
 }
 
-extern "C" __attribute__((visibility("default"))) void NAPI_calendarManager_GetABCCode(const char** buf,
+extern "C" __attribute__((visibility("default"))) void NAPI_CalendarManager_GetABCCode(const char** buf,
     int* bufLen)
 {
     if (buf != nullptr) {
