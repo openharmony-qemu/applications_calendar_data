@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//arkcompiler/ets_frontend/es2panda/es2abc_config.gni")
 import("//build/ohos.gni")
 
 config("calendarmanager_public_config") {
@@ -19,6 +20,43 @@ config("calendarmanager_public_config") {
     "./native/include",
     "./napi/include",
   ]
+}
+
+jspath = "js/editor.js"
+
+# compile .js to .abc.
+action("gen_editor_abc") {
+  visibility = [ ":*" ]
+  script = "../../../../arkcompiler/ets_frontend/es2panda/scripts/generate_js_bytecode.py"
+
+  args = [
+    "--src-js",
+    rebase_path(jspath),
+    "--dst-file",
+    rebase_path(target_out_dir + "/editor.abc"),
+    "--frontend-tool-path",
+    rebase_path("${es2abc_build_path}"),
+    "--module",
+  ]
+  deps = [ "../../../../arkcompiler/ets_frontend/es2panda:es2panda_build" ]
+  inputs = [ jspath ]
+  outputs = [ target_out_dir + "/editor.abc" ]
+}
+
+base_output_path = get_label_info(":editor_js", "target_out_dir")
+editor_obj_path = base_output_path + "/editor.o"
+gen_js_obj("editor_js") {
+  input = jspath
+  output = editor_obj_path
+  dep = ":gen_editor_abc"
+}
+
+abc_output_path = get_label_info(":editor_abc", "target_out_dir")
+editor_abc_obj_path = abc_output_path + "/editor_abc.o"
+gen_js_obj("editor_abc") {
+  input = "$target_out_dir/editor.abc"
+  output = editor_abc_obj_path
+  dep = ":gen_editor_abc"
 }
 
 ohos_shared_library("calendarmanager") {
@@ -40,7 +78,10 @@ ohos_shared_library("calendarmanager") {
     "./native/src/native_util.cpp",
   ]
 
-  deps = []
+  deps = [
+    ":editor_abc",
+    ":editor_js",
+  ]
 
   public_configs = [ ":calendarmanager_public_config" ]
 
@@ -52,6 +93,7 @@ ohos_shared_library("calendarmanager") {
     "ability_runtime:abilitykit_native",
     "ability_runtime:data_ability_helper",
     "ability_runtime:napi_base_context",
+    "ace_engine:ace_uicontent",
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",
