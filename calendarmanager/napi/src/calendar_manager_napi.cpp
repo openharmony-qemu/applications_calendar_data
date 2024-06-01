@@ -275,7 +275,7 @@ napi_value CalendarManagerNapi::LaunchEditorPage(napi_env env, std::shared_ptr<E
     napi_deferred deferred = nullptr;
     napi_create_promise(env, &deferred, &promise);
     AAFwk::Want want;
-    want.SetElementName("com.huawei.hmos.calendardata", "EditorUIExtensionAbility");
+    want.SetElementName("com.ohos.calendardata", "EditorUIExtensionAbility");
     const std::string uiExtType = "sys/commonUI";
     want.SetParam("ability.want.params.uiExtensionType", uiExtType);
     want.SetParam("event", ctxt->event);
