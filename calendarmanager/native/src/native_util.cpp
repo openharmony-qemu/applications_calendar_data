@@ -140,13 +140,14 @@ std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
 std::string GetRule(const Event &event)
 {
     const time_t now = event.startTime / 1000;
-    auto time = std::make_unique<std::tm>(*(std::localtime(&now)));
+    const std::tm* time = std::localtime(&now);
     const int monOffset = 1;
     const std::vector<string> weekList = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
     const int weekSize = 7;
     std::string rrule;
     RecurrenceType recurrenceFrequency = event.recurrenceRule.value().recurrenceFrequency;
-    if (recurrenceFrequency == DAILY) {
+    if(time != nullptr){
+        if (recurrenceFrequency == DAILY) {
         rrule = "FREQ=DAILY;WKST=SU";
     } else if (recurrenceFrequency == WEEKLY) {
         rrule = "FREQ=WEEKLY;WKST=SU;BYDAY=";
@@ -172,7 +173,7 @@ std::string GetRule(const Event &event)
     if (event.recurrenceRule.value().interval.has_value() && event.recurrenceRule.value().interval.value() > 0) {
         rrule += ";INTERVAL=" + std::to_string(event.recurrenceRule.value().interval.value());
     }
-
+    }
     return rrule;
 }
 
