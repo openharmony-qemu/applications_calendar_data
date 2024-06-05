@@ -140,7 +140,7 @@ std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
 std::string GetRule(const Event &event)
 {
     const time_t now = event.startTime / 1000;
-    const std::tm* time = std::localtime(&now);
+    auto time = std::make_unique<std::tm>(*(std::localtime(&now)));
     const int monOffset = 1;
     const std::vector<string> weekList = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
     const int weekSize = 7;
