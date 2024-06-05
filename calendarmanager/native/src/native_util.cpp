@@ -146,7 +146,7 @@ std::string GetRule(const Event &event)
     const int weekSize = 7;
     std::string rrule;
     RecurrenceType recurrenceFrequency = event.recurrenceRule.value().recurrenceFrequency;
-    if(time != nullptr){
+    if(time != nullptr) {
         if (recurrenceFrequency == DAILY) {
         rrule = "FREQ=DAILY;WKST=SU";
     } else if (recurrenceFrequency == WEEKLY) {
