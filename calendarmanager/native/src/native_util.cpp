@@ -179,7 +179,6 @@ std::string GetRule(const Event &event)
     if (event.recurrenceRule.value().interval.has_value() && event.recurrenceRule.value().interval.value() > 0) {
         rrule += ";INTERVAL=" + std::to_string(event.recurrenceRule.value().interval.value());
     }
-    }
     return rrule;
 }
 
