@@ -155,7 +155,6 @@ std::string GetRule(const Event &event)
                 rrule += weekList[time->tm_wday];
             }
         }
-
     } else if (recurrenceFrequency == MONTHLY) {
         rrule = "FREQ=MONTHLY;WKST=SU;BYMONTHDAY=";
         if (time != nullptr) {
@@ -179,6 +178,7 @@ std::string GetRule(const Event &event)
     if (event.recurrenceRule.value().interval.has_value() && event.recurrenceRule.value().interval.value() > 0) {
         rrule += ";INTERVAL=" + std::to_string(event.recurrenceRule.value().interval.value());
     }
+    
     return rrule;
 }
 
