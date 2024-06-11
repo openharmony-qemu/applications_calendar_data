@@ -29,7 +29,7 @@ import { ErrorCode } from '../../constants/ErrorCode';
 import { BusinessError } from '@ohos.base';
 import { ValueType } from '@ohos.data.ValuesBucket';
 
-const TAG = "RemindersProcessor";
+const TAG = 'RemindersProcessor';
 
 /**
  * the RemindersProcessor table processor
@@ -41,7 +41,8 @@ export class RemindersProcessor extends DefaultProcessor {
     super(isFromMigrate);
   }
 
-  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                              values: data_rdb.ValuesBucket, callback: Function) {
     if (!this.isFromMigrate) {
       const callerName = getBundleNameByUri(uri);
       initValueCreator(values, callerName);
@@ -60,7 +61,8 @@ export class RemindersProcessor extends DefaultProcessor {
     }
   }
 
-  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             values: data_rdb.ValuesBucket, callback: Function) {
     if (!this.isFromMigrate) {
       const callerName = getBundleNameByUri(uri);
       initValueCreator(values, callerName);
@@ -79,25 +81,29 @@ export class RemindersProcessor extends DefaultProcessor {
     }
   }
 
-  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                              predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     values = deleteValueCreator(values);
     this.doUpdate(rdbStore, uri, values, predicates, callback)
   }
 
-  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     values = deleteValueCreator(values);
     initPredicateCreator(predicates, callerName);
     this.doUpdate(rdbStore, uri, values, predicates, callback)
   }
 
-  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
+                            predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doQuery(rdbStore, uri, columns, predicates, callback);
@@ -109,7 +115,8 @@ export class RemindersProcessor extends DefaultProcessor {
  * @param values 插入操作的数据
  * @return true 相同 false 不相同
  */
-async function isEventSameWithReminderCreator(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<boolean> {
+async function isEventSameWithReminderCreator(rdbStore: data_rdb.RdbStore,
+                                              values: data_rdb.ValuesBucket): Promise<boolean> {
   Log.debug(TAG, 'isEventSameWithReminderCreator start');
   const reminderCreator = values[RemindersColumns.CREATOR];
   let resultSet = await queryEventIdAndCreatorByReminder(rdbStore, values);
@@ -143,7 +150,8 @@ async function isEventSameWithReminderCreator(rdbStore: data_rdb.RdbStore, value
  * @param values 插入操作的数据
  * @return true 相同 false 不相同
  */
-async function isEventSameWithReminderId(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<boolean> {
+async function isEventSameWithReminderId(rdbStore: data_rdb.RdbStore,
+                                         values: data_rdb.ValuesBucket): Promise<boolean> {
   Log.debug(TAG, 'isEventSameWithReminderId start');
   let resultSet = await queryEventIdAndCreatorByReminder(rdbStore, values);
   try {
@@ -169,7 +177,8 @@ async function isEventSameWithReminderId(rdbStore: data_rdb.RdbStore, values: da
  * @param values 插入操作的数据
  * @return DataShareResultSet
  */
-async function queryEventIdAndCreatorByReminder(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<data_rdb.ResultSet> {
+async function queryEventIdAndCreatorByReminder(rdbStore: data_rdb.RdbStore,
+                                                values: data_rdb.ValuesBucket): Promise<data_rdb.ResultSet> {
   const eventId = values[RemindersColumns.EVENT_ID] as ValueType;
   const columns = [EventColumns.ID, EventColumns.CREATOR];
   let predicates = new dataSharePredicates.DataSharePredicates();

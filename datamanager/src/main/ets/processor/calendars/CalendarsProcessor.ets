@@ -53,30 +53,35 @@ export class CalendarsProcessor extends DefaultProcessor {
     this.doInsert(rdbStore, uri, values, callback);
   }
 
-  async deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                              predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     initPredicateDefaultCalendarProtect(predicates);
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                              predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     values = deleteValueCreator(values);
     this.doUpdate(rdbStore, uri, values, predicates, callback);
   }
 
-  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     values = deleteValueCreator(values);
     initPredicateCreator(predicates, callerName);
     this.doUpdate(rdbStore, uri, values, predicates, callback);
   }
 
-  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
+                            predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateDefaultAndOwnCreator(predicates, callerName);
     this.doQuery(rdbStore, uri, columns, predicates, callback);

@@ -14,37 +14,31 @@
  * limitations under the License.
  */
 
-import { Constants } from '../Constants';
-
-interface AttendeesColumnsType {
-  TABLE_NAME: string;
-  ID: string;
-  EVENT_ID: string;
-  ATTENDEE_NAME: string;
-  ATTENDEE_EMAIL: string;
-  ATTENDEE_STATUS: string;
-  ATTENDEE_RELATIONSHIP: string;
-  ATTENDEE_TYPE: string;
-  ATTENDEE_IDENTITY: string;
-  ATTENDEE_ID_NAMESPACE: string;
-  CREATOR: string;
-}
-
 /**
  * the const of table Attendees
  *
  * @since 2022-09-08
  */
-export const AttendeesColumns: AttendeesColumnsType = {
-  TABLE_NAME: 'Attendees',
-  ID: '_id',
-  EVENT_ID: 'event_id',
-  ATTENDEE_NAME: 'attendeeName',
-  ATTENDEE_EMAIL: 'attendeeEmail',
-  ATTENDEE_STATUS: 'attendeeStatus',
-  ATTENDEE_RELATIONSHIP: 'attendeeRelationship',
-  ATTENDEE_TYPE: 'attendeeType',
-  ATTENDEE_IDENTITY: 'attendeeIdentity',
-  ATTENDEE_ID_NAMESPACE: 'attendeeIdNamespace',
-  CREATOR: Constants.CREATOR,
+export enum AttendeesColumns {
+  TABLE_NAME = 'Attendees',
+
+  ID = '_id',
+
+  EVENT_ID = 'event_id',
+
+  ATTENDEE_NAME = 'attendeeName',
+
+  ATTENDEE_EMAIL = 'attendeeEmail',
+
+  ATTENDEE_STATUS = 'attendeeStatus',
+
+  ATTENDEE_RELATIONSHIP = 'attendeeRelationship',
+
+  ATTENDEE_TYPE = 'attendeeType',
+
+  ATTENDEE_IDENTITY = 'attendeeIdentity',
+
+  ATTENDEE_ID_NAMESPACE = 'attendeeIdNamespace',
+
+  CREATOR = 'creator'
 }

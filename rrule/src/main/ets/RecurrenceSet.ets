@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-interface RecurrenceSetType {
-  rRule: string;
-  rDate: string;
-  exRule: string;
-  exDate: string;
-}
-
 /**
  * the recurrence rule structure
  *
  * @since 2022-05-28
  */
-export class RecurrenceSet implements RecurrenceSetType {
-  rRule = '';
-  rDate = '';
-  exRule = '';
-  exDate = '';
+export class RecurrenceSet {
+  public rRule: string = '';
+  public rDate: string = '';
+  public exRule: string = '';
+  public exDate: string = '';
 
   constructor(rRule: string, rDate: string, exRule: string, exDate: string) {
     this.rRule = rRule;

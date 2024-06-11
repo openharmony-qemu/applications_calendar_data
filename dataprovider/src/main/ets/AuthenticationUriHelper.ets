@@ -17,7 +17,7 @@
 import abilityAccessCtrl, { Permissions } from '@ohos.abilityAccessCtrl';
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
 
-const TAG = "CalendarUriHelper"
+const TAG = 'CalendarUriHelper'
 
 /**
  * Verify whether the current calling application has this permission by tokenID

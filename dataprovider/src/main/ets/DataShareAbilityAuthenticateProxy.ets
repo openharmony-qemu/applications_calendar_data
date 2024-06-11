@@ -29,7 +29,7 @@ import dataSharePredicates from '@ohos.data.dataSharePredicates';
 import { BusinessError } from '@ohos.base';
 import { ValuesBucket } from '@ohos.data.ValuesBucket';
 
-const TAG = "DataShareAbilityAuthenticateProxy";
+const TAG = 'DataShareAbilityAuthenticateProxy';
 
 const INSERT_BY_PROXY_OPERATION_NAME: string = 'insert';
 const UPDATE_BY_PROXY_OPERATION_NAME: string = 'update';
@@ -40,10 +40,10 @@ const PERMISSIONS_FLAG_HIGH: number = 2;
 const PERMISSIONS_FLAG_LOW: number = 1;
 const PERMISSIONS_FLAG_UNAUTHORIZED: number = -1;
 
-const PERMISSIONS_WRITE_WHOLE_CALENDAR: Permissions = "ohos.permission.WRITE_WHOLE_CALENDAR"
-const PERMISSIONS_WRITE_CALENDAR: Permissions = "ohos.permission.WRITE_CALENDAR"
-const PERMISSIONS_READ_WHOLE_CALENDAR: Permissions = "ohos.permission.READ_WHOLE_CALENDAR"
-const PERMISSIONS_READ_CALENDAR: Permissions = "ohos.permission.READ_CALENDAR"
+const PERMISSIONS_WRITE_WHOLE_CALENDAR: Permissions = 'ohos.permission.WRITE_WHOLE_CALENDAR';
+const PERMISSIONS_WRITE_CALENDAR: Permissions = 'ohos.permission.WRITE_CALENDAR';
+const PERMISSIONS_READ_WHOLE_CALENDAR: Permissions = 'ohos.permission.READ_WHOLE_CALENDAR';
+const PERMISSIONS_READ_CALENDAR: Permissions = 'ohos.permission.READ_CALENDAR';
 
 const SUCCESS_COUNT: number = 1;
 const FAIL_COUNT: number = 1;
@@ -61,7 +61,8 @@ class DataShareAbilityAuthenticateProxy {
     return isDatabaseInitComplete;
   }
 
-  async insertByProxy(uri: string, value: data_rdb.ValuesBucket | data_rdb.ValuesBucket[], permission: Permissions, callback: Function) {
+  async insertByProxy(uri: string, value: data_rdb.ValuesBucket | data_rdb.ValuesBucket[],
+                      permission: Permissions, callback: Function) {
     let insertDataParameter = new InsertDataParameter(value);
     insertDataParameter.operationName = INSERT_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, insertDataParameter, PERMISSIONS_WRITE_WHOLE_CALENDAR,
@@ -69,7 +70,8 @@ class DataShareAbilityAuthenticateProxy {
     dataOperateAfterVerify(uri, verifyFlag, insertDataParameter);
   }
 
-  async deleteByProxy(uri: string, predicates: dataSharePredicates.DataSharePredicates, permission: Permissions, callback: Function) {
+  async deleteByProxy(uri: string, predicates: dataSharePredicates.DataSharePredicates,
+                      permission: Permissions, callback: Function) {
     let deleteDataParameter = new DeleteDataParameter(predicates);
     deleteDataParameter.operationName = DELETE_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, deleteDataParameter, PERMISSIONS_WRITE_WHOLE_CALENDAR,
@@ -77,7 +79,8 @@ class DataShareAbilityAuthenticateProxy {
     dataOperateAfterVerify(uri, verifyFlag, deleteDataParameter);
   }
 
-  async updateByProxy(uri: string, value: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, permission: Permissions, callback: Function) {
+  async updateByProxy(uri: string, value: data_rdb.ValuesBucket,
+                      predicates: dataSharePredicates.DataSharePredicates, permission: Permissions, callback: Function) {
     let updateDataParameter = new UpdateDataParameter(value, predicates);
     updateDataParameter.operationName = UPDATE_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, updateDataParameter, PERMISSIONS_WRITE_WHOLE_CALENDAR,
@@ -85,7 +88,8 @@ class DataShareAbilityAuthenticateProxy {
     dataOperateAfterVerify(uri, verifyFlag, updateDataParameter);
   }
 
-  async queryByProxy(uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, permission: Permissions, callback: Function) {
+  async queryByProxy(uri: string, columns: Array<string>,
+                     predicates: dataSharePredicates.DataSharePredicates, permission: Permissions, callback: Function) {
     let queryDataParameter = new QueryDataParameter(columns, predicates);
     queryDataParameter.operationName = QUERY_BY_PROXY_OPERATION_NAME;
     let verifyFlag = await verifyByUri(uri, queryDataParameter, PERMISSIONS_READ_WHOLE_CALENDAR,
@@ -265,15 +269,15 @@ async function dataOperateSelectorByLowAuthority(uri: string, dataParameter: Dat
  * @since 2022-12-28
  */
 abstract class DataParameter {
-  operationName: string = '';
+  public operationName: string = '';
 
-  value: data_rdb.ValuesBucket | data_rdb.ValuesBucket[] = {};
+  public value: data_rdb.ValuesBucket | data_rdb.ValuesBucket[] = {};
 
-  columns: Array<string> = [];
+  public columns: Array<string> = [];
 
-  predicates: dataSharePredicates.DataSharePredicates = new dataSharePredicates.DataSharePredicates();
+  public predicates: dataSharePredicates.DataSharePredicates = new dataSharePredicates.DataSharePredicates();
 
-  callback: Function = (err: BusinessError, count: number) => {
+  public callback: Function = (err: BusinessError, count: number) => {
   };
 }
 

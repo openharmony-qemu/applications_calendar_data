@@ -14,39 +14,33 @@
  * limitations under the License.
  */
 
-import { Constants } from '../Constants';
-
-interface CalendarAlertsColumnsType {
-  TABLE_NAME: string;
-  ID: string;
-  EVENT_ID: string;
-  BEGIN: string;
-  END: string;
-  ALARM_TIME: string;
-  CREATION_TIME: string;
-  RECEIVED_TIME: string;
-  NOTIFY_TIME: string;
-  STATE: string;
-  MINUTES: string;
-  CREATOR: string;
-}
-
 /**
  * the const of table CalendarAlerts
  *
  * @since 2022-09-08
  */
-export const CalendarAlertsColumns: CalendarAlertsColumnsType = {
-  TABLE_NAME: 'CalendarAlerts',
-  ID: '_id',
-  EVENT_ID: 'event_id',
-  BEGIN: 'begin',
-  END: 'end',
-  ALARM_TIME: 'alarmTime',
-  CREATION_TIME: 'creationTime',
-  RECEIVED_TIME: 'receivedTime',
-  NOTIFY_TIME: 'notifyTime',
-  STATE: 'state',
-  MINUTES: 'minutes',
-  CREATOR: Constants.CREATOR,
+export enum CalendarAlertsColumns {
+  TABLE_NAME = 'CalendarAlerts',
+
+  ID = '_id',
+
+  EVENT_ID = 'event_id',
+
+  BEGIN = 'begin',
+
+  END = 'end',
+
+  ALARM_TIME = 'alarmTime',
+
+  CREATION_TIME = 'creationTime',
+
+  RECEIVED_TIME = 'receivedTime',
+
+  NOTIFY_TIME = 'notifyTime',
+
+  STATE = 'state',
+
+  MINUTES = 'minutes',
+
+  CREATOR = 'creator'
 }

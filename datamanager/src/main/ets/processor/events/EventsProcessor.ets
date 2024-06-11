@@ -19,12 +19,12 @@ import dataSharePredicates from '@ohos.data.dataSharePredicates';
 import { BusinessError } from '@ohos.base';
 import { ValueType } from '@ohos.data.ValuesBucket';
 
-import { Log } from "@ohos/common/src/main/ets/utils/Log";
+import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { hasNoError } from '@ohos/common/src/main/ets/utils/ErrorUtils';
 import { getBundleNameByUri } from '@ohos/common/src/main/ets/utils/UrlUtils';
 
 import { Calendars } from '@ohos/datastructure/src/main/ets/calendars/Calendars';
-import { APP_NAME } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
+import { AppName } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
 import { CalendarsIndexes, parseCalendarsIndexes } from '@ohos/datastructure/src/main/ets/calendars/CalendarsIndexes';
 import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
 import { EventColumns, UPDATE_INSTANCES_COLUMNS } from '@ohos/datastructure/src/main/ets/events/EventColumns';
@@ -34,11 +34,11 @@ import { parseCalendars } from '@ohos/datastructure/src/main/ets/calendars/Calen
 import { parseEvents } from '@ohos/datastructure/src/main/ets/events/EventParser';
 
 import { ErrorCode } from '../../constants/ErrorCode';
-import { DefaultProcessor } from "./../DefaultProcessor";
+import { DefaultProcessor } from './../DefaultProcessor';
 import { initValueCreator, initPredicateCreator, deleteValueCreator } from '../DatabaseProcessorHelper';
 import { acquireExpandOne, isNeedRefreshInstances, acquireUpdateOne } from '../instances/InstancesProcessor';
 
-const TAG: string = "EventsProcessor";
+const TAG: string = 'EventsProcessor';
 
 /**
  * the Events table processor
@@ -46,7 +46,8 @@ const TAG: string = "EventsProcessor";
  * @since 2022-06-24
  */
 export class EventsProcessor extends DefaultProcessor {
-  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                              values: data_rdb.ValuesBucket, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     const isCalendarExist = await isCalendarContainSameId(rdbStore, values);
@@ -63,7 +64,8 @@ export class EventsProcessor extends DefaultProcessor {
     }
   }
 
-  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             values: data_rdb.ValuesBucket, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     const isCalendarCreatorExist = await isCalendarContainSameCreator(rdbStore, values);
@@ -80,25 +82,29 @@ export class EventsProcessor extends DefaultProcessor {
     }
   }
 
-  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                              predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     deleteValueCreator(values);
     this.updateEventWithInstance(rdbStore, uri, values, predicates, callback);
   }
 
-  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     deleteValueCreator(values);
     initPredicateCreator(predicates, callerName);
     this.updateEventWithInstance(rdbStore, uri, values, predicates, callback);
   }
 
-  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
+                            predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     initPredicateCreator(predicates, callerName);
     this.doQuery(rdbStore, uri, columns, predicates, callback);
@@ -112,7 +118,8 @@ export class EventsProcessor extends DefaultProcessor {
    * @param values 插入的数据
    * @param callback 回调方法
    */
-  async insertEventWithInstanceExpand(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  async insertEventWithInstanceExpand(rdbStore: data_rdb.RdbStore, uri: string,
+                                      values: data_rdb.ValuesBucket, callback: Function) {
     this.doInsert(rdbStore, uri, values, (err: BusinessError, rowId: number) => {
       Log.debug(TAG, `before insert callback`);
       if (hasNoError(err)) {
@@ -132,7 +139,8 @@ export class EventsProcessor extends DefaultProcessor {
    * @param predicates 更新条件
    * @param callback 回调方法
    */
-  async updateEventWithInstance(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateEventWithInstance(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                                predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     let needUpdatedEventIds: Array<number>;
     if (isNeedRefreshInstances(values)) {
       needUpdatedEventIds = await queryEventIdsByPredicate(rdbStore, predicates);
@@ -155,9 +163,10 @@ export class EventsProcessor extends DefaultProcessor {
  * @param values 插入操作的数据
  * @return true 相同 false 不相同
  */
-async function isCalendarContainSameCreator(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<boolean> {
+async function isCalendarContainSameCreator(rdbStore: data_rdb.RdbStore,
+                                            values: data_rdb.ValuesBucket): Promise<boolean> {
   Log.debug(TAG, 'isCalendarContainSameCreator start');
-  const EventCreator = values[EventColumns.CREATOR];
+  const eventCreator = values[EventColumns.CREATOR];
   let resultSet = await queryCalendarIdAndCreatorByEvent(rdbStore, values);
   if (resultSet === null || resultSet === undefined) {
     return false;
@@ -168,7 +177,7 @@ async function isCalendarContainSameCreator(rdbStore: data_rdb.RdbStore, values:
     if (calendars === null || calendars === undefined) {
       return false;
     }
-    if (calendars.creator === EventCreator || calendars.creator === APP_NAME.CALENDARDATA) {
+    if (calendars.creator === eventCreator || calendars.creator === AppName.CALENDARDATA) {
       return true;
     }
   }
@@ -182,7 +191,8 @@ async function isCalendarContainSameCreator(rdbStore: data_rdb.RdbStore, values:
  * @param values 插入操作的数据
  * @return true 相同 false 不相同
  */
-async function isCalendarContainSameId(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<boolean> {
+async function isCalendarContainSameId(rdbStore: data_rdb.RdbStore,
+                                       values: data_rdb.ValuesBucket): Promise<boolean> {
   Log.debug(TAG, 'isCalendarContainSameId start');
   let resultSet = await queryCalendarIdAndCreatorByEvent(rdbStore, values);
   if (resultSet === null || resultSet === undefined) {
@@ -201,7 +211,8 @@ async function isCalendarContainSameId(rdbStore: data_rdb.RdbStore, values: data
  * @param values 插入操作的数据
  * @return DataShareResultSet
  */
-async function queryCalendarIdAndCreatorByEvent(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket): Promise<data_rdb.ResultSet> {
+async function queryCalendarIdAndCreatorByEvent(rdbStore: data_rdb.RdbStore,
+                                                values: data_rdb.ValuesBucket): Promise<data_rdb.ResultSet> {
   const calendarId = values[EventColumns.CALENDAR_ID] as ValueType;
   const columns = [CalendarsColumns.ID, CalendarsColumns.CREATOR];
   let predicates = new dataSharePredicates.DataSharePredicates();
@@ -221,8 +232,9 @@ async function queryCalendarIdAndCreatorByEvent(rdbStore: data_rdb.RdbStore, val
  * @param rdbStore rdb数据库
  * @param predicates update条件，用于定位需要刷新Instances对应eventId的范围
  */
-async function queryEventIdsByPredicate(rdbStore: data_rdb.RdbStore, predicates: dataSharePredicates.DataSharePredicates): Promise<Array<number>> {
-  const resultArray: Array<number> = new Array();
+async function queryEventIdsByPredicate(rdbStore: data_rdb.RdbStore,
+                                        predicates: dataSharePredicates.DataSharePredicates): Promise<number[]> {
+  const resultArray: number[] = [];
   const columns = [EventColumns.ID];
   try {
     const resultSet = await rdbStore.query(EventColumns.TABLE_NAME, predicates, columns);
@@ -277,7 +289,8 @@ async function updateInstances(rdbStore: data_rdb.RdbStore, updatedIds: Array<nu
  * @param eventIds 需查询的eventIds集合
  * @return Map<number, Events> eventId-Events的map
  */
-async function queryEventsByIds(rdbStore: data_rdb.RdbStore, eventIds: Array<number>): Promise<Map<number, Events>> {
+async function queryEventsByIds(rdbStore: data_rdb.RdbStore,
+                                eventIds: Array<number>): Promise<Map<number, Events>> {
   const resultMap: Map<number, Events> = new Map();
   const predicate = new dataSharePredicates.DataSharePredicates();
   predicate.in(EventColumns.ID, eventIds);

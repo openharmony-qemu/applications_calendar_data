@@ -63,7 +63,8 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
 
   }
 
-  insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                        values: data_rdb.ValuesBucket, callback: Function) {
     this.doInsert(rdbStore, uri, values, callback);
   }
 
@@ -72,7 +73,8 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
     this.doBatchInsert(rdbStore, uri, values, callback);
   }
 
-  insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                       values: data_rdb.ValuesBucket, callback: Function) {
     this.doInsert(rdbStore, uri, values, callback);
   }
 
@@ -81,27 +83,33 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
     this.doBatchInsert(rdbStore, uri, values, callback);
   }
 
-  deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                        predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                       predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                        predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doUpdate(rdbStore, uri, values, predicates, callback);
   }
 
-  updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                       predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doUpdate(rdbStore, uri, values, predicates, callback);
   }
 
-  queryByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  queryByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
+                       predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doQuery(rdbStore, uri, columns, predicates, callback);
   }
 
-  queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
+                      predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.doQuery(rdbStore, uri, columns, predicates, callback);
   }
 
@@ -163,7 +171,8 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
    * @param predicates 删除条件
    * @param callback 回调方法
    */
-  doDelete(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  doDelete(rdbStore: data_rdb.RdbStore, uri: string,
+           predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const table = getTableByUri(uri);
     rdbStore.delete(table, predicates, (err: BusinessError, count) => {
       Log.log(this.logTag, `delete ${table} before callback`);
@@ -191,7 +200,8 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
    * @param predicates 更新条件
    * @param callback 回调方法
    */
-  doUpdate(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  doUpdate(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+           predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const table = getTableByUri(uri);
     rdbStore.update(table, values, predicates, (err, count) => {
       Log.log(this.logTag, `update ${table} before callback`);
@@ -215,7 +225,8 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
    * @param predicates 查询条件
    * @param callback 回调方法
    */
-  doQuery(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  doQuery(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
+          predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const table = getTableByUri(uri);
     let queryInnerFun = (err: BusinessError, resultSet: data_rdb.ResultSet) => {
       Log.log(this.logTag, `query ${table} before callback`);
@@ -250,7 +261,8 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
     })
   }
 
-  notifyAlertsChanges(operationName: string, table: string, values?: data_rdb.ValuesBucket | data_rdb.ValuesBucket[]) {
+  notifyAlertsChanges(operationName: string, table: string,
+                      values?: data_rdb.ValuesBucket | data_rdb.ValuesBucket[]) {
     let message = new AlertsMessage();
     message.setOperationName(operationName);
     message.setTableName(table);
