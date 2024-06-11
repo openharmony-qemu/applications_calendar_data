@@ -23,7 +23,8 @@ import { CalendarsIndexes } from './CalendarsIndexes';
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseCalendars(resultSet: data_rdb.ResultSet, indexes: CalendarsIndexes | undefined): Calendars | undefined {
+export function parseCalendars(resultSet: data_rdb.ResultSet,
+                               indexes: CalendarsIndexes | undefined): Calendars | undefined {
   if (resultSet === null || resultSet === undefined || indexes === null || indexes === undefined) {
     return undefined;
   }

@@ -23,7 +23,7 @@ import data_rdb from '@ohos.data.relationalStore';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
 
 let rdbStore: data_rdb.RdbStore;
-let TAG = "DataShareAbilityDelegate";
+let TAG = 'DataShareAbilityDelegate';
 
 /**
  * the delegate of CalendarData's DatabaseProcessor
@@ -163,7 +163,8 @@ class DataShareAbilityDelegate {
     }
   }
 
-  updateByHighAuthority(uri: string, value: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  updateByHighAuthority(uri: string, value: data_rdb.ValuesBucket,
+                        predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     if (!rdbStore) {
       this.getDb();
       Log.warn(TAG, `updateByHighAuthority uri: ${uri} rdbStore is null`)
@@ -182,7 +183,8 @@ class DataShareAbilityDelegate {
     }
   }
 
-  updateByLowAuthority(uri: string, value: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  updateByLowAuthority(uri: string, value: data_rdb.ValuesBucket,
+                       predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     if (!rdbStore) {
       this.getDb();
       Log.warn(TAG, `updateByLowAuthority uri: ${uri} rdbStore is null`)
@@ -201,7 +203,8 @@ class DataShareAbilityDelegate {
     }
   }
 
-  queryByHighAuthority(uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  queryByHighAuthority(uri: string, columns: Array<string>,
+                       predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     if (!rdbStore) {
       this.getDb();
       Log.warn(TAG, `queryByHighAuthority uri: ${uri} rdbStore is null`)
@@ -220,7 +223,8 @@ class DataShareAbilityDelegate {
     }
   }
 
-  queryByLowAuthority(uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  queryByLowAuthority(uri: string, columns: Array<string>,
+                      predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     if (!rdbStore) {
       this.getDb();
       Log.warn(TAG, `queryByLowAuthority uri: ${uri} rdbStore is null`)

@@ -94,79 +94,93 @@ interface EventsType {
  *
  * @since 2022-05-28
  */
-export class Events implements EventsType {
-  id = 0;
-  syncId = '';
-  dirty = 0;
-  mutators = '';
-  calendarType = 0;
-  imageType = '';
-  lastSynced = 0;
-  calendarId = 0;
-  title = '';
-  eventLocation = '';
-  longitude = '';
-  latitude = '';
-  description = '';
-  eventColor = 0;
-  eventColorIndex = '';
-  eventStatus = 0;
-  selfAttendeeStatus = 0;
-  dtStart = 0;
-  dtEnd = 0;
-  eventTimeZone = '';
-  duration = '';
-  allDay = 0;
-  accessLevel = 0;
-  availability = 0;
-  hasAlarm = 0;
-  hasExtendedProperties = 0;
-  rRule = '';
-  rDate = '';
-  exRule = '';
-  exDate = '';
-  originalId = 0;
-  originalSyncId = '';
-  originalInstanceTime = 0;
-  originalAllDay = 0;
-  lastDate = 0;
-  eventTimeStamp = 0;
-  hasAttendeeData = 0;
-  guestsCanModify = 0;
-  guestsCanInviteOthers = 0;
-  guestsCanSeeGuests = 0;
-  organizer = '';
-  isOrganizer = 0;
-  deleted = 0;
-  eventEndTimezone = '';
-  customAppPackage = '';
-  customAppUri = '';
-  uid2445 = '';
-  version = 0;
-  eventUuid = '';
-  hwExtAlertType = 0;
-  importantEventType = 0;
-  // event service
-  serviceVerified = 0;
-  serviceType = '';
-  serviceCpBzUri = '';
-  serviceCpMngUri = '';
-  serviceDescription = '';
-  serviceSupportMinVersion = 0;
-  // birthdayKind
-  syncData1 = '';
-  syncData2 = '';
-  syncData3 = '';
-  syncData4 = '';
-  syncData5 = '';
-  syncData6 = '';
-  syncData7 = '';
-  syncData8 = '';
-  syncData9 = '';
-  syncData10 = '';
-  kvSynced = 0;
-  kvSyncTime = 0;
-  creator = '';
+export class Events {
+  public id: number = 0;
+  // 邮箱账户的有值 9FTElLYEtUOcwfc25Ut5DgAAAAABDfRUxJS2BLVDnMH3NuVLeQ4AAj21rqg1
+  public syncId: string = '';
+  public dirty: number = 0;
+  public mutators: string = '';
+  // 日程是否是农历日程 1 true
+  public calendarType: number = 0;
+  public uuid: string = '';
+  public imageType: string = '';
+  public lastSynced: number = 0;
+  public calendarId: number = 0;
+  public title: string = '';
+  public eventLocation: string = '';
+  public longitude: string = '';
+  public latitude: string = '';
+  public description: string = '';
+  public eventColor: number = 0;
+  public eventColorIndex: string = '';
+  public eventStatus: number = 0;
+  public selfAttendeeStatus: number = 0;
+  public dtStart: number = 0;
+  public dtEnd: number = 0;
+  public eventTimeZone: string = '';
+  public duration: string = '';
+  public allDay: number = 0;
+  public accessLevel: number = 0;
+  public availability: number = 0;
+  public hasAlarm: number = 0;
+  public hasExtendedProperties: number = 0;
+  public rRule: string = '';
+  public rDate: string = '';
+  public exRule: string = '';
+  public exDate: string = '';
+  public originalId: number = 0;
+  public originalSyncId: string = '';
+  public originalInstanceTime: number = 0;
+  public originalAllDay: number = 0;
+  public lastDate: number = 0;
+  public eventTimeStamp: number = 0;
+  public hasAttendeeData: number = 0;
+  public guestsCanModify: number = 0;
+  public guestsCanInviteOthers: number = 0;
+  public guestsCanSeeGuests: number = 0;
+  public organizer: string = '';
+  public isOrganizer: number = 0;
+  public deleted: number = 0;
+  public eventEndTimezone: string = '';
+  public customAppPackage: string = '';
+  public customAppUri: string = '';
+  public uid2445: string = '';
+  public version: number = 0;
+  public eventUuid: string = '';
+  public hwExtAlertType: number = 0;
+  public importantEventType: number = 0;
+  //一键入会相关
+  public serviceVerified: number = 0;
+  public serviceType: string = '';
+  public serviceCpBzUri: string = '';
+  public serviceCpMngUri: string = '';
+  public serviceDescription: string = '';
+  public serviceSupportMinVersion: number = 0;
+  // birthdayKind 日程如果是属于联系人生日账户,该值表示日程的类型 10 太阳历, 11 农历
+  public syncData1: string = '';
+  // SYNC_DATA2 表示联系人id
+  public syncData2: string = '';
+  // 联系人日程有值,代码没搜到相关含义
+  public syncData3: string = '';
+  // 联系人日程有值,com.android.huawei.phone 联系人应用的包名
+  public syncData4: string = '';
+  public syncData5: string = '';
+  public syncData6: string = '';
+  public syncData7: string = '';
+  public syncData8: string = '';
+  public syncData9: string = '';
+  public syncData10: string = '';
+  public kvSynced: number = 0;
+  public kvSyncTime: number = 0;
+  public creator: string = '';
+  // 双升单,提升性能，需要批量插入,oldEventId 记录原来event 主键id,
+  public oldEventId: number = 0;
+
+  // 日程唯一标识，三方写入可指定
+  public identifier: string = '';
+
+  constructor() {
+  }
 
   /**
    * 判断是否全天日程

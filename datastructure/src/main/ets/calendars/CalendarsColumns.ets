@@ -63,59 +63,95 @@ interface CalendarsColumnsType {
  *
  * @since 2022-09-08
  */
-export const CalendarsColumns: CalendarsColumnsType = {
-  TABLE_NAME: 'Calendars',
-  ID: '_id',
-  ACCOUNT_NAME: 'account_name',
-  ACCOUNT_TYPE: 'account_type',
-  SYNC_ID: '_sync_id',
-  DIRTY: 'dirty',
-  MUTATORS: 'mutators',
-  NAME: 'name',
-  CALENDAR_DISPLAY_NAME: 'calendar_displayName',
-  CALENDAR_COLOR: 'calendar_color',
-  CALENDAR_COLOR_INDEX: 'calendar_color_index',
-  CALENDAR_ACCESS_LEVEL: 'calendar_access_level',
-  VISIBLE: 'visible',
-  SYNC_EVENTS: 'sync_events',
-  CALENDAR_LOCATION: 'calendar_location',
-  CALENDAR_TIMEZONE: 'calendar_timezone',
-  OWNER_ACCOUNT: 'ownerAccount',
-  IS_PRIMARY: 'isPrimary',
-  CAN_ORGANIZER_RESPOND: 'canOrganizerRespond',
-  CAN_MODIFY_TIMEZONE: 'canModifyTimeZone',
-  CAN_PARTIALLY_UPDATE: 'canPartiallyUpdate',
-  MAX_REMINDERS: 'maxReminders',
-  ALLOWED_REMINDERS: 'allowedReminders',
-  ALLOWED_AVAILABILITY: 'allowedAvailability',
-  ALLOWED_ATTENDEE_TYPES: 'allowedAttendeeTypes',
-  DELETED: 'deleted',
-  CALENDAR_TIME_STAMP: 'calendar_time_stamp',
-  CAL_SYNC1: 'cal_sync1',
-  CAL_SYNC2: 'cal_sync2',
-  CAL_SYNC3: 'cal_sync3',
-  CAL_SYNC4: 'cal_sync4',
-  CAL_SYNC5: 'cal_sync5',
-  CAL_SYNC6: 'cal_sync6',
-  CAL_SYNC7: 'cal_sync7',
-  CAL_SYNC8: 'cal_sync8',
-  CAL_SYNC9: 'cal_sync9',
-  CAL_SYNC10: 'cal_sync10',
-  CAN_REMINDER: 'canReminder',
-  CREATOR: Constants.CREATOR,
+export enum CalendarsColumns {
+  TABLE_NAME = 'Calendars',
+
+  ID = '_id',
+
+  ACCOUNT_NAME = 'account_name',
+
+  ACCOUNT_TYPE = 'account_type',
+
+  D_SIDE_ACCOUNT_TYPE = 'd_side_account_type',
+
+  SYNC_ID = '_sync_id',
+
+  DIRTY = 'dirty',
+
+  MUTATORS = 'mutators',
+
+  NAME = 'name',
+
+  CALENDAR_DISPLAY_NAME = 'calendar_displayName',
+
+  CALENDAR_COLOR = 'calendar_color',
+
+  CALENDAR_COLOR_INDEX = 'calendar_color_index',
+
+  CALENDAR_ACCESS_LEVEL = 'calendar_access_level',
+
+  VISIBLE = 'visible',
+
+  SYNC_EVENTS = 'sync_events',
+
+  CALENDAR_LOCATION = 'calendar_location',
+
+  CALENDAR_TIMEZONE = 'calendar_timezone',
+
+  OWNER_ACCOUNT = 'ownerAccount',
+
+  IS_PRIMARY = 'isPrimary',
+
+  CAN_ORGANIZER_RESPOND = 'canOrganizerRespond',
+
+  CAN_MODIFY_TIMEZONE = 'canModifyTimeZone',
+
+  CAN_PARTIALLY_UPDATE = 'canPartiallyUpdate',
+
+  MAX_REMINDERS = 'maxReminders',
+
+  ALLOWED_REMINDERS = 'allowedReminders',
+
+  ALLOWED_AVAILABILITY = 'allowedAvailability',
+
+  ALLOWED_ATTENDEE_TYPES = 'allowedAttendeeTypes',
+
+  DELETED = 'deleted',
+
+  CALENDAR_TIME_STAMP = 'calendar_time_stamp',
+
+  CAL_SYNC1 = 'cal_sync1',
+
+  CAL_SYNC2 = 'cal_sync2',
+
+  CAL_SYNC3 = 'cal_sync3',
+
+  CAL_SYNC4 = 'cal_sync4',
+
+  CAL_SYNC5 = 'cal_sync5',
+
+  CAL_SYNC6 = 'cal_sync6',
+
+  CAL_SYNC7 = 'cal_sync7',
+
+  CAL_SYNC8 = 'cal_sync8',
+
+  CAL_SYNC9 = 'cal_sync9',
+
+  CAL_SYNC10 = 'cal_sync10',
+
+  CAN_REMINDER = 'canReminder',
+
+  CREATOR = 'creator',
 }
 
-interface AppNameType {
-  CALENDARDATA: string;
-}
-
-export const APP_NAME: AppNameType = {
-  CALENDARDATA: 'calendardata',
+export enum AppName {
+  CALENDARDATA = 'com.huawei.hmos.calendardata',
 }
 
 export const DEFAULT_CALENDAR_VALUE: Record<string, number | string> = {
   '_id': 1,
   'account_name': 'phone',
   'account_type': 'local',
-  'creator': APP_NAME.CALENDARDATA,
+  'creator': AppName.CALENDARDATA,
 }

@@ -14,29 +14,20 @@
  * limitations under the License.
  */
 
-interface ColorsColumnsType {
-  TABLE_NAME: string;
-  ID: string;
-  ACCOUNT_NAME: string;
-  ACCOUNT_TYPE: string;
-  DATA: string;
-  COLOR_TYPE: string;
-  COLOR_INDEX: string;
-  COLOR: string;
-}
+export enum ColorsColumns {
+  TABLE_NAME = 'Colors',
 
-/**
- * the const of table Colors
- *
- * @since 2022-09-08
- */
-export const ColorsColumns: ColorsColumnsType = {
-  TABLE_NAME: 'Colors',
-  ID: '_id',
-  ACCOUNT_NAME: 'account_name',
-  ACCOUNT_TYPE: 'account_type',
-  DATA: 'data',
-  COLOR_TYPE: 'color_type',
-  COLOR_INDEX: 'color_index',
-  COLOR: 'color',
+  ID = '_id',
+
+  ACCOUNT_NAME = 'account_name',
+
+  ACCOUNT_TYPE = 'account_type',
+
+  DATA = 'data',
+
+  COLOR_TYPE = 'color_type',
+
+  COLOR_INDEX = 'color_index',
+
+  COLOR = 'color'
 }

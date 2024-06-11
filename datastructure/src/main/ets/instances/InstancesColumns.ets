@@ -14,35 +14,29 @@
  * limitations under the License.
  */
 
-import { Constants } from '../Constants';
-
-interface instancesColumnsType {
-  TABLE_NAME: string,
-  ID: string,
-  EVENT_ID: string,
-  BEGIN: string,
-  END: string,
-  START_DAY: string,
-  END_DAY: string,
-  START_MINUTE: string,
-  END_MINUTE: string,
-  CREATOR: string,
-}
-
 /**
  * the const of table Instances
  *
  * @since 2022-06-01
  */
-export const InstancesColumns: instancesColumnsType = {
-  TABLE_NAME: 'Instances',
-  ID: '_id',
-  EVENT_ID: 'event_id',
-  BEGIN: 'begin',
-  END: 'end',
-  START_DAY: 'startDay',
-  END_DAY: 'endDay',
-  START_MINUTE: 'startMinute',
-  END_MINUTE: 'endMinute',
-  CREATOR: Constants.CREATOR,
+export enum InstancesColumns {
+  TABLE_NAME = 'Instances',
+
+  ID = '_id',
+
+  EVENT_ID = 'event_id',
+
+  BEGIN = 'begin',
+
+  END = 'end',
+
+  START_DAY = 'startDay',
+
+  END_DAY = 'endDay',
+
+  START_MINUTE = 'startMinute',
+
+  END_MINUTE = 'endMinute',
+
+  CREATOR = 'creator'
 }

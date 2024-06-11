@@ -14,30 +14,26 @@
  * limitations under the License.
  */
 
-interface CalendarAlertStateType {
-  STATE_SCHEDULED: number;
-  STATE_FIRED: number;
-  STATE_DISMISSED: number;
-}
-
 /**
  * the type of CalendarState
  *
  * @since 2022-09-13
  */
-export const CalendarAlertState: CalendarAlertStateType = {
+export enum CalendarAlertStateType {
   /**
    * An alert begins in this state when it is first created.
    */
-  STATE_SCHEDULED: 0,
+  STATE_SCHEDULED = 0,
+
   /**
    * After a notification for an alert has been created it should be
    * updated to fired.
    */
-  STATE_FIRED: 1,
+  STATE_FIRED = 1,
+
   /**
    * Once the user has dismissed the notification the alert's state should
    * be set to dismissed so it is not fired again.
    */
-  STATE_DISMISSED: 2,
-}
+  STATE_DISMISSED = 2,
+};
