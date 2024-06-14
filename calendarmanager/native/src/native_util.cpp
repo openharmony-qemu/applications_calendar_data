@@ -199,7 +199,7 @@ void BuildEventRecurrenceRule(DataShare::DataShareValuesBucket &valuesBucket, co
     }
 }
 
-DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId)
+DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId, int channelId)
 {
     DataShare::DataShareValuesBucket valuesBucket;
     valuesBucket.Put("calendar_id", calendarId);
@@ -209,6 +209,7 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     valuesBucket.Put("event_calendar_type", event.type);
     valuesBucket.Put("dtstart", event.startTime);
     valuesBucket.Put("dtend", event.endTime);
+    valuesBucket.Put("channel_id", channelId);
 
     BuildEventLocation(valuesBucket, event);
     BuildEventService(valuesBucket, event);

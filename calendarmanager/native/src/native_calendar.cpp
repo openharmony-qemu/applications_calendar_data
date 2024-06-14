@@ -62,9 +62,9 @@ void Calendar::InsertReminders(int eventId, vector<int> reminders)
         }
 }
 
-int Calendar::AddEventInfo(const Event& event)
+int AddEventInfo(const Event& event, int channelId)
 {
-    auto valueEvent = BuildValueEvent(event, m_id, 0);
+    auto valueEvent = BuildValueEvent(event, m_id, channelId);
     auto eventId = DataShareHelperManager::GetInstance().Insert(*(m_eventUri.get()), valueEvent);
     LOG_INFO("Insert Event eventId %{public}d", eventId);
     if (eventId <= 0) {
@@ -91,7 +91,7 @@ int Calendar::AddEventInfo(const Event& event)
 
 int Calendar::AddEvent(const Event& event)
 {
-    return Calendar::AddEventInfo(event);
+    return AddEventInfo(event, 0);
 }
 #define SUPPORT_BATCH_INSERT 0
 
@@ -112,7 +112,7 @@ int Calendar::AddEvents(const std::vector<Event>& events)
     int count = 0;
     int channelId = 0;
     for (const auto &event : events) {
-        auto index = Calendar::AddEventInfo(event, channelId);
+        auto index = AddEventInfo(event, channelId);
         if (index > 0) {
             count++;
         }
