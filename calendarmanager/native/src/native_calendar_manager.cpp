@@ -58,17 +58,6 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
 
 std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount& account)
 {
-    DataShare::DataSharePredicates predicates = BuildCalendarFilter(account);
-    std::vector<std::string> columns = {"_id", "account_name", "account_type", "calendar_displayName"};
-    DataShare::DatashareBusinessError error;
-    auto resultSet = DataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
-    if (resultSet) {
-        auto calendarSet = ResultSetToCalendars(resultSet);
-        if (!calendarSet.empty()) {
-            LOG_INFO("already exist");
-            return std::make_shared<Calendar>(calendarSet.at(0)->GetAccount(), calendarSet.at(0)->GetId());
-        }
-    }
     auto valueEvent = BuildValueCalendarAccount(account);
     auto index = DataShareHelperManager::GetInstance().Insert(*(m_calendarUri.get()), valueEvent);
     LOG_DEBUG("Insert index %{public}d", index);
