@@ -28,6 +28,9 @@ import data_rdb from '@ohos.data.relationalStore';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
 import { BusinessError } from '@ohos.base';
 import { ValuesBucket } from '@ohos.data.ValuesBucket';
+import getTableByUri from '@ohos/datamanager/src/main/ets/utils/CalendarUriHelper';
+import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
+import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns';
 
 const TAG = 'DataShareAbilityAuthenticateProxy';
 
@@ -115,7 +118,9 @@ async function verifyByUri(uri: string, dataParameter: DataParameter, highPermis
     // Encapsulate the callback function of an object to add Permission Used Record
     dataParameter.callback = (err: BusinessError, rowId: number) => {
       callback(err, rowId);
-      addPermissionUsedRecordInCallBack(err, bundleNameAndTokenIdFromUri.tokenId, highPermission);
+      if (isNeedAddPermissionUsedRecord(uri, dataParameter)) {
+        addPermissionUsedRecordInCallBack(err, bundleNameAndTokenIdFromUri.tokenId, highPermission);
+      }
     }
     // return high-level
     return PERMISSIONS_FLAG_HIGH;
@@ -126,7 +131,9 @@ async function verifyByUri(uri: string, dataParameter: DataParameter, highPermis
     // Encapsulate the callback function of an object to add Permission Used Record
     dataParameter.callback = (err: BusinessError, rowId: number) => {
       callback(err, rowId);
-      addPermissionUsedRecordInCallBack(err, bundleNameAndTokenIdFromUri.tokenId, lowPermission);
+      if (isNeedAddPermissionUsedRecord(uri, dataParameter)) {
+        addPermissionUsedRecordInCallBack(err, bundleNameAndTokenIdFromUri.tokenId, lowPermission);
+      }
     }
     // return low-level
     return PERMISSIONS_FLAG_LOW;
@@ -193,6 +200,34 @@ function addPermissionUsedRecordInCallBack(err: BusinessError, tokenId: string, 
     }
   }
   return;
+}
+
+function isNeedAddPermissionUsedRecord(uri: string, dataParameter: DataParameter): boolean {
+  let table = getTableByUri(uri);
+  if (table === CalendarsColumns.TABLE_NAME) {
+    return true;
+  }
+
+  if (table !== EventColumns.TABLE_NAME) {
+    return false;
+  }
+
+  let value = dataParameter.value;
+  if (value instanceof Array) {
+    return true;
+  }
+
+  let valuesBucket: data_rdb.ValuesBucket = value as ValuesBucket;
+  let channelId = valuesBucket['channel_id'] as number;
+  if (channelId === undefined || channelId === null) {
+    return true;
+  }
+
+  if (channelId == 0) {
+    return true;
+  }
+
+  return false;
 }
 
 /**

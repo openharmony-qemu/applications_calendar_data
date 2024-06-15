@@ -47,6 +47,7 @@ public:
     std::vector<Attendee> GetAttendeesByEventId(int id);
     std::optional<std::vector<int>> GetRemindersByEventId(int id);
     void InsertReminders(int eventId, vector<int> reminders);
+    int AddEventInfo(const Event& event, int channelId);
     CalendarAccount GetAccount() const
     {
         return m_account;

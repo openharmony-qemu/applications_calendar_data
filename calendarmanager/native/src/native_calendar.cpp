@@ -62,9 +62,9 @@ void Calendar::InsertReminders(int eventId, vector<int> reminders)
         }
 }
 
-int Calendar::AddEvent(const Event& event)
+int Calendar::AddEventInfo(const Event& event, int channelId)
 {
-    auto valueEvent = BuildValueEvent(event, m_id);
+    auto valueEvent = BuildValueEvent(event, m_id, channelId);
     auto eventId = DataShareHelperManager::GetInstance().Insert(*(m_eventUri.get()), valueEvent);
     LOG_INFO("Insert Event eventId %{public}d", eventId);
     if (eventId <= 0) {
@@ -88,6 +88,11 @@ int Calendar::AddEvent(const Event& event)
 
     return eventId;
 }
+
+int Calendar::AddEvent(const Event& event)
+{
+    return Calendar::AddEventInfo(event, 0);
+}
 #define SUPPORT_BATCH_INSERT 0
 
 #if SUPPORT_BATCH_INSERT
@@ -105,11 +110,13 @@ int Calendar::AddEvents(const std::vector<Event>& events)
 int Calendar::AddEvents(const std::vector<Event>& events)
 {
     int count = 0;
+    int channelId = 0;
     for (const auto &event : events) {
-        auto index = Calendar::AddEvent(event);
+        auto index = Calendar::AddEventInfo(event, channelId);
         if (index > 0) {
             count++;
         }
+        channelId++;
     }
     LOG_INFO("AddEvents count %{public}d", count);
     return count;
@@ -171,7 +178,7 @@ bool Calendar::UpdateEvent(const Event& event)
     const auto eventId = event.id.value();
     DataShare::DataSharePredicates m_predicates;
     m_predicates.EqualTo("_id", eventId);
-    auto valueEvent = BuildValueEvent(event, m_id);
+    auto valueEvent = BuildValueEvent(event, m_id, 0);
     auto ret = DataShareHelperManager::GetInstance().Update(*(m_eventUri.get()), m_predicates, valueEvent);
     LOG_INFO(" Update code %{public}d", ret);
     {
