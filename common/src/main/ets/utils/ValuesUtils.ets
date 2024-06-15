@@ -73,3 +73,23 @@ export function isContainsAllKeys(values: data_rdb.ValuesBucket, keys: Array<str
   }
   return true;
 }
+
+/**
+ * 过滤ValuesBucket中指定值
+ *
+ * @param values 待过滤的ValuesBucket
+ * @param key 待过滤的key
+ */
+export function filterValuesBucket(values: data_rdb.ValuesBucket, key: string): data_rdb.ValuesBucket {
+  if (!isContainsKey(values, key)) {
+    return values;
+  }
+  let resultBucket: data_rdb.ValuesBucket = {};
+  Object.keys(values).forEach(keyBucket => {
+    if (keyBucket !== key) {
+      resultBucket[keyBucket] = values[keyBucket];
+    }
+  });
+
+  return resultBucket;
+}

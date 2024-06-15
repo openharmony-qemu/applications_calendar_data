@@ -37,8 +37,10 @@ import { ErrorCode } from '../../constants/ErrorCode';
 import { DefaultProcessor } from './../DefaultProcessor';
 import { initValueCreator, initPredicateCreator, deleteValueCreator } from '../DatabaseProcessorHelper';
 import { acquireExpandOne, isNeedRefreshInstances, acquireUpdateOne } from '../instances/InstancesProcessor';
+import { filterValuesBucket } from '@ohos/common/src/main/ets/utils/ValuesUtils';
 
 const TAG: string = 'EventsProcessor';
+const CHANNEL_ID: string = 'channel_id';
 
 /**
  * the Events table processor
@@ -47,7 +49,8 @@ const TAG: string = 'EventsProcessor';
  */
 export class EventsProcessor extends DefaultProcessor {
   async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
-                              values: data_rdb.ValuesBucket, callback: Function) {
+                              value: data_rdb.ValuesBucket, callback: Function) {
+    let values = filterValuesBucket(value, CHANNEL_ID);
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     const isCalendarExist = await isCalendarContainSameId(rdbStore, values);
@@ -65,7 +68,8 @@ export class EventsProcessor extends DefaultProcessor {
   }
 
   async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
-                             values: data_rdb.ValuesBucket, callback: Function) {
+                             value: data_rdb.ValuesBucket, callback: Function) {
+    let values = filterValuesBucket(value, CHANNEL_ID);
     const callerName = getBundleNameByUri(uri);
     initValueCreator(values, callerName);
     const isCalendarCreatorExist = await isCalendarContainSameCreator(rdbStore, values);
@@ -89,14 +93,16 @@ export class EventsProcessor extends DefaultProcessor {
     this.doDelete(rdbStore, uri, predicates, callback);
   }
 
-  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, value: data_rdb.ValuesBucket,
                               predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    let values = filterValuesBucket(value, CHANNEL_ID);
     deleteValueCreator(values);
     this.updateEventWithInstance(rdbStore, uri, values, predicates, callback);
   }
 
-  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, value: data_rdb.ValuesBucket,
                              predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    let values = filterValuesBucket(value, CHANNEL_ID);
     const callerName = getBundleNameByUri(uri);
     deleteValueCreator(values);
     initPredicateCreator(predicates, callerName);
