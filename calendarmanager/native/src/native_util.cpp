@@ -206,7 +206,7 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
 
     LOG_DEBUG("title %{public}s", event.title.value_or("").c_str());
     valuesBucket.Put("title", event.title.value_or(""));
-    valuesBucket.Put("event_calendar_type", event.type);
+    valuesBucket.Put("important_event_type", event.type);
     valuesBucket.Put("dtstart", event.startTime);
     valuesBucket.Put("dtend", event.endTime);
     valuesBucket.Put("channel_id", channelId);
@@ -228,6 +228,9 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     }
     if (event.identifier.has_value()) {
         valuesBucket.Put("identifier", event.identifier.value());
+    }
+    if (event.isLunar.has_value()) {
+        valuesBucket.Put("event_calendar_type", event.isLunar.value());
     }
     return valuesBucket;
 }
@@ -531,7 +534,7 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
     GetValueOptional(resultSet, "_id", event.id);
     if (columns.count("type")) {
         int type = 0;
-        GetValue(resultSet, "event_calendar_type", type);
+        GetValue(resultSet, "important_event_type", type);
         event.type = static_cast<EventType>(type);
     }
     if (columns.count("title")) {
@@ -568,6 +571,12 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
    
     if (columns.count("identifier")) {
         GetValueOptional(resultSet, "identifier", event.identifier);
+    }
+
+    if (columns.count("isLunar")) {
+        int isLunar = 0;
+        GetValue(resultSet, "event_calendar_type", isLunar);
+        event.isLunar = static_cast<bool>(isLunar);
     }
 }
 
@@ -693,16 +702,9 @@ bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValu
     return false;
 }
 
-void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,
+    std::set<string>& resultSetField, const std::map<string, string> eventField)
 {
-    const std::map<string, string> eventField = { { "id", "_id" },
-                                                  { "type", "event_calendar_type" },
-                                                  { "title", "title" },
-                                                  { "startTime", "dtstart" },
-                                                  { "endTime", "dtend" },
-                                                  { "isAllDay", "allDay" },
-                                                  { "timeZone", "eventTimezone" },
-                                                  { "description", "description" }};
     for (const auto& field : eventKey) {
         if (field == "location") {
             queryField.emplace_back("eventLocation");
@@ -737,11 +739,29 @@ void setField(const std::vector<string>& eventKey, std::vector<string>& queryFie
             resultSetField.insert(field);
             continue;
         }
+        if (field == "isLunar") {
+            queryField.emplace_back("event_calendar_type");
+            resultSetField.insert(field);
+            continue;
+        }
         if (field == "id") {
             continue;
         }
         queryField.emplace_back(eventField.at(field));
         resultSetField.insert(field);
     }
+}
+
+void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+{
+    const std::map<string, string> eventField = { { "id", "_id" },
+                                                  { "type", "important_event_type" },
+                                                  { "title", "title" },
+                                                  { "startTime", "dtstart" },
+                                                  { "endTime", "dtend" },
+                                                  { "isAllDay", "allDay" },
+                                                  { "timeZone", "eventTimezone" },
+                                                  { "description", "description" }};
+    SetFieldInfo(eventKey, queryField, resultSetField, eventField);
 }
 }

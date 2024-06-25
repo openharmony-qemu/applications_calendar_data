@@ -105,6 +105,7 @@ struct Event {
     optional<string> description;
     optional<EventService> service;
     optional<string> identifier;
+    optional<bool> isLunar;
 };
 
 
