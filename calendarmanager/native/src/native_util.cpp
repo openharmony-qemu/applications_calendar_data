@@ -702,16 +702,9 @@ bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValu
     return false;
 }
 
-void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField, 
+    std::set<string>& resultSetField, const std::map<string, string> eventField)
 {
-    const std::map<string, string> eventField = { { "id", "_id" },
-                                                  { "type", "important_event_type" },
-                                                  { "title", "title" },
-                                                  { "startTime", "dtstart" },
-                                                  { "endTime", "dtend" },
-                                                  { "isAllDay", "allDay" },
-                                                  { "timeZone", "eventTimezone" },
-                                                  { "description", "description" }};
     for (const auto& field : eventKey) {
         if (field == "location") {
             queryField.emplace_back("eventLocation");
@@ -746,7 +739,7 @@ void setField(const std::vector<string>& eventKey, std::vector<string>& queryFie
             resultSetField.insert(field);
             continue;
         }
-         if (field == "isLunar") {
+        if (field == "isLunar") {
             queryField.emplace_back("event_calendar_type");
             resultSetField.insert(field);
             continue;
@@ -756,6 +749,19 @@ void setField(const std::vector<string>& eventKey, std::vector<string>& queryFie
         }
         queryField.emplace_back(eventField.at(field));
         resultSetField.insert(field);
-    }
+    }  
+}
+
+void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+{
+    const std::map<string, string> eventField = { { "id", "_id" },
+                                                  { "type", "important_event_type" },
+                                                  { "title", "title" },
+                                                  { "startTime", "dtstart" },
+                                                  { "endTime", "dtend" },
+                                                  { "isAllDay", "allDay" },
+                                                  { "timeZone", "eventTimezone" },
+                                                  { "description", "description" }};
+    SetFieldInfo(eventKey, queryField, resultSetField, eventField);
 }
 }
