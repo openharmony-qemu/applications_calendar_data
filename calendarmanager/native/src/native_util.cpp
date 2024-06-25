@@ -702,7 +702,7 @@ bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValu
     return false;
 }
 
-void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField, 
+void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,
     std::set<string>& resultSetField, const std::map<string, string> eventField)
 {
     for (const auto& field : eventKey) {
@@ -749,7 +749,7 @@ void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& quer
         }
         queryField.emplace_back(eventField.at(field));
         resultSetField.insert(field);
-    }  
+    }
 }
 
 void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
