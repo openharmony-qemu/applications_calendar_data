@@ -93,6 +93,7 @@ ohos_shared_library("calendarmanager") {
     "ability_runtime:abilitykit_native",
     "ability_runtime:data_ability_helper",
     "ability_runtime:napi_base_context",
+    "access_token:libaccesstoken_sdk",
     "ace_engine:ace_uicontent",
     "c_utils:utils",
     "data_share:datashare_common",
