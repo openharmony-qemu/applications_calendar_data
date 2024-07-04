@@ -24,6 +24,7 @@
 #include "data_share_helper_manager.h"
 #include "datashare_helper.h"
 #include "datashare_predicates.h"
+#include "accesstoken_kit.h"
 
 #include "ipc_skeleton.h"
 
@@ -48,6 +49,8 @@ napi_status CalendarEnvNapi::GetContext(napi_env env, napi_value value)
 void CalendarEnvNapi::Init(napi_env env, napi_value value)
 {
     const std::string CALENDAR_DATA_URI = "datashare:///calendardata";
+    const std::string CALENDAR_DATA_WHOLE_URI = "datashare:///calendardata_whole";
+    const std::string PERMISSION = "ohos.permission.READ_WHOLE_CALENDAR";
     if (hasInited) {
         return;
     }
@@ -59,8 +62,16 @@ void CalendarEnvNapi::Init(napi_env env, napi_value value)
     std::string bundleName = m_context->GetBundleName();
     uint64_t tokenId = IPCSkeleton::GetSelfTokenID();
     CalendarEnv::GetInstance().Init(bundleName, tokenId);
-    auto dataShareHelper = DataShare::DataShareHelper::Creator(m_context->GetToken(), CALENDAR_DATA_URI);
-    DataShareHelperManager::GetInstance().SetDataShareHelper(dataShareHelper);
+
+    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), PERMISSION);
+    LOG_INFO("verify access result=%{public}d", ret);
+    if (ret == Security::AccessToken::PERMISSION_GRANTED) {
+        auto dataShareHelper = DataShare::DataShareHelper::Creator(m_context->GetToken(), CALENDAR_DATA_WHOLE_URI);
+        DataShareHelperManager::GetInstance().SetDataShareHelper(dataShareHelper);
+    } else {
+        auto dataShareHelper = DataShare::DataShareHelper::Creator(m_context->GetToken(), CALENDAR_DATA_URI);
+         DataShareHelperManager::GetInstance().SetDataShareHelper(dataShareHelper);
+    } 
     hasInited = true;
 }
 };
