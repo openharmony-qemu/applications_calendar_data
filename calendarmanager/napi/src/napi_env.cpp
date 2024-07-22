@@ -68,9 +68,11 @@ void CalendarEnvNapi::Init(napi_env env, napi_value value)
     LOG_INFO("verify access result=%{public}d", ret);
     if (ret == Security::AccessToken::PERMISSION_GRANTED) {
         auto dataShareHelper = DataShare::DataShareHelper::Creator(m_context->GetToken(), CALENDAR_DATA_WHOLE_URI);
+        LOG_INFO("dataShareHelper high create result=%{public}d", dataShareHelper != nullptr);
         DataShareHelperManager::GetInstance().SetDataShareHelper(dataShareHelper);
     } else {
         auto dataShareHelper = DataShare::DataShareHelper::Creator(m_context->GetToken(), CALENDAR_DATA_URI);
+        LOG_INFO("dataShareHelper low create result=%{public}d", dataShareHelper != nullptr);
         DataShareHelperManager::GetInstance().SetDataShareHelper(dataShareHelper);
     }
     hasInited = true;
