@@ -98,7 +98,7 @@ std::shared_ptr<Calendar> CalendarManager::GetCalendar(const std::optional<Calen
     auto calendarSet = ResultSetToCalendars(resultSet);
     if (calendarSet.empty()) {
         LOG_WARN("calendarSet empty");
-        return std::make_shared<Calendar>(-1);;
+        return std::make_shared<Calendar>(-1);
     }
     LOG_INFO("GetCalendar successed");
     return std::move(calendarSet.at(0));
