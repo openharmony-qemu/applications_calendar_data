@@ -64,8 +64,8 @@ HWTEST_F(CalendarManagerTest, getCalendar_test_exist, testing::ext::TestSize.Lev
         "name_getCalendar_test_exist",
         "local",
     };
-    ASSERT_TRUE(calendar);
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
+    ASSERT_TRUE(calendar);
     if (calendar->GetId() == -1 || CalendarManager::IsDefaultAccount(calendar->GetAccount())) {
         calendar = CalendarManager::GetInstance().CreateCalendar(test_account);
         ASSERT_TRUE(calendar);
