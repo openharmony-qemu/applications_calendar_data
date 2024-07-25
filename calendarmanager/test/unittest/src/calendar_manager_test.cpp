@@ -55,7 +55,7 @@ HWTEST_F(CalendarManagerTest, getCalendar_which_no_exist, testing::ext::TestSize
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
     ASSERT_TRUE(calendar);
-    ASSERT_EQ(calendars->GetId(), -1);
+    ASSERT_EQ(calendar->GetId(), -1);
 }
 
 HWTEST_F(CalendarManagerTest, getCalendar_test_exist, testing::ext::TestSize.Level1)
@@ -66,7 +66,7 @@ HWTEST_F(CalendarManagerTest, getCalendar_test_exist, testing::ext::TestSize.Lev
     };
     ASSERT_TRUE(calendar);
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
-    if (calendars->GetId() == -1 || CalendarManager::IsDefaultAccount(calendar->GetAccount())) {
+    if (calendar->GetId() == -1 || CalendarManager::IsDefaultAccount(calendar->GetAccount())) {
         calendar = CalendarManager::GetInstance().CreateCalendar(test_account);
         ASSERT_TRUE(calendar);
     }
@@ -83,7 +83,7 @@ HWTEST_F(CalendarManagerTest, createCalendar_which_not_exist, testing::ext::Test
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
     ASSERT_TRUE(calendar);
-    ASSERT_EQ(calendars->GetId(), -1);
+    ASSERT_EQ(calendar->GetId(), -1);
     calendar = CalendarManager::GetInstance().CreateCalendar(test_account);
     ASSERT_TRUE(calendar);
     auto accountExpect = calendar->GetAccount();
@@ -100,7 +100,7 @@ HWTEST_F(CalendarManagerTest, createCalendar_which_already_exist, testing::ext::
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
     ASSERT_TRUE(calendar);
-    ASSERT_EQ(calendars->GetId(), -1);
+    ASSERT_EQ(calendar->GetId(), -1);
     calendar = CalendarManager::GetInstance().CreateCalendar(test_account);
     ASSERT_TRUE(calendar);
     auto newCalendar = CalendarManager::GetInstance().CreateCalendar(test_account);
@@ -145,7 +145,7 @@ HWTEST_F(CalendarManagerTest, getAccount_test_1, testing::ext::TestSize.Level1)
     };
     auto calendar = CalendarManager::GetInstance().GetCalendar(test_account);
     ASSERT_TRUE(calendar);
-    ASSERT_EQ(calendars->GetId(), -1);
+    ASSERT_EQ(calendar->GetId(), -1);
     calendar = CalendarManager::GetInstance().CreateCalendar(test_account);
     ASSERT_TRUE(calendar);
     auto newCalendar = CalendarManager::GetInstance().CreateCalendar(test_account);
