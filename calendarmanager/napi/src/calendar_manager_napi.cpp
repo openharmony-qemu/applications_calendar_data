@@ -53,9 +53,6 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
         auto nativteCalendar = Native::CalendarManager::GetInstance().CreateCalendar(ctxt->account);
         ctxt->status = (nativteCalendar != nullptr) ? napi_ok : napi_generic_failure;
         CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar error!");
-        if (nativteCalendar->GetId() == -1) {
-            CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
-        }
         ctxt->calendar->SetNative(nativteCalendar);
         ctxt->id = nativteCalendar->GetId();
     };
@@ -141,7 +138,10 @@ napi_value CalendarManagerNapi::GetCalendar(napi_env env, napi_callback_info inf
     auto execute = [ctxt]() {
         auto nativteCalendar = Native::CalendarManager::GetInstance().GetCalendar(ctxt->account);
         ctxt->status = (nativteCalendar != nullptr) ? napi_ok : napi_generic_failure;
-        CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
+        CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar error!");
+        if (nativteCalendar->GetId() == -1) {
+            CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
+        }
         ctxt->calendar->SetNative(nativteCalendar);
         ctxt->id = nativteCalendar->GetId();
     };
