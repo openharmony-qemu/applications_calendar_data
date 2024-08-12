@@ -236,7 +236,7 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithYearlyList, testing::ext::TestSize.
     Event event;
     RecurrenceRule recurrenceRule;
     recurrenceRule.recurrenceFrequency = YEARLY;
-    recurrenceRule.interval 2;
+    recurrenceRule.interval = 2;
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
     std::string rrule = "FREQ=YEARLY;INTERVAL=2;WKST=SU";
     const auto value = GetRule(event);
