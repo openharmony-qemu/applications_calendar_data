@@ -140,45 +140,174 @@ std::string GetUTCTimes(const std::vector<int64_t> &timeValues)
 std::string GetRule(const Event &event)
 {
     const time_t now = event.startTime / 1000;
-    const std::tm* time = std::localtime(&now);
-    const int monOffset = 1;
-    const std::vector<string> weekList = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
-    const int weekSize = 7;
+    const std::tm *time = std::localtime(&now);
     std::string rrule;
     RecurrenceType recurrenceFrequency = event.recurrenceRule.value().recurrenceFrequency;
     if (recurrenceFrequency == DAILY) {
-        rrule = "FREQ=DAILY;WKST=SU";
+        rrule = "FREQ=DAILY" + GetEventRRule(event) + ";WKST=SU";
     } else if (recurrenceFrequency == WEEKLY) {
-        rrule = "FREQ=WEEKLY;WKST=SU;BYDAY=";
+        rrule = "FREQ=WEEKLY" + GetEventRRule(event) + ";WKST=SU;BYDAY=";
         if (time != nullptr) {
-            if (time->tm_wday < weekSize) {
-                rrule += weekList[time->tm_wday];
-            }
+            rrule += GetWeeklyRule(event, *time);
         }
     } else if (recurrenceFrequency == MONTHLY) {
-        rrule = "FREQ=MONTHLY;WKST=SU;BYMONTHDAY=";
+        rrule = "FREQ=MONTHLY" + GetEventRRule(event) + ";WKST=SU";
         if (time != nullptr) {
-            rrule += std::to_string(time->tm_mday);
+            rrule += GetMonthlyRule(event, *time);
         }
     } else if (recurrenceFrequency == YEARLY) {
-        rrule = "FREQ=YEARLY;WKST=SU;BYMONTHDAY=";
+        rrule = "FREQ=YEARLY" + GetEventRRule(event) + ";WKST=SU";
         if (time != nullptr) {
-            rrule += std::to_string(time->tm_mday);
-            rrule += ";BYMONTH=";
-            rrule += std::to_string(time->tm_mon + monOffset);
+            rrule += GetYearlyRule(event, *time);
         }
     }
-    if (event.recurrenceRule.value().expire.has_value() && event.recurrenceRule.value().expire.value() > 0) {
-        rrule += ";UNTIL=";
-        rrule += GetUTCTime(event.recurrenceRule.value().expire.value());
+
+    return rrule;
+}
+
+std::string GetEventRRule(const Event &event)
+{
+    auto recurrenceRule = event.recurrenceRule.value();
+    std::string rrule;
+    if (recurrenceRule.expire.has_value() && recurrenceRule.expire.value() > 0) {
+        rrule = ";UNTIL=" + GetUTCTime(event.recurrenceRule.value().expire.value());
     }
-    if (event.recurrenceRule.value().count.has_value() && event.recurrenceRule.value().count.value() > 0) {
-        rrule += ";COUNT=" + std::to_string(event.recurrenceRule.value().count.value());
+    if (recurrenceRule.count.has_value() && recurrenceRule.count.value() > 0) {
+        rrule = ";COUNT=" + std::to_string(recurrenceRule.count.value());
     }
-    if (event.recurrenceRule.value().interval.has_value() && event.recurrenceRule.value().interval.value() > 0) {
-        rrule += ";INTERVAL=" + std::to_string(event.recurrenceRule.value().interval.value());
+    if (recurrenceRule.interval.has_value() && recurrenceRule.interval.value() > 0) {
+        rrule = ";INTERVAL=" + std::to_string(recurrenceRule.interval.value());
     }
-    
+    return rrule;
+}
+
+std::string GetWeeklyRule(const Event &event, const std::tm &time)
+{
+    std::string rrule;
+    bool isHasSetData = false;
+    auto rRuleValue = event.recurrenceRule.value();
+    const std::vector<string> weekList = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
+    if (rRuleValue.daysOfWeek.has_value()) {
+        isHasSetData = true;
+        auto daysOfWeekList = rRuleValue.daysOfWeek.value();
+        rrule = GetDaysOfWeekRule(MIN_DAY_OF_WEEK, MAX_DAY_OF_WEEK, daysOfWeekList);
+    }
+    if (isHasSetData == false) {
+        if (time.tm_wday < MAX_DAY_OF_WEEK) {
+            rrule = weekList[time.tm_wday];
+        }
+    }
+    return rrule;
+}
+
+std::string GetMonthlyRule(const Event &event, const std::tm &time)
+{
+    bool isHasSetData = false;
+    std::string rrule;
+    auto rruleValue = event.recurrenceRule.value();
+    if (rruleValue.daysOfWeek.has_value() && rruleValue.weeksOfMonth.has_value()) {
+        isHasSetData = true;
+        rrule += ";BYDAY=";
+        rrule += GetDaysOfWeekMonthRule(rruleValue.daysOfWeek.value(), rruleValue.weeksOfMonth.value());
+    }
+
+    if (rruleValue.daysOfMonth.has_value()) {
+        isHasSetData = true;
+        rrule += ";BYMONTHDAY=";
+        auto daysOfMonthList = rruleValue.daysOfMonth.value();
+        rrule += GetRRuleSerial(MIN_DAY_OF_MONTH, MAX_DAY_OF_MONTH, daysOfMonthList);
+    }
+    if (isHasSetData == false) {
+        rrule += ";BYMONTHDAY=";
+        rrule += std::to_string(time.tm_mday);
+    }
+    return rrule;
+}
+
+std::string GetYearlyRule(const Event &event, const std::tm &time)
+{
+    const int monOffset = 1;
+    bool isHasSetData = false;
+    std::string rrule;
+    auto rruleValue = event.recurrenceRule.value();
+    if (rruleValue.daysOfYear.has_value()) {
+        isHasSetData = true;
+        std::string days = GetRRuleSerial(MIN_DAY_OF_YEAR, MAX_DAY_OF_YEAR, rruleValue.daysOfYear.value());
+        rrule = ";BYYEARDAY=" + days;
+    }
+    if (rruleValue.weeksOfYear.has_value() && rruleValue.daysOfWeek.has_value()) {
+        isHasSetData = true;
+        auto weekOfYearList = rruleValue.weeksOfYear.value();
+        std::string weeks = GetRRuleSerial(MIN_WEEK_OF_YEAR, MAX_WEEK_OF_YEAR, weekOfYearList);
+        auto daysOfWeekList = rruleValue.daysOfWeek.value();
+        std::string weekdays = GetDaysOfWeekRule(MIN_DAY_OF_WEEK, MAX_DAY_OF_WEEK, daysOfWeekList);
+        rrule = ";BYWEEKNO=" + weeks + ";BYDAY=" + weekdays;
+    }
+    if (rruleValue.monthsOfYear.has_value() && rruleValue.daysOfMonth.has_value()) {
+        isHasSetData = true;
+        auto daysOfMonthList = rruleValue.daysOfMonth.value();
+        auto monthsOfYearList = rruleValue.monthsOfYear.value();
+        std::string days = GetRRuleSerial(MIN_DAY_OF_MONTH, MAX_DAY_OF_MONTH, daysOfMonthList);
+        std::string months = GetRRuleSerial(MIN_MONTH_OF_YEAR, MAX_MONTH_OF_YEAR, monthsOfYearList);
+        rrule = ";BYMONTHDAY=" + days + ";BYMONTH=" + months;
+    }
+    if (isHasSetData == false) {
+        rrule += ";BYMONTHDAY=";
+        rrule += std::to_string(time.tm_mday);
+        rrule += ";BYMONTH=";
+        rrule += std::to_string(time.tm_mon + monOffset);
+    }
+    return rrule;
+}
+
+std::string GetDaysOfWeekRule(int minValue, int maxValue, const std::vector<int64_t> &daysOfWeekList)
+{
+    std::string rrule;
+    const std::vector<string> weekDayList = {"MO", "TU", "WE", "TH", "FR", "SA", "SU"};
+    for (const auto &dayOfWeek : daysOfWeekList) {
+        if (dayOfWeek <= maxValue && dayOfWeek >= minValue) {
+            if (&dayOfWeek == &daysOfWeekList.back()) {
+                rrule = rrule + weekDayList[dayOfWeek - 1];
+                break;
+            }
+            rrule = rrule + weekDayList[dayOfWeek - 1] + ",";
+        }
+    }
+    return rrule;
+}
+
+std::string GetDaysOfWeekMonthRule(
+    const std::vector<int64_t> &daysOfWeekList, const std::vector<int64_t> &weeksOfMonthList)
+{
+    std::string rrule;
+    const std::vector<string> weekDayList = {"MO", "TU", "WE", "TH", "FR", "SA", "SU"};
+    int daysLen = daysOfWeekList.size();
+    for (int i = 0; i < daysLen; i++) {
+        if (daysOfWeekList[i] > MIN_DAY_OF_WEEK && daysOfWeekList[i] <= MAX_DAY_OF_WEEK &&
+            weeksOfMonthList[i] >= MIN_WEEK_OF_MONTH && weeksOfMonthList[i] <= MAX_WEEK_OF_MONTH) {
+            if (i == daysLen - 1) {
+                rrule = rrule + std::to_string(weeksOfMonthList[i]) + weekDayList[daysOfWeekList[i] - 1];
+                break;
+            } else {
+                rrule = rrule + std::to_string(weeksOfMonthList[i]) + weekDayList[daysOfWeekList[i] - 1] + ",";
+            }
+        }
+    }
+    return rrule;
+}
+
+std::string GetRRuleSerial(int minValue, int maxValue, const std::vector<int64_t> &serialList)
+{
+    std::string rrule;
+    for (const auto &serial : serialList) {
+        if (serial >= minValue && serial <= maxValue) {
+            if (&serial == &serialList.back()) {
+                rrule = rrule + std::to_string(serial);
+                break;
+            }
+            rrule = rrule + std::to_string(serial) + ",";
+        }
+    }
     return rrule;
 }
 
