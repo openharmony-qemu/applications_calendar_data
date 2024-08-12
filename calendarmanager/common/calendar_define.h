@@ -82,6 +82,12 @@ struct RecurrenceRule {
     optional<int64_t> count;
     optional<int64_t> interval;
     optional<vector<int64_t>> excludedDates;
+    optional<vector<int64_t>> daysOfWeek;
+    optional<vector<int64_t>> daysOfMonth ;
+    optional<vector<int64_t>> daysOfYear;
+    optional<vector<int64_t>> weeksOfMonth;
+    optional<vector<int64_t>> weeksOfYear;
+    optional<vector<int64_t>> monthsOfYear;
 };
 
 struct EventService {
