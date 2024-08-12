@@ -18,6 +18,18 @@
 #include "native_util.h"
 
 namespace OHOS::CalendarApi::Native {
+const int MIN_DAY_OF_WEEK = 1;
+const int MAX_DAY_OF_WEEK = 7;
+const int MIN_MONTH_OF_YEAR = -12;
+const int MAX_MONTH_OF_YEAR = 12;
+const int MIN_DAY_OF_MONTH = -31;
+const int MAX_DAY_OF_MONTH = 31;
+const int MIN_DAY_OF_YEAR = -366;
+const int MAX_DAY_OF_YEAR = 366;
+const int MIN_WEEK_OF_YEAR = -53;
+const int MAX_WEEK_OF_YEAR = 53;
+const int MIN_WEEK_OF_MONTH = -5;
+const int MAX_WEEK_OF_MONTH = 5;
 void DumpCalendarAccount(const CalendarAccount &account)
 {
     LOG_DEBUG("account.name:%{public}s", account.name.c_str());
@@ -881,7 +893,7 @@ void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& quer
     }
 }
 
-void setField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+void SetField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
 {
     const std::map<string, string> eventField = { { "id", "_id" },
                                                   { "type", "important_event_type" },
