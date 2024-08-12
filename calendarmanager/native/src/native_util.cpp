@@ -642,32 +642,77 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
             ruleMap.insert(std::pair<std::string, std::string>(keyAndValue[0], keyAndValue[1]));
         }
     }
+    SetRRuleValue(ruleMap, out);
+    out.excludedDates = ResultSetToExcludedDates(resultSet);
 
-    std::map<std::string, std::string>::iterator iter;
+    return std::make_optional<RecurrenceRule>(out);
+}
+void SetRRuleValue(const std::map<std::string, std::string> &ruleMap, RecurrenceRule &out)
+{
+    std::map<std::string, std::string>::const_iterator iter;
     for (iter = ruleMap.begin(); iter != ruleMap.end(); iter++) {
         if (iter->first == "FREQ") {
             ConvertRecurrenceFrequency(iter->second, out);
             continue;
         }
-
         if (iter->first == "COUNT") {
             out.count = std::make_optional<int64_t>(std::stoi(iter->second));
             continue;
         }
-
         if (iter->first == "INTERVAL") {
             out.interval = std::make_optional<int64_t>(std::stoi(iter->second));
             continue;
         }
-
         if (iter->first == "UNTIL") {
             out.expire = std::make_optional<int64_t>(TimeToUTC(iter->second));
         }
+        if (iter->first == "BYDAY") {
+            std::vector<std::string> weekDayList = SplitString(iter->second, ",");
+            SetByDayOfRRule(weekDayList, out);
+        }
+        if (iter->first == "BYWEEKNO") {
+            std::vector<std::string> weekNumList = SplitString(iter->second, ",");
+            for (const auto &weekNum : weekNumList) {
+                out.weeksOfYear->push_back(std::stoi(weekNum));
+            }
+        }
+        if (iter->first == "BYMONTHDAY") {
+            std::vector<std::string> monthDayList = SplitString(iter->second, ",");
+            for (const auto &monthDay : monthDayList) {
+                out.daysOfMonth.value().push_back(std::stoi(monthDay));
+            }
+        }
+        if (iter->first == "BYYEARDAY") {
+            std::vector<std::string> yearDayList = SplitString(iter->second, ",");
+            for (const auto &yearDay : yearDayList) {
+                out.daysOfYear.value().push_back(std::stoi(yearDay));
+            }
+        }
+        if (iter->first == "BYMONTH") {
+            std::vector<std::string> monthList = SplitString(iter->second, ",");
+            for (const auto &month : monthList) {
+                out.monthsOfYear.value().push_back(std::stoi(month));
+            }
+        }
     }
+}
 
-    out.excludedDates = ResultSetToExcludedDates(resultSet);
-
-    return std::make_optional<RecurrenceRule>(out);
+void SetByDayOfRRule(const std::vector<std::string> &weekDayList, RecurrenceRule &out)
+{
+    const int weekStrLen = 2;
+    const std::vector<string> dayOfWeekList = {"MO", "TU", "WE", "TH", "FR", "SA", "SU"};
+    for (const auto &weekday : weekDayList) {
+        if (weekday.length() >= weekStrLen) {
+            std::string weekDayStr = weekday.substr(weekday.length() - weekStrLen, weekStrLen);
+            std::string WeekNumStr = weekday.substr(0, weekday.length() - weekStrLen);
+            auto it = std::find(dayOfWeekList.begin(), dayOfWeekList.end(), weekDayStr);
+            if (it != dayOfWeekList.end()) {
+                int dayNum = it - dayOfWeekList.begin();
+                out.daysOfWeek.value().push_back(dayNum + 1);
+                out.weeksOfMonth.value().push_back(std::stoi(WeekNumStr));
+            }
+        }
+    }
 }
 
 void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std::set<std::string>& columns)
