@@ -150,4 +150,97 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithYearly, testing::ext::TestSize.Leve
 
     EXPECT_EQ(value, rrule);
 }
+HWTEST_F(EventRecurrenceRuleTest, GetRuleWithWeeklyList, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = WEEKLY;
+    recurrenceRule.daysOfWeek = {1, 2, 3, 4, 5, 6, 7};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    std::string rrule = "FREQ=WEEKLY;WKST=SU;BYDAY=MO,TU,WE,TH,FR,SA,SU";
+    const auto value = GetRule(event);
+
+    EXPECT_EQ(value, rrule);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, GetRuleWithWeeksOfMonthlyList, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = MONTHLY;
+    recurrenceRule.weeksOfMonth = {2, 3};
+    recurrenceRule.daysOfWeek = {3, 5};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    std::string rrule = "FREQ=MONTHLY;WKST=SU;BYDAY=2WE,3FR";
+    const auto value = GetRule(event);
+
+    EXPECT_EQ(value, rrule);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, GetRuleWithDaysOfMonthlyList, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = MONTHLY;
+    recurrenceRule.daysOfMonth = {18, 19};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    std::string rrule = "FREQ=MONTHLY;WKST=SU;BYMONTHDAY=18,19";
+    const auto value = GetRule(event);
+
+    EXPECT_EQ(value, rrule);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, GetRuleWithMonthsOfYearlyList, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.monthsOfYear = {5, 6};
+    recurrenceRule.daysOfMonth = {20, 21};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    std::string rrule = "FREQ=YEARLY;WKST=SU;BYMONTHDAY=20,21;BYMONTH=5,6";
+    const auto value = GetRule(event);
+
+    EXPECT_EQ(value, rrule);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, GetRuleWithDaysOfYearlyList, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.daysOfYear = {180, 360, 365};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    std::string rrule = "FREQ=YEARLY;WKST=SU;BYYEARDAY=180,360,365";
+    const auto value = GetRule(event);
+
+    EXPECT_EQ(value, rrule);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, GetRuleWithWeeksOfYearlyList, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.weeksOfYear = {5, 6, 7};
+    recurrenceRule.daysOfWeek = {5, 6, 7};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    std::string rrule = "FREQ=YEARLY;WKST=SU;BYWEEKNO=5,6,7;BYDAY=FR,SA,SU";
+    const auto value = GetRule(event);
+
+    EXPECT_EQ(value, rrule);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, GetRuleWithYearlyList, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.interval 2;
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    std::string rrule = "FREQ=YEARLY;INTERVAL=2;WKST=SU";
+    const auto value = GetRule(event);
+
+    EXPECT_EQ(value, rrule);
+}
 }
