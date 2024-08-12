@@ -39,7 +39,7 @@ namespace OHOS::CalendarApi::Native {
     void SetByDayOfRRule(const std::vector<std::string> &weekDayList, RecurrenceRule &out);
     std::string GetDaysOfWeekRule(int minValue, int maxValue, const std::vector<int64_t> &daysOfWeekList);
     std::string GetDaysOfWeekMonthRule(
-      const std::vector<int64_t> &daysOfWeekList, const std::vector<int64_t> &weeksOfMonthList);
+        const std::vector<int64_t> &daysOfWeekList, const std::vector<int64_t> &weeksOfMonthList);
     std::string GetRRuleSerial(int minValue, int maxValue, const std::vector<int64_t> &serialList);
     std::string GetWeeklyRule(const Event &event, const std::tm &time);
     std::string GetMonthlyRule(const Event &event, const std::tm &time);
