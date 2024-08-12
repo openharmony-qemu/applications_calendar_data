@@ -271,7 +271,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     std::set<string> resultSetField;
     if (eventKey.size() > 0) {
         queryField.emplace_back("_id");
-        setField(eventKey, queryField, resultSetField);
+        SetField(eventKey, queryField, resultSetField);
     } else {
         resultSetField = {"type", "title", "startTime", "endTime", "isAllDay", "description",
         "timeZone", "location", "service", "attendee", "reminderTime"};
