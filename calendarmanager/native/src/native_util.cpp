@@ -182,13 +182,13 @@ std::string GetEventRRule(const Event &event)
     auto recurrenceRule = event.recurrenceRule.value();
     std::string rrule;
     if (recurrenceRule.expire.has_value() && recurrenceRule.expire.value() > 0) {
-        rrule = ";UNTIL=" + GetUTCTime(event.recurrenceRule.value().expire.value());
+        rrule += ";UNTIL=" + GetUTCTime(event.recurrenceRule.value().expire.value());
     }
     if (recurrenceRule.count.has_value() && recurrenceRule.count.value() > 0) {
-        rrule = ";COUNT=" + std::to_string(recurrenceRule.count.value());
+        rrule += ";COUNT=" + std::to_string(recurrenceRule.count.value());
     }
     if (recurrenceRule.interval.has_value() && recurrenceRule.interval.value() > 0) {
-        rrule = ";INTERVAL=" + std::to_string(recurrenceRule.interval.value());
+        rrule += ";INTERVAL=" + std::to_string(recurrenceRule.interval.value());
     }
     return rrule;
 }
@@ -265,6 +265,7 @@ std::string GetYearlyRule(const Event &event, const std::tm &time)
     }
     if (rruleValue.monthsOfYear.has_value() && rruleValue.weeksOfMonth.has_value() &&
         rruleValue.daysOfWeek.has_value()) {
+        isHasSetData = true;
         auto monthsOfYearList = rruleValue.monthsOfYear.value();
         auto weeksOfMonthList = rruleValue.weeksOfMonth.value();
         auto daysOfWeekList = rruleValue.daysOfWeek.value();
@@ -304,7 +305,7 @@ std::string GetDaysOfWeekMonthRule(
     const std::vector<string> weekDayList = {"MO", "TU", "WE", "TH", "FR", "SA", "SU"};
     int daysLen = daysOfWeekList.size();
     for (int i = 0; i < daysLen; i++) {
-        if (daysOfWeekList[i] > MIN_DAY_OF_WEEK && daysOfWeekList[i] <= MAX_DAY_OF_WEEK &&
+        if (daysOfWeekList[i] >= MIN_DAY_OF_WEEK && daysOfWeekList[i] <= MAX_DAY_OF_WEEK &&
             weeksOfMonthList[i] >= MIN_WEEK_OF_MONTH && weeksOfMonthList[i] <= MAX_WEEK_OF_MONTH) {
             if (i == daysLen - 1) {
                 rrule = rrule + std::to_string(weeksOfMonthList[i]) + weekDayList[daysOfWeekList[i] - 1];
