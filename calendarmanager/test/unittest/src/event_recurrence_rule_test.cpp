@@ -239,7 +239,7 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithYearlyList, testing::ext::TestSize.
     recurrenceRule.recurrenceFrequency = YEARLY;
     recurrenceRule.interval = 2;
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
-    std::string rrule = "FREQ=YEARLY;INTERVAL=2;WKST=SU";
+    std::string rrule = "FREQ=YEARLY;INTERVAL=2;WKST=SU;BYMONTHDAY=1;BYMOTH=1";
     const auto value = GetRule(event);
 
     EXPECT_EQ(value, rrule);
@@ -254,7 +254,7 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithDayOfWeekMonthYearlyList, testing::
     recurrenceRule.weeksOfMonth = {2, 3, 4};
     recurrenceRule.monthsOfYear = {6, 7, 8};
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
-    std::string rrule = "FREQ=YEARLY;BYDAY=2MO,3WE,4FR;BYMONTH=6,7,8;WKST=SU";
+    std::string rrule = "FREQ=YEARLY;WKST=SU;BYDAY=2MO,3WE,4FR;BYMONTH=6,7,8";
     const auto value = GetRule(event);
 
     EXPECT_EQ(value, rrule);
