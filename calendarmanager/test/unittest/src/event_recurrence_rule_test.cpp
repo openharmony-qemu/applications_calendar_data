@@ -96,8 +96,8 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithDay, testing::ext::TestSize.Level1)
     recurrenceRule.recurrenceFrequency = DAILY;
     recurrenceRule.expire = std::make_optional<int64_t>(timeValue);
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
-    std::string rrule = "FREQ=DAILY;WKST=SU;UNTIL=20240421T040230Z";
-    
+    std::string rrule = "FREQ=DAILY;UNTIL=20240421T040230Z;WKST=SU";
+
     const auto value = GetRule(event);
 
     EXPECT_EQ(value, rrule);
@@ -112,8 +112,8 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithWeekly, testing::ext::TestSize.Leve
     recurrenceRule.interval = std::make_optional<int64_t>(2);
     recurrenceRule.count = std::make_optional<int64_t>(3);
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
-    std::string rrule = "FREQ=WEEKLY;WKST=SU;BYDAY=SU;COUNT=3;INTERVAL=2";
-    
+    std::string rrule = "FREQ=WEEKLY;COUNT=3;INTERVAL=2;WKST=SU;BYDAY=SU";
+
     const auto value = GetRule(event);
 
     EXPECT_EQ(value, rrule);
@@ -128,8 +128,8 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithMonthly, testing::ext::TestSize.Lev
     recurrenceRule.recurrenceFrequency = MONTHLY;
     recurrenceRule.expire = std::make_optional<int64_t>(timeValue);
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
-    std::string rrule = "FREQ=MONTHLY;WKST=SU;BYMONTHDAY=21;UNTIL=20240421T040230Z";
-    
+    std::string rrule = "FREQ=MONTHLY;UNTIL=20240421T040230Z;WKST=SU;BYMONTHDAY=21";
+
     const auto value = GetRule(event);
 
     EXPECT_EQ(value, rrule);
@@ -144,12 +144,13 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithYearly, testing::ext::TestSize.Leve
     recurrenceRule.recurrenceFrequency = YEARLY;
     recurrenceRule.expire = std::make_optional<int64_t>(timeValue);
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
-    std::string rrule = "FREQ=YEARLY;WKST=SU;BYMONTHDAY=21;BYMONTH=4;UNTIL=20240421T040230Z";
-    
+    std::string rrule = "FREQ=YEARLY;UNTIL=20240421T040230Z;WKST=SU;BYMONTHDAY=21;BYMONTH=4";
+
     const auto value = GetRule(event);
 
     EXPECT_EQ(value, rrule);
 }
+
 HWTEST_F(EventRecurrenceRuleTest, GetRuleWithWeeklyList, testing::ext::TestSize.Level1)
 {
     Event event;
