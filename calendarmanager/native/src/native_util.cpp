@@ -263,6 +263,15 @@ std::string GetYearlyRule(const Event &event, const std::tm &time)
         std::string months = GetRRuleSerial(MIN_MONTH_OF_YEAR, MAX_MONTH_OF_YEAR, monthsOfYearList);
         rrule = ";BYMONTHDAY=" + days + ";BYMONTH=" + months;
     }
+    if (rruleValue.monthsOfYear.has_value() && rruleValue.weeksOfMonth.has_value() &&
+        rruleValue.daysOfWeek.has_value()) {
+        auto monthsOfYearList = rruleValue.monthsOfYear.value();
+        auto weeksOfMonthList = rruleValue.weeksOfMonth.value();
+        auto daysOfWeekList = rruleValue.daysOfWeek.value();
+        std::string months = GetRRuleSerial(MIN_MONTH_OF_YEAR, MAX_MONTH_OF_YEAR, monthsOfYearList);
+        std::string daysOfWeekMonth = GetDaysOfWeekMonthRule(daysOfWeekList, weeksOfMonthList);
+        rrule = ";BYDAY=" + daysOfWeekMonth + ";BYMONTH=" + months;
+    }
     if (isHasSetData == false) {
         rrule += ";BYMONTHDAY=";
         rrule += std::to_string(time.tm_mday);
