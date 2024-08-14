@@ -416,6 +416,12 @@ napi_status GetValue(napi_env env, napi_value in, RecurrenceRule& out)
     NapiUtil::GetNamedPropertyOptional(env, in, "count", out.count);
     NapiUtil::GetNamedPropertyOptional(env, in, "interval", out.interval);
     NapiUtil::GetNamedPropertyOptional(env, in, "excludedDates", out.excludedDates);
+    NapiUtil::GetNamedPropertyOptional(env, in, "daysOfWeek", out.daysOfWeek);
+    NapiUtil::GetNamedPropertyOptional(env, in, "daysOfMonth", out.daysOfMonth);
+    NapiUtil::GetNamedPropertyOptional(env, in, "daysOfYear", out.daysOfYear);
+    NapiUtil::GetNamedPropertyOptional(env, in, "weeksOfMonth", out.weeksOfMonth);
+    NapiUtil::GetNamedPropertyOptional(env, in, "weeksOfYear", out.weeksOfYear);
+    NapiUtil::GetNamedPropertyOptional(env, in, "monthsOfYear", out.monthsOfYear);
     return napi_ok;
 }
 
@@ -430,6 +436,12 @@ napi_status SetValue(napi_env env, const RecurrenceRule& in, napi_value& out)
     SetNamedPropertyOptional(env, "count", in.count, out);
     SetNamedPropertyOptional(env, "interval", in.interval, out);
     SetNamedPropertyOptional(env, "excludedDates", in.excludedDates, out);
+    SetNamedPropertyOptional(env, "daysOfWeek", in.daysOfWeek, out);
+    SetNamedPropertyOptional(env, "daysOfMonth", in.daysOfMonth, out);
+    SetNamedPropertyOptional(env, "daysOfYear", in.daysOfYear, out);
+    SetNamedPropertyOptional(env, "weeksOfMonth", in.weeksOfMonth, out);
+    SetNamedPropertyOptional(env, "weeksOfYear", in.weeksOfYear, out);
+    SetNamedPropertyOptional(env, "monthsOfYear", in.monthsOfYear, out);
     return napi_ok;
 }
 
