@@ -21,7 +21,7 @@
 #include "napi_queue.h"
 #include "native_util.h"
 #include "event_filter_napi.h"
-#include <limits.h>
+#include <climits>
 
 namespace OHOS::CalendarApi::NapiUtil {
 constexpr int32_t STR_MAX_LENGTH = 4096;
