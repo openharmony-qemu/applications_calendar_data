@@ -21,6 +21,7 @@
 #include "napi_queue.h"
 #include "native_util.h"
 #include "event_filter_napi.h"
+#include <limits.h>
 
 namespace OHOS::CalendarApi::NapiUtil {
 constexpr int32_t STR_MAX_LENGTH = 4096;
@@ -113,7 +114,7 @@ napi_status GetValue(napi_env env, napi_value in, std::string& out)
 
     size_t maxLen = STR_MAX_LENGTH;
     status = napi_get_value_string_utf8(env, in, NULL, 0, &maxLen);
-    if (maxLen <= 0) {
+    if (maxLen == 0 || maxLen == UINT_MAX) {
         return status;
     }
     LOG_DEBUG("napi_value -> std::string get length %{public}d", (int)maxLen);
