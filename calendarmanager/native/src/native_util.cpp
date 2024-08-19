@@ -304,7 +304,7 @@ std::string GetDaysOfWeekMonthRule(
     std::string rrule;
     const std::vector<string> weekDayList = {"MO", "TU", "WE", "TH", "FR", "SA", "SU"};
     auto daysLen = daysOfWeekList.size();
-    for (int i = 0; i < daysLen; i++) {
+    for (size_t i = 0; i < daysLen; i++) {
         if (daysOfWeekList[i] >= MIN_DAY_OF_WEEK && daysOfWeekList[i] <= MAX_DAY_OF_WEEK &&
             weeksOfMonthList[i] >= MIN_WEEK_OF_MONTH && weeksOfMonthList[i] <= MAX_WEEK_OF_MONTH) {
             if (i == daysLen - 1) {
