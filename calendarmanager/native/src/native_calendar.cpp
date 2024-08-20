@@ -232,7 +232,9 @@ std::vector<Attendee> Calendar::GetAttendeesByEventId(int id)
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_attendeeUri.get()), predicates, columns, &error);
     std::vector<Attendee> attendees;
-    ResultSetToAttendees(attendees, result);
+    if (result != nullptr) {
+        ResultSetToAttendees(attendees, result);
+    }
     LOG_INFO(" query attendee finished");
     return attendees;
 }
@@ -244,6 +246,9 @@ std::optional<std::vector<int>> Calendar::GetRemindersByEventId(int id)
     std::vector<std::string> columns = {"event_id", "minutes"};
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_reminderUrl.get()), predicates, columns, &error);
+    if (result == nullptr) {
+        return std::nullopt;
+    }
     std::vector<int> reminders;
     auto ret = ResultSetToReminders(reminders, result);
     if (ret != DataShare::E_OK) {
