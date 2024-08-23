@@ -30,7 +30,7 @@ import { getBundleNameByUri } from '@ohos/common/src/main/ets/utils/UrlUtils';
 import { CalendarAccountType } from '@ohos/datastructure/src/main/ets/calendars/CalendarAccountType';
 import { CalendarAlerts } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlerts';
 import { parseCalendarAlerts } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertsParser';
-import { CalendarAlertState } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertStateType';
+import { CalendarAlertStateType } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertStateType';
 import { CalendarAlertsColumns } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertsColumns';
 import { CalendarAlertsIndexes } from '@ohos/datastructure/src/main/ets/calendaralerts/CalendarAlertsIndexes';
 import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
@@ -444,7 +444,7 @@ async function insertAlert(rdbStore: data_rdb.RdbStore, date: Date, calendarAler
   valueBucket[CalendarAlertsColumns.CREATION_TIME] = currentMillis;
   valueBucket[CalendarAlertsColumns.RECEIVED_TIME] = 0;
   valueBucket[CalendarAlertsColumns.NOTIFY_TIME] = 0;
-  valueBucket[CalendarAlertsColumns.STATE] = CalendarAlertState.STATE_SCHEDULED;
+  valueBucket[CalendarAlertsColumns.STATE] = CalendarAlertStateType.STATE_SCHEDULED;
   valueBucket[CalendarAlertsColumns.MINUTES] = calendarAlerts.minutes;
   valueBucket[CalendarAlertsColumns.CREATOR] = calendarAlerts.creator;
   try {
@@ -527,7 +527,7 @@ async function deleteRepeatReminders(rdbStore: data_rdb.RdbStore) {
 async function removeScheduledAlarmsLocked(rdbStore: data_rdb.RdbStore) {
   Log.info(TAG, 'removeScheduledAlarmsLocked start.');
   let predicates = new dataSharePredicates.DataSharePredicates();
-  predicates.equalTo(CalendarAlertsColumns.STATE, CalendarAlertState.STATE_SCHEDULED)
+  predicates.equalTo(CalendarAlertsColumns.STATE, CalendarAlertStateType.STATE_SCHEDULED)
   try {
     await rdbStore.delete(CalendarAlertsColumns.TABLE_NAME, predicates);
     Log.debug(TAG, `removeScheduledAlarmsLocked succeed`);
