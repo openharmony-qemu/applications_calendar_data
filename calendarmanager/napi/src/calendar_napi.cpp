@@ -160,7 +160,7 @@ napi_value CalendarNapi::DeleteEvent(napi_env env, napi_callback_info info)
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         // required atleast 1 arguments :: <number>
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, "invalid arguments!");
-        NapiUtil::GetValue(env, argv[0], ctxt->eventId);
+        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->eventId);
         CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
     };
     ctxt->GetCbInfo(env, info, input);
@@ -185,7 +185,7 @@ napi_value CalendarNapi::DeleteEvents(napi_env env, napi_callback_info info)
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         // required atleast 1 arguments :: <number>
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, "invalid arguments!");
-        NapiUtil::GetValue(env, argv[0], ctxt->ids);
+        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->ids);
         CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
     };
     ctxt->GetCbInfo(env, info, input);
@@ -210,7 +210,7 @@ napi_value CalendarNapi::UpdateEvent(napi_env env, napi_callback_info info)
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         // required atleast 1 arguments :: <number>
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, "invalid arguments!");
-        NapiUtil::GetValue(env, argv[0], ctxt->event);
+        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->event);
         CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
     };
     ctxt->GetCbInfo(env, info, input);
@@ -236,7 +236,7 @@ napi_value CalendarNapi::UpdateEvents(napi_env env, napi_callback_info info)
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         // required atleast 1 arguments :: <number>
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, "invalid arguments!");
-        NapiUtil::GetValue(env, argv[0], ctxt->events);
+        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->events);
         CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
     };
     ctxt->GetCbInfo(env, info, input);
@@ -347,7 +347,7 @@ napi_value CalendarNapi::SetConfig(napi_env env, napi_callback_info info)
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         // required atleast 1 arguments :: <CalendarConfig>
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, "invalid arguments!");
-        NapiUtil::GetValue(env, argv[0], ctxt->config);
+        ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->config);
         CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid config!");
     };
     ctxt->GetCbInfo(env, info, input);
