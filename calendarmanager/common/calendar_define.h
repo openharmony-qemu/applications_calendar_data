@@ -70,6 +70,7 @@ struct Attendee {
 };
 
 enum RecurrenceType {
+    NORULE = -1,
     YEARLY = 0,
     MONTHLY = 1,
     WEEKLY = 2,
