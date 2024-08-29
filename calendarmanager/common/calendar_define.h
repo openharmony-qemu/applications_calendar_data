@@ -53,6 +53,7 @@ struct Location {
 };
 
 enum RoleType  {
+    NORULE = -1,
     NONE = 0,
     PARTICIPANT = 1,
     ORGANIZER = 2,

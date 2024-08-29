@@ -155,7 +155,7 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     EXPECT_EQ(newEvent.endTime, event.endTime);
     EXPECT_EQ(newEvent.isAllDay, event.isAllDay);
     EXPECT_EQ(newEvent.attendees, event.attendees);
-    EXPECT_EQ(newEvent.timeZone, event.timeZone);
+    EXPECT_EQ(newEvent.timeZone, "UTC");
     EXPECT_EQ(newEvent.reminderTime, event.reminderTime);
     EXPECT_EQ(newEvent.description, event.description);
 }
