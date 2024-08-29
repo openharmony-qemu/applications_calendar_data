@@ -130,17 +130,15 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     event.type = EventType::Important;
     Location testLocation { "test", 123, 456 };
     event.location = std::make_optional<Location>(testLocation);
-    const int startTime = 12;
-    event.startTime = startTime;
-    const int endTime = 100;
-    event.endTime =  endTime;
+    event.startTime = 17230000;
+    event.endTime = 17630000;
     event.isAllDay = true;
     event.attendees =  {
         {"xiaoming", "xiaoming@abc.com"},
         {"xiaoqiang", "test_attendee1@abc.com"},
         {"abc", "test_attendee2@abc.com"}
     };
-    event.timeZone = "shanghai";
+    event.timeZone = "UTC";
     event.reminderTime = {0, 1, 2};
     event.description = "UpdateEvent_test_2_disp";
     const auto eventId = calendar->AddEvent(event);
@@ -155,7 +153,7 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     EXPECT_EQ(newEvent.endTime, event.endTime);
     EXPECT_EQ(newEvent.isAllDay, event.isAllDay);
     EXPECT_EQ(newEvent.attendees, event.attendees);
-    EXPECT_EQ(newEvent.timeZone, "UTC");
+    EXPECT_EQ(newEvent.timeZone, event.timeZone);
     EXPECT_EQ(newEvent.reminderTime, event.reminderTime);
     EXPECT_EQ(newEvent.description, event.description);
 }
