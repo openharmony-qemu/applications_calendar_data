@@ -639,6 +639,7 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
 {
     const int strListSize = 2;
     RecurrenceRule out;
+    out.recurrenceFrequency = NORULE;
     std::string value;
     auto ret = GetValue(resultSet, "rrule", value);
     if (ret != DataShare::E_OK) {

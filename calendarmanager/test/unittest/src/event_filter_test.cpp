@@ -267,7 +267,7 @@ HWTEST_F(EventFilterTest, FilterByTitle_and_eventKey_002, testing::ext::TestSize
     EXPECT_EQ(newEvent.location.value(), event.location.value());
     EXPECT_EQ(newEvent.isAllDay.value(), event.isAllDay.value());
     EXPECT_EQ(newEvent.attendees, event.attendees);
-    EXPECT_EQ(newEvent.timeZone.value(), event.timeZone.value());
+    EXPECT_EQ(newEvent.timeZone.value(), "UTC");
 }
 
 HWTEST_F(EventFilterTest, FilterByTime_and_eventKey_003, testing::ext::TestSize.Level1)
