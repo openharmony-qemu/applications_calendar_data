@@ -112,7 +112,7 @@ std::string GetUTCTime(const int64_t &timeValue)
     const int strLen = 2;
     const int baseYear = 1900;
     time_t expire = timeValue / 1000;
-    std::tm* expireTime = std::gmtime_s(&expire);
+    std::tm* expireTime = std::gmtime(&expire);
     std::stringstream out;
     out << (expireTime->tm_year + baseYear);
     out << std::setfill('0') << std::setw(strLen) << expireTime->tm_mon + monOffset;
