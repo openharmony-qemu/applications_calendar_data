@@ -113,7 +113,7 @@ std::string GetUTCTime(const int64_t &timeValue)
     const int strLen = 2;
     const int baseYear = 1900;
     time_t expire = timeValue / 1000;
-    struct tm expireTime;
+    std::tm expireTime = {0};
 #ifdef WINDOWS_PLATFORM
     if (gmtime_s(&expireTime, &expire)) {
 #else
