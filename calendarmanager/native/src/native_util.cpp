@@ -446,7 +446,6 @@ int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, std::strin
     return resultSet->GetString(index, out);
 }
 
-
 std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPtr &resultSet)
 {
     std::vector<std::shared_ptr<Calendar>> result;
