@@ -494,7 +494,6 @@ std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPt
     return result;
 }
 
-
 std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
 {
     Location out;
