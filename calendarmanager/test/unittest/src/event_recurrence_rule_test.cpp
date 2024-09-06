@@ -48,6 +48,56 @@ public:
 
 std::shared_ptr<Calendar> EventRecurrenceRuleTest::calendar = nullptr;
 
+HWTEST_F(EventRecurrenceRuleTest, SetRRuleValueNORule, testing::ext::TestSize.Level1)
+{
+    RecurrenceRule out;
+    out.recurrenceFrequency = NORULE;
+    RecurrenceRule newOut;
+    newOut.count = 10;
+    newOut.interval = 1;
+    newOut.recurrenceFrequency = DAILY;
+    std::string value;
+    std::map<std::string, std::string> ruleMap;
+    ruleMap.insert(std::pair<std::string, std::string>("FREQ", "DAILY"));
+    ruleMap.insert(std::pair<std::string, std::string>("COUNT", "10"));
+    ruleMap.insert(std::pair<std::string, std::string>("INTERVAL", "1"));
+    SetRRuleValue(ruleMap, out);
+    ASSERT_EQ(newOut.recurrenceFrequency, out.recurrenceFrequency);
+    ASSERT_EQ(newOut.interval.value(), out.interval.value());
+    ASSERT_EQ(newOut.count.value(), out.count.value());
+}
+
+HWTEST_F(EventRecurrenceRuleTest, SetByDayOfRRuleTest, testing::ext::TestSize.Level1)
+{
+    std::vector<std::string> weekDayList;
+    weekDayList.push_back("2MO");
+    RecurrenceRule out;
+    RecurrenceRule newOut;
+    newOut.count = 10;
+    newOut.interval = 1;
+    newOut.recurrenceFrequency = DAILY;
+    newOut.daysOfWeek = std::make_optional<vector<int64_t>>();
+    newOut.weeksOfMonth = std::make_optional<vector<int64_t>>();
+    newOut.daysOfWeek->push_back(1);
+    newOut.weeksOfMonth->push_back(2);
+    SetByDayOfRRule(weekDayList, out);
+    auto outDaysOfWeekList = out.daysOfWeek.value();
+    auto newDaysOfWeekList = newOut.daysOfWeek.value();
+    auto outWeeksOfMonthList = out.weeksOfMonth.value();
+    auto newWeeksOfMonthList = newOut.weeksOfMonth.value();
+    ASSERT_EQ(newDaysOfWeekList[0], outDaysOfWeekList[0]);
+    ASSERT_EQ(newWeeksOfMonthList[0], outWeeksOfMonthList[0]);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, ColorParse, testing::ext::TestSize.Level1)
+{
+    std::string colorStr = "123";
+    variant<string, int64_t> colorValue;
+    colorValue = 123;
+    bool corlor = ColorParse(colorStr, colorValue);
+
+    ASSERT_EQ(corlor, 0);
+}
 
 HWTEST_F(EventRecurrenceRuleTest, GetUTCTime, testing::ext::TestSize.Level1)
 {

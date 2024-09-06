@@ -688,24 +688,28 @@ void SetRRuleValue(const std::map<std::string, std::string> &ruleMap, Recurrence
             SetByDayOfRRule(weekDayList, out);
         }
         if (iter->first == "BYWEEKNO") {
+            out.weeksOfYear = std::make_optional<std::vector<int64_t>>();
             std::vector<std::string> weekNumList = SplitString(iter->second, ",");
             for (const auto &weekNum : weekNumList) {
                 out.weeksOfYear->push_back(std::stoi(weekNum));
             }
         }
         if (iter->first == "BYMONTHDAY") {
+            out.weeksOfYear = std::make_optional<std::vector<int64_t>>();
             std::vector<std::string> monthDayList = SplitString(iter->second, ",");
             for (const auto &monthDay : monthDayList) {
                 out.daysOfMonth.value().push_back(std::stoi(monthDay));
             }
         }
         if (iter->first == "BYYEARDAY") {
+            out.daysOfYear = std::make_optional<std::vector<int64_t>>();
             std::vector<std::string> yearDayList = SplitString(iter->second, ",");
             for (const auto &yearDay : yearDayList) {
                 out.daysOfYear.value().push_back(std::stoi(yearDay));
             }
         }
         if (iter->first == "BYMONTH") {
+            out.monthsOfYear = std::make_optional<std::vector<int64_t>>();
             std::vector<std::string> monthList = SplitString(iter->second, ",");
             for (const auto &month : monthList) {
                 out.monthsOfYear.value().push_back(std::stoi(month));
@@ -718,15 +722,23 @@ void SetByDayOfRRule(const std::vector<std::string> &weekDayList, RecurrenceRule
 {
     const int weekStrLen = 2;
     const std::vector<string> dayOfWeekList = {"MO", "TU", "WE", "TH", "FR", "SA", "SU"};
+    out.daysOfWeek = std::make_optional<vector<int64_t>>();
+    out.weeksOfMonth = std::make_optional<vector<int64_t>>();
     for (const auto &weekday : weekDayList) {
-        if (weekday.length() >= weekStrLen) {
+        if (weekday.length() > weekStrLen) {
             std::string weekDayStr = weekday.substr(weekday.length() - weekStrLen, weekStrLen);
             std::string WeekNumStr = weekday.substr(0, weekday.length() - weekStrLen);
             auto it = std::find(dayOfWeekList.begin(), dayOfWeekList.end(), weekDayStr);
             if (it != dayOfWeekList.end()) {
                 int dayNum = it - dayOfWeekList.begin();
-                out.daysOfWeek.value().push_back(dayNum + 1);
-                out.weeksOfMonth.value().push_back(std::stoi(WeekNumStr));
+                out.daysOfWeek->push_back(dayNum + 1);
+                out.weeksOfMonth->push_back(std::stoi(WeekNumStr));
+            }
+        } else if (weekday.length() == weekStrLen) {
+            auto it = std::find(dayOfWeekList.begin(), dayOfWeekList.end(), weekday);
+            if (it != dayOfWeekList.end()) {
+                int dayNum = it - dayOfWeekList.begin();
+                out.daysOfWeek->push_back(dayNum + 1);
             }
         }
     }
