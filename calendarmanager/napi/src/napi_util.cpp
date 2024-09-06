@@ -252,7 +252,9 @@ napi_status SetValue(napi_env env, const std::vector<int64_t>& in, napi_value& o
     napi_value buffer = nullptr;
     napi_status status = napi_create_arraybuffer(env, bytes, &data, &buffer);
     CHECK_RETURN((status == napi_ok), "invalid buffer", status);
-
+    if (!in.data()) {
+        return napi_invalid_arg;
+    }
     if (memcpy_s(data, bytes, in.data(), bytes) != EOK) {
         LOG_ERROR("memcpy_s not EOK");
         return napi_invalid_arg;

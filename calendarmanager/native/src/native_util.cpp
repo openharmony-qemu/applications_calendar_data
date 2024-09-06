@@ -16,6 +16,7 @@
 #include <iomanip>
 #include "calendar_log.h"
 #include "native_util.h"
+#include <ctime>
 
 namespace OHOS::CalendarApi::Native {
 const int MIN_DAY_OF_WEEK = 1;
@@ -112,15 +113,22 @@ std::string GetUTCTime(const int64_t &timeValue)
     const int strLen = 2;
     const int baseYear = 1900;
     time_t expire = timeValue / 1000;
-    std::tm* expireTime = std::gmtime(&expire);
+    std::tm expireTime = {0};
+#ifdef WINDOWS_PLATFORM
+    if (gmtime_s(&expireTime, &expire)) {
+#else
+    if (gmtime_r(&expire, &expireTime) == nullptr) {
+#endif
+        return {};
+    }
     std::stringstream out;
-    out << (expireTime->tm_year + baseYear);
-    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_mon + monOffset;
-    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_mday;
+    out << (expireTime.tm_year + baseYear);
+    out << std::setfill('0') << std::setw(strLen) << expireTime.tm_mon + monOffset;
+    out << std::setfill('0') << std::setw(strLen) << expireTime.tm_mday;
     out << "T";
-    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_hour;
-    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_min;
-    out << std::setfill('0') << std::setw(strLen) << expireTime->tm_sec;
+    out << std::setfill('0') << std::setw(strLen) << expireTime.tm_hour;
+    out << std::setfill('0') << std::setw(strLen) << expireTime.tm_min;
+    out << std::setfill('0') << std::setw(strLen) << expireTime.tm_sec;
     out << "Z";
 
     return out.str();
@@ -438,7 +446,6 @@ int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, std::strin
     return resultSet->GetString(index, out);
 }
 
-
 std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPtr &resultSet)
 {
     std::vector<std::shared_ptr<Calendar>> result;
@@ -485,7 +492,6 @@ std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPt
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return result;
 }
-
 
 std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
 {
