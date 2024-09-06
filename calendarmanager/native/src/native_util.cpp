@@ -664,6 +664,15 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
 
     return std::make_optional<RecurrenceRule>(out);
 }
+
+void SetVecNum(std::optional<std::vector<int64_t>> &ruleVec, const std::string &ruleStr)
+{
+    std::vector<std::string> weekNumList = SplitString(ruleStr, ",");
+    for (const auto &weekNum : weekNumList) {
+        ruleVec->push_back(std::stoi(weekNum));
+    }
+}
+
 void SetRRuleValue(const std::map<std::string, std::string> &ruleMap, RecurrenceRule &out)
 {
     std::map<std::string, std::string>::const_iterator iter;
@@ -689,31 +698,19 @@ void SetRRuleValue(const std::map<std::string, std::string> &ruleMap, Recurrence
         }
         if (iter->first == "BYWEEKNO") {
             out.weeksOfYear = std::make_optional<std::vector<int64_t>>();
-            std::vector<std::string> weekNumList = SplitString(iter->second, ",");
-            for (const auto &weekNum : weekNumList) {
-                out.weeksOfYear->push_back(std::stoi(weekNum));
-            }
+            SetVecNum(out.weeksOfYear, iter->second);
         }
         if (iter->first == "BYMONTHDAY") {
-            out.weeksOfYear = std::make_optional<std::vector<int64_t>>();
-            std::vector<std::string> monthDayList = SplitString(iter->second, ",");
-            for (const auto &monthDay : monthDayList) {
-                out.daysOfMonth.value().push_back(std::stoi(monthDay));
-            }
+            out.daysOfMonth = std::make_optional<std::vector<int64_t>>();
+            SetVecNum(out.daysOfMonth, iter->second);
         }
         if (iter->first == "BYYEARDAY") {
             out.daysOfYear = std::make_optional<std::vector<int64_t>>();
-            std::vector<std::string> yearDayList = SplitString(iter->second, ",");
-            for (const auto &yearDay : yearDayList) {
-                out.daysOfYear.value().push_back(std::stoi(yearDay));
-            }
+            SetVecNum(out.daysOfYear, iter->second);
         }
         if (iter->first == "BYMONTH") {
             out.monthsOfYear = std::make_optional<std::vector<int64_t>>();
-            std::vector<std::string> monthList = SplitString(iter->second, ",");
-            for (const auto &month : monthList) {
-                out.monthsOfYear.value().push_back(std::stoi(month));
-            }
+            SetVecNum(out.monthsOfYear, iter->second);
         }
     }
 }
