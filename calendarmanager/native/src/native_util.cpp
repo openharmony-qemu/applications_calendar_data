@@ -553,11 +553,11 @@ int StringToInt(const std::string &str)
 {
     try {
         return std::stoi(str);
-    } catch (std::invalid_argument &ex) {
-        LOG_ERROR("Invalid_argument %{public}s", ex.what());
-        return 0;
     } catch (std::out_of_range &ex) {
         LOG_ERROR("Out of range %{public}s", ex.what());
+        return 0;
+    } catch (std::invalid_argument &ex) {
+        LOG_ERROR("Invalid_argument %{public}s", ex.what());
         return 0;
     }
     return 0;
