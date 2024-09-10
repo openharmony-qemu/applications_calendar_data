@@ -551,7 +551,16 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
 
 int StringToInt(const std::string &str)
 {
-    return std::atoi(str.c_str());
+    try {
+        return std::stoi(str);
+    } catch (std::invalid_argument &ex) {
+        LOG_ERROR("Invalid_argument %{public}s", ex.what());
+        return 0;
+    } catch (std::out_of_range &ex) {
+        LOG_ERROR("Out of range %{public}s", ex.what());
+        return 0;
+    }
+    return 0;
 }
 
 std::time_t TimeToUTC(const std::string &strTime)
@@ -669,7 +678,7 @@ void SetVecNum(std::optional<std::vector<int64_t>> &ruleVec, const std::string &
 {
     std::vector<std::string> weekNumList = SplitString(ruleStr, ",");
     for (const auto &weekNum : weekNumList) {
-        ruleVec->push_back(std::stoi(weekNum));
+        ruleVec->push_back(StringToInt(weekNum));
     }
 }
 
@@ -682,11 +691,11 @@ void SetRRuleValue(const std::map<std::string, std::string> &ruleMap, Recurrence
             continue;
         }
         if (iter->first == "COUNT") {
-            out.count = std::make_optional<int64_t>(std::stoi(iter->second));
+            out.count = std::make_optional<int64_t>(StringToInt(iter->second));
             continue;
         }
         if (iter->first == "INTERVAL") {
-            out.interval = std::make_optional<int64_t>(std::stoi(iter->second));
+            out.interval = std::make_optional<int64_t>(StringToInt(iter->second));
             continue;
         }
         if (iter->first == "UNTIL") {
@@ -729,7 +738,7 @@ void SetByDayOfRRule(const std::vector<std::string> &weekDayList, RecurrenceRule
             if (it != dayOfWeekList.end()) {
                 int dayNum = it - dayOfWeekList.begin();
                 out.daysOfWeek->push_back(dayNum + 1);
-                out.weeksOfMonth->push_back(std::stoi(WeekNumStr));
+                out.weeksOfMonth->push_back(StringToInt(WeekNumStr));
             }
         } else if (weekday.length() == weekStrLen) {
             auto it = std::find(dayOfWeekList.begin(), dayOfWeekList.end(), weekday);
