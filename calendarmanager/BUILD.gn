@@ -20,6 +20,7 @@ config("calendarmanager_public_config") {
     "./native/include",
     "./napi/include",
   ]
+  configs = [ "//build/config/compiler:exceptions" ]
 }
 
 jspath = "js/editor.js"
