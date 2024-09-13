@@ -57,7 +57,7 @@ std::shared_ptr<EventFilter> FilterById(const std::vector<int> &ids)
 
 std::shared_ptr<EventFilter> FilterByTime(int64_t start, int64_t end)
 {
-    LOG_DEBUG("FilterByTime start:%{public}s end:%{public}s",
+    LOG_DEBUG("FilterByTime start:%{private}s end:%{private}s",
         std::to_string(start).c_str(), std::to_string(end).c_str());
     auto predicates = std::make_shared<DataShare::DataSharePredicates>();
     if (!predicates) {
@@ -81,7 +81,7 @@ std::shared_ptr<EventFilter> FilterByTime(int64_t start, int64_t end)
 
 std::shared_ptr<EventFilter> FilterByTitle(std::string_view title)
 {
-    LOG_DEBUG("FilterByTitle %{public}s", std::string(title).c_str());
+    LOG_DEBUG("FilterByTitle %{private}s", std::string(title).c_str());
     auto predicates = std::make_shared<DataShare::DataSharePredicates>();
     predicates->Like("title", "%" + std::string(title) + "%");
     return std::make_shared<EventFilter>(predicates);

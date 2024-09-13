@@ -33,46 +33,46 @@ const int MIN_WEEK_OF_MONTH = -5;
 const int MAX_WEEK_OF_MONTH = 5;
 void DumpCalendarAccount(const CalendarAccount &account)
 {
-    LOG_DEBUG("account.name:%{public}s", account.name.c_str());
-    LOG_DEBUG("account.type:%{public}s", account.type.c_str());
-    LOG_DEBUG("account.displayName:%{public}s", account.displayName.value_or("").c_str());
+    LOG_DEBUG("account.name:%{private}s", account.name.c_str());
+    LOG_DEBUG("account.type:%{private}s", account.type.c_str());
+    LOG_DEBUG("account.displayName:%{private}s", account.displayName.value_or("").c_str());
 }
 
 void DumpEvent(const Event &event)
 {
-    LOG_DEBUG("id       :%{public}d", event.id.value_or(-1));
-    LOG_DEBUG("type     :%{public}d", event.type);
-    LOG_DEBUG("title    :%{public}s", event.title.value_or("[null]").c_str());
+    LOG_DEBUG("id       :%{private}d", event.id.value_or(-1));
+    LOG_DEBUG("type     :%{private}d", event.type);
+    LOG_DEBUG("title    :%{private}s", event.title.value_or("[null]").c_str());
     if (event.location) {
         auto location = event.location.value();
-        LOG_DEBUG("location.location  :%{public}s", location.location.value_or("[null]").c_str());
-        LOG_DEBUG("location.longitude :%{public}lf", location.longitude.value_or(-1));
-        LOG_DEBUG("location.latitude  :%{public}lf", location.latitude.value_or(-1));
+        LOG_DEBUG("location.location  :%{private}s", location.location.value_or("[null]").c_str());
+        LOG_DEBUG("location.longitude :%{private}d", location.longitude.value_or(-1));
+        LOG_DEBUG("location.latitude  :%{private}d", location.latitude.value_or(-1));
     } else {
         LOG_DEBUG("location [null]");
     }
     if (event.service) {
         auto service = event.service.value();
-        LOG_DEBUG("service.type  :%{public}s", service.type.c_str());
-        LOG_DEBUG("service.description :%{public}s", service.description.value_or("[null]").c_str());
-        LOG_DEBUG("service.uri  :%{public}s", service.uri.c_str());
+        LOG_DEBUG("service.type  :%{private}s", service.type.c_str());
+        LOG_DEBUG("service.description :%{private}s", service.description.value_or("[null]").c_str());
+        LOG_DEBUG("service.uri  :%{private}s", service.uri.c_str());
     } else {
         LOG_DEBUG("service [null]");
     }
     if (event.recurrenceRule.has_value()) {
-        LOG_DEBUG("recurrenceRule.recurrenceFrequency: %{public}d", event.recurrenceRule.value().recurrenceFrequency);
+        LOG_DEBUG("recurrenceRule.recurrenceFrequency: %{private}d", event.recurrenceRule.value().recurrenceFrequency);
     }
-    LOG_DEBUG("startTime    :%{public}s", std::to_string(event.startTime).c_str());
-    LOG_DEBUG("endTime      :%{public}s", std::to_string(event.endTime).c_str());
-    LOG_DEBUG("isAllDay :%{public}d", event.isAllDay.value_or(0));
+    LOG_DEBUG("startTime    :%{private}s", std::to_string(event.startTime).c_str());
+    LOG_DEBUG("endTime      :%{private}s", std::to_string(event.endTime).c_str());
+    LOG_DEBUG("isAllDay :%{private}d", event.isAllDay.value_or(0));
 
     for (const auto &attendee : event.attendees) {
-        LOG_DEBUG("attendee.name   :%{public}s", attendee.name.c_str());
-        LOG_DEBUG("attendee.email  :%{public}s", attendee.email.c_str());
+        LOG_DEBUG("attendee.name   :%{private}s", attendee.name.c_str());
+        LOG_DEBUG("attendee.email  :%{private}s", attendee.email.c_str());
     }
 
-    LOG_DEBUG("timeZone     :%{public}s", event.timeZone.value_or("[null]").c_str());
-    LOG_DEBUG("description  :%{public}s", event.description.value_or("[null]").c_str());
+    LOG_DEBUG("timeZone     :%{private}s", event.timeZone.value_or("[null]").c_str());
+    LOG_DEBUG("description  :%{private}s", event.description.value_or("[null]").c_str());
 }
 
 void BuildEventLocation(DataShare::DataShareValuesBucket &valuesBucket, const Event &event)
@@ -363,7 +363,7 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     DataShare::DataShareValuesBucket valuesBucket;
     valuesBucket.Put("calendar_id", calendarId);
 
-    LOG_DEBUG("title %{public}s", event.title.value_or("").c_str());
+    LOG_DEBUG("title %{private}s", event.title.value_or("").c_str());
     valuesBucket.Put("title", event.title.value_or(""));
     valuesBucket.Put("important_event_type", event.type);
     valuesBucket.Put("dtstart", event.startTime);
@@ -373,8 +373,8 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     BuildEventLocation(valuesBucket, event);
     BuildEventService(valuesBucket, event);
     BuildEventRecurrenceRule(valuesBucket, event);
-    
-    LOG_DEBUG("description %{public}s", event.description.value_or("").c_str());
+
+    LOG_DEBUG("description %{private}s", event.description.value_or("").c_str());
 
     if (event.description.has_value()) {
         valuesBucket.Put("description", event.description.value());
@@ -399,9 +399,9 @@ DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, in
     DataShare::DataShareValuesBucket valuesBucket;
     valuesBucket.Put("event_id", eventId);
     valuesBucket.Put("attendeeName", attendee.name);
-    LOG_DEBUG("attendeeName %{public}s", attendee.name.c_str());
+    LOG_DEBUG("attendeeName %{private}s", attendee.name.c_str());
     valuesBucket.Put("attendeeEmail", attendee.email);
-    LOG_DEBUG("attendeeEmail %{public}s", attendee.email.c_str());
+    LOG_DEBUG("attendeeEmail %{private}s", attendee.email.c_str());
     if (attendee.role.has_value()) {
         valuesBucket.Put("attendeeRelationship", attendee.role.value());
     }
@@ -440,7 +440,7 @@ int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, std::strin
     auto fieldNameStr = string(fieldName);
     auto ret = resultSet->GetColumnIndex(fieldNameStr, index);
     if (ret != DataShare::E_OK) {
-        LOG_WARN("GetValue [%{public}s] failed [%{public}d]", fieldNameStr.c_str(), ret);
+        LOG_WARN("GetValue [%{private}s] failed [%{private}d]", fieldNameStr.c_str(), ret);
         return ret;
     }
     return resultSet->GetString(index, out);
@@ -465,25 +465,25 @@ std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPt
         if (GetValue(resultSet, "_id", idValue) != DataShare::E_OK) {
             break;
         }
-        LOG_DEBUG("id: %{public}d", idValue);
+        LOG_DEBUG("id: %{private}d", idValue);
         std::string nameValue;
         if (GetValue(resultSet, "account_name", nameValue) != DataShare::E_OK) {
             break;
         }
-        LOG_DEBUG("account_name: %{public}s", nameValue.c_str());
+        LOG_DEBUG("account_name: %{private}s", nameValue.c_str());
         std::string typeValue;
         if (GetValue(resultSet, "account_type", typeValue) != DataShare::E_OK) {
             break;
         }
-        LOG_DEBUG("account_type: %{public}s", typeValue.c_str());
+        LOG_DEBUG("account_type: %{private}s", typeValue.c_str());
 
         std::string displayNameValue;
         GetValue(resultSet, "calendar_displayName", displayNameValue);
-        LOG_DEBUG("calendar_displayName: %{public}s", displayNameValue.c_str());
+        LOG_DEBUG("calendar_displayName: %{private}s", displayNameValue.c_str());
 
         int canReminder = -1;
         GetValue(resultSet, "canReminder", canReminder);
-        LOG_DEBUG("canReminder: %{public}d", canReminder);
+        LOG_DEBUG("canReminder: %{private}d", canReminder);
 
         int colorValue = 0;
         GetValue(resultSet, "calendar_color", colorValue);

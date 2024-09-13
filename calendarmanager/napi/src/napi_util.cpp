@@ -674,7 +674,7 @@ napi_value DefineClass(napi_env env, const std::string& name,
     if (hasProp) {
         napi_get_named_property(env, root, propName.c_str(), &constructor);
         if (constructor != nullptr) {
-            LOG_DEBUG("got calendar.calendarmanager.%{public}s as constructor", propName.c_str());
+            LOG_DEBUG("got calendar.calendarmanager.%{private}s as constructor", propName.c_str());
             return constructor;
         }
         hasProp = false; // no constructor.
@@ -685,7 +685,7 @@ napi_value DefineClass(napi_env env, const std::string& name,
 
     if (!hasProp) {
         napi_set_named_property(env, root, propName.c_str(), constructor);
-        LOG_DEBUG("save constructor to calendar.calendarmanager.%{public}s", propName.c_str());
+        LOG_DEBUG("save constructor to calendar.calendarmanager.%{private}s", propName.c_str());
     }
     return constructor;
 }

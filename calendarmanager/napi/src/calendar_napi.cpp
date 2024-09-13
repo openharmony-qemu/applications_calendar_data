@@ -384,10 +384,10 @@ napi_value CalendarNapi::GetAccount(napi_env env, napi_callback_info info)
     auto nativeCalendar = calendarNapi->GetNative();
     CHECK_RETURN(nativeCalendar != nullptr, "GetAccount -> get nativeCalendar nullptr", nullptr);
     auto account = nativeCalendar->GetAccount();
-    LOG_DEBUG("account.name:%{public}s", account.name.c_str());
-    LOG_DEBUG("account.type:%{public}s", account.type.c_str());
+    LOG_DEBUG("account.name:%{private}s", account.name.c_str());
+    LOG_DEBUG("account.type:%{private}s", account.type.c_str());
     if (account.displayName) {
-        LOG_DEBUG("account.displayName:%{public}s", account.displayName.value().c_str());
+        LOG_DEBUG("account.displayName:%{private}s", account.displayName.value().c_str());
     }
     napi_value result;
     status = NapiUtil::SetValue(env, account, result);

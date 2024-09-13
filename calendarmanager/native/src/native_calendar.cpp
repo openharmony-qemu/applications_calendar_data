@@ -33,7 +33,6 @@ Calendar::Calendar(int id)
     uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
     auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
     auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
-    LOG_INFO("bundleName_tokeId: %{public}s", bundleName_tokeId.c_str());
     m_eventUri = std::make_unique<Uri>(eventUrl + bundleName_tokeId);
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
 }
@@ -45,7 +44,6 @@ Calendar::Calendar(CalendarAccount account, int id)
     uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
     auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
     auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
-    LOG_INFO("bundleName_tokeId: %{public}s", bundleName_tokeId.c_str());
     m_eventUri = std::make_unique<Uri>(eventUrl + bundleName_tokeId);
     m_attendeeUri = std::make_unique<Uri>(attendeeUrl + bundleName_tokeId);
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
@@ -58,7 +56,7 @@ void Calendar::InsertReminders(int eventId, vector<int> reminders)
             valuesBucket.Put("event_id", eventId);
             valuesBucket.Put("minutes", reminder);
             auto index = DataShareHelperManager::GetInstance().Insert(*(m_reminderUrl.get()), valuesBucket);
-            LOG_INFO("Insert reminder index %{public}d", index);
+            LOG_INFO("Insert reminder index %{private}d", index);
         }
 }
 
@@ -66,7 +64,7 @@ int Calendar::AddEventInfo(const Event& event, int channelId)
 {
     auto valueEvent = BuildValueEvent(event, m_id, channelId);
     auto eventId = DataShareHelperManager::GetInstance().Insert(*(m_eventUri.get()), valueEvent);
-    LOG_INFO("Insert Event eventId %{public}d", eventId);
+    LOG_INFO("Insert Event eventId %{private}d", eventId);
     if (eventId <= 0) {
         return eventId;
     }
@@ -78,7 +76,7 @@ int Calendar::AddEventInfo(const Event& event, int channelId)
     }
     if (valueAttendees.size() > 0) {
         auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
-        LOG_INFO("batchInsert attendees count %{public}d", count);
+        LOG_INFO("batchInsert attendees count %{private}d", count);
     }
     
     // insert reminder
@@ -103,7 +101,7 @@ int Calendar::AddEvents(const std::vector<Event>& events)
         valueEvents.emplace_back(BuildValueEvent(event));
     }
     auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_eventUri.get()), valueEvents);
-    LOG_INFO("BatchInsert count %{public}d", count);
+    LOG_INFO("BatchInsert count %{private}d", count);
     return count;
 }
 #else
@@ -118,7 +116,7 @@ int Calendar::AddEvents(const std::vector<Event>& events)
         }
         channelId++;
     }
-    LOG_INFO("AddEvents count %{public}d", count);
+    LOG_INFO("AddEvents count %{private}d", count);
     return count;
 }
 #endif
