@@ -46,8 +46,8 @@ void DumpEvent(const Event &event)
     if (event.location) {
         auto location = event.location.value();
         LOG_DEBUG("location.location  :%{private}s", location.location.value_or("[null]").c_str());
-        LOG_DEBUG("location.longitude :%{private}d", location.longitude.value_or(-1));
-        LOG_DEBUG("location.latitude  :%{private}d", location.latitude.value_or(-1));
+        LOG_DEBUG("location.longitude :%{private}lf", location.longitude.value_or(-1));
+        LOG_DEBUG("location.latitude  :%{private}lf", location.latitude.value_or(-1));
     } else {
         LOG_DEBUG("location [null]");
     }
