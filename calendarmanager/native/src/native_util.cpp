@@ -554,9 +554,15 @@ int StringToInt(const std::string &str)
     try {
         return std::stoi(str);
     } catch (std::invalid_argument &ex) {
-        LOG_ERROR("Invalid_argument %{public}s", ex.what());
+        LOG_ERROR("Invalid_argument to int, str: %{public}s", str.c_str());
         return 0;
-    }
+    } catch (std::out_of_range &ex) {
+        LOG_ERROR("out_of_range to int, str: %{public}s", str.c_str());
+        return 0;
+    } catch (std::exception &ex) {
+        LOG_ERROR("StringToInt conversion fail, str: %{public}s", str.c_str());
+        return 0;
+    } 
 }
 
 std::time_t TimeToUTC(const std::string &strTime)
