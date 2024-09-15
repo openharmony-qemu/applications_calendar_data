@@ -67,6 +67,105 @@ HWTEST_F(EventRecurrenceRuleTest, SetRRuleValueNORule, testing::ext::TestSize.Le
     ASSERT_EQ(newOut.count.value(), out.count.value());
 }
 
+HWTEST_F(EventRecurrenceRuleTest, SetRRuleValueByWeekDay, testing::ext::TestSize.Level1)
+{
+    RecurrenceRule out;
+    out.recurrenceFrequency = WEEKLY;
+    RecurrenceRule newOut;
+    newOut.recurrenceFrequency = WEEKLY;
+    newOut.daysOfWeek = std::make_optional<vector<int64_t>>();
+    newOut.daysOfWeek->push_back(3);
+    std::string value;
+    std::map<std::string, std::string> ruleMap;
+    ruleMap.insert(std::pair<std::string, std::string>("FREQ", "WEEKLY"));
+    ruleMap.insert(std::pair<std::string, std::string>("BYDAY", "WE"));
+    SetRRuleValue(ruleMap, out);
+    ASSERT_EQ(newOut.recurrenceFrequency, out.recurrenceFrequency);
+    ASSERT_EQ(newOut.daysOfWeek.value()[0], out.daysOfWeek.value()[0]);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, SetRRuleValueByMonthWeekDay, testing::ext::TestSize.Level1)
+{
+    RecurrenceRule out;
+    out.recurrenceFrequency = MONTHLY;
+    RecurrenceRule newOut;
+    newOut.daysOfWeek = std::make_optional<vector<int64_t>>();
+    newOut.weeksOfMonth = std::make_optional<vector<int64_t>>();
+    newOut.daysOfWeek->push_back(2);
+    newOut.weeksOfMonth->push_back(1);
+    newOut.recurrenceFrequency = MONTHLY;
+    newOut.expire = 1713643350000;
+    std::string value;
+    std::map<std::string, std::string> ruleMap;
+    ruleMap.insert(std::pair<std::string, std::string>("FREQ", "MONTHLY"));
+    ruleMap.insert(std::pair<std::string, std::string>("BYDAY", "1TU"));
+    ruleMap.insert(std::pair<std::string, std::string>("UNTIL", "20240421T040230Z"));
+    SetRRuleValue(ruleMap, out);
+    ASSERT_EQ(newOut.recurrenceFrequency, out.recurrenceFrequency);
+    ASSERT_EQ(newOut.weeksOfMonth.value()[0], out.weeksOfMonth.value()[0]);
+    ASSERT_EQ(newOut.daysOfWeek.value()[0], out.daysOfWeek.value()[0]);
+    ASSERT_EQ(newOut.expire.value(), out.expire.value());
+}
+
+HWTEST_F(EventRecurrenceRuleTest, SetRRuleValueByYearMonthDay, testing::ext::TestSize.Level1)
+{
+    RecurrenceRule out;
+    out.recurrenceFrequency = YEARLY;
+    RecurrenceRule newOut;
+    newOut.daysOfMonth = std::make_optional<vector<int64_t>>();
+    newOut.monthsOfYear = std::make_optional<vector<int64_t>>();
+    newOut.recurrenceFrequency = YEARLY;
+    newOut.monthsOfYear->push_back(3);
+    newOut.daysOfMonth->push_back(8);
+    std::string value;
+    std::map<std::string, std::string> ruleMap;
+    ruleMap.insert(std::pair<std::string, std::string>("FREQ", "YEARLY"));
+    ruleMap.insert(std::pair<std::string, std::string>("BYMONTHDAY", "8"));
+    ruleMap.insert(std::pair<std::string, std::string>("BYMONTH", "3"));
+    SetRRuleValue(ruleMap, out);
+    ASSERT_EQ(newOut.recurrenceFrequency, out.recurrenceFrequency);
+    ASSERT_EQ(newOut.monthsOfYear.value()[0], out.monthsOfYear.value()[0]);
+    ASSERT_EQ(newOut.daysOfMonth.value()[0], out.daysOfMonth.value()[0]);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, SetRRuleValueByYearWeekDay, testing::ext::TestSize.Level1)
+{
+    RecurrenceRule out;
+    out.recurrenceFrequency = YEARLY;
+    RecurrenceRule newOut;
+    newOut.daysOfWeek = std::make_optional<vector<int64_t>>();
+    newOut.weeksOfYear = std::make_optional<vector<int64_t>>();
+    newOut.recurrenceFrequency = YEARLY;
+    newOut.daysOfWeek->push_back(6);
+    newOut.weeksOfYear->push_back(6);
+    std::string value;
+    std::map<std::string, std::string> ruleMap;
+    ruleMap.insert(std::pair<std::string, std::string>("FREQ", "YEARLY"));
+    ruleMap.insert(std::pair<std::string, std::string>("BYWEEKNO", "6"));
+    ruleMap.insert(std::pair<std::string, std::string>("BYDAY", "SA"));
+    SetRRuleValue(ruleMap, out);
+    ASSERT_EQ(newOut.recurrenceFrequency, out.recurrenceFrequency);
+    ASSERT_EQ(newOut.daysOfWeek.value()[0], out.daysOfWeek.value()[0]);
+    ASSERT_EQ(newOut.weeksOfYear.value()[0], out.weeksOfYear.value()[0]);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, SetRRuleValueByYearDay, testing::ext::TestSize.Level1)
+{
+    RecurrenceRule out;
+    out.recurrenceFrequency = YEARLY;
+    RecurrenceRule newOut;
+    newOut.daysOfYear = std::make_optional<vector<int64_t>>();
+    newOut.recurrenceFrequency = YEARLY;
+    newOut.daysOfYear->push_back(36);
+    std::string value;
+    std::map<std::string, std::string> ruleMap;
+    ruleMap.insert(std::pair<std::string, std::string>("FREQ", "YEARLY"));
+    ruleMap.insert(std::pair<std::string, std::string>("BYYEARDAY", "36"));
+    SetRRuleValue(ruleMap, out);
+    ASSERT_EQ(newOut.recurrenceFrequency, out.recurrenceFrequency);
+    ASSERT_EQ(newOut.daysOfYear.value()[0], out.daysOfYear.value()[0]);
+}
+
 HWTEST_F(EventRecurrenceRuleTest, SetByDayOfRRuleTest, testing::ext::TestSize.Level1)
 {
     std::vector<std::string> weekDayList;
