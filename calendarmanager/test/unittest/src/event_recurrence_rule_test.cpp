@@ -198,6 +198,36 @@ HWTEST_F(EventRecurrenceRuleTest, ColorParse, testing::ext::TestSize.Level1)
     ASSERT_EQ(corlor, 0);
 }
 
+HWTEST_F(EventRecurrenceRuleTest, ColorParseRed, testing::ext::TestSize.Level1)
+{
+    std::string colorStr = "#FF0000";
+    variant<string, int64_t> colorValue;
+    colorValue = 123;
+    bool corlor = ColorParse(colorStr, colorValue);
+
+    ASSERT_EQ(corlor, 1);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, ColorParseNULL, testing::ext::TestSize.Level1)
+{
+    std::string colorStr = "";
+    variant<string, int64_t> colorValue;
+    colorValue = 123;
+    bool corlor = ColorParse(colorStr, colorValue);
+
+    ASSERT_EQ(corlor, 0);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, ColorParseLen, testing::ext::TestSize.Level1)
+{
+    std::string colorStr = "#FF000";
+    variant<string, int64_t> colorValue;
+    colorValue = 123;
+    bool corlor = ColorParse(colorStr, colorValue);
+
+    ASSERT_EQ(corlor, 0);
+}
+
 HWTEST_F(EventRecurrenceRuleTest, GetUTCTime, testing::ext::TestSize.Level1)
 {
     const int64_t timeValue = 1713672150000;
@@ -409,4 +439,17 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithDayOfWeekMonthYearlyList, testing::
     EXPECT_EQ(value, rrule);
 }
 
+HWTEST_F(EventRecurrenceRuleTest, BuildValueEventRecurrenceRule, testing::ext::TestSize.Level1)
+{
+    Event event;
+    event.identifier = std::make_optional<std::string>("1111");
+    event.isLunar = std::make_optional<bool>(true);
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.daysOfWeek = {1, 3, 5};
+    recurrenceRule.weeksOfMonth = {2, 3, 4};
+    recurrenceRule.monthsOfYear = {6, 7, 8};
+    recurrenceRule.excludedDates = {1713672150000};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    BuildValueEvent(event, 0, 0);
 }
