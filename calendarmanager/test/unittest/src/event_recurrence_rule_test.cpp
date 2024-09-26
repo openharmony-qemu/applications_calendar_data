@@ -476,3 +476,5 @@ HWTEST_F(EventRecurrenceRuleTest, BuildValueEventRecurrenceRule, testing::ext::T
     EXPECT_EQ(rrule, rruleVal);
     EXPECT_EQ(excludedDateStr, excludedDate);
 }
+
+}
