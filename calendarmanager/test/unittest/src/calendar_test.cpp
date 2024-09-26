@@ -235,4 +235,43 @@ HWTEST_F(CalendarTest, SetConfig_with_color_test, testing::ext::TestSize.Level1)
     EXPECT_EQ(config, configExpect);
 }
 
+HWTEST_F(CalendarTest, UpdateEvent_test_3, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.daysOfWeek = {1, 3, 5};
+    recurrenceRule.weeksOfMonth = {2, 3, 4};
+    recurrenceRule.monthsOfYear = {6, 7, 8};
+    recurrenceRule.excludedDates = {1713672150000};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    event.title = std::make_optional<std::string>("UpdateEvent_test_3");
+    event.isLunar = std::make_optional<bool>(true);
+    auto eventId = calendar->AddEvent(event);
+    auto events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule", "identifier", "isLunar", "id"});
+    ASSERT_NE(eventId, 0);
 }
+
+HWTEST_F(CalendarTest, AddEventInfoNoID, testing::ext::TestSize.Level1)
+{
+    Event event;
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.daysOfWeek = {1, 3, 5};
+    recurrenceRule.weeksOfMonth = {2, 3, 4};
+    recurrenceRule.monthsOfYear = {6, 7, 8};
+    recurrenceRule.excludedDates = {1713672150000};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    int channelId = 0;
+    int eventInfo = calendar->AddEventInfo(event, channelId);
+    ASSERT_NE(eventInfo, 0);
+}
+
+HWTEST_F(CalendarTest, UpdateEventNoID, testing::ext::TestSize.Level1)
+{
+    Event event;
+    bool isUpdataEvent = calendar->UpdateEvent(event);
+    ASSERT_EQ(isUpdataEvent, 0);
+}
+
+}  // namespace OHOS::CalendarApi::Native

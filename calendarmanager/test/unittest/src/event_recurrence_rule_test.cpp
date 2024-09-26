@@ -198,6 +198,36 @@ HWTEST_F(EventRecurrenceRuleTest, ColorParse, testing::ext::TestSize.Level1)
     ASSERT_EQ(corlor, 0);
 }
 
+HWTEST_F(EventRecurrenceRuleTest, ColorParseRed, testing::ext::TestSize.Level1)
+{
+    std::string colorStr = "#FF0000";
+    variant<string, int64_t> colorValue;
+    colorValue = 123;
+    bool corlor = ColorParse(colorStr, colorValue);
+
+    ASSERT_EQ(corlor, 1);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, ColorParseNULL, testing::ext::TestSize.Level1)
+{
+    std::string colorStr = "";
+    variant<string, int64_t> colorValue;
+    colorValue = 123;
+    bool corlor = ColorParse(colorStr, colorValue);
+
+    ASSERT_EQ(corlor, 0);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, ColorParseLen, testing::ext::TestSize.Level1)
+{
+    std::string colorStr = "#FF000";
+    variant<string, int64_t> colorValue;
+    colorValue = 123;
+    bool corlor = ColorParse(colorStr, colorValue);
+
+    ASSERT_EQ(corlor, 0);
+}
+
 HWTEST_F(EventRecurrenceRuleTest, GetUTCTime, testing::ext::TestSize.Level1)
 {
     const int64_t timeValue = 1713672150000;
@@ -407,6 +437,44 @@ HWTEST_F(EventRecurrenceRuleTest, GetRuleWithDayOfWeekMonthYearlyList, testing::
     const auto value = GetRule(event);
 
     EXPECT_EQ(value, rrule);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, BuildValueEventRecurrenceRule, testing::ext::TestSize.Level1)
+{
+    Event event;
+    event.identifier = std::make_optional<std::string>("1111");
+    event.isLunar = std::make_optional<bool>(true);
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.daysOfWeek = {1, 3, 5};
+    recurrenceRule.weeksOfMonth = {2, 3, 4};
+    recurrenceRule.monthsOfYear = {6, 7, 8};
+    recurrenceRule.excludedDates = {1727254841000};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    std::string rrule = "FREQ=YEARLY;WKST=SU;BYDAY=2MO,3WE,4FR;BYMONTH=6,7,8";
+    std::string excludedDateStr = "20240925T090041Z";
+    DataShare::DataShareValuesBucket newShareValuesBucket;
+    newShareValuesBucket.Put("identifier", event.identifier.value());
+    newShareValuesBucket.Put("event_calendar_type", event.isLunar.value());
+    newShareValuesBucket.Put("rrule", rrule);
+    newShareValuesBucket.Put("exdate", excludedDateStr);
+    auto shareValuesBucket = BuildValueEvent(event, 0, 0);
+    auto itIdentifier = shareValuesBucket.valuesMap.find("identifier");
+    auto *itIdentifierVal = std::get_if<std::string>(&itIdentifier->second);
+    std::string identifierVal = *itIdentifierVal;
+    auto itIsLunar = shareValuesBucket.valuesMap.find("event_calendar_type");
+    auto *itIsLunarVal = std::get_if<int64_t>(&itIsLunar->second);
+    int64_t isLunarVal = *itIsLunarVal;
+    auto itRrule = shareValuesBucket.valuesMap.find("rrule");
+    auto *itRruleValue = std::get_if<std::string>(&itRrule->second);
+    std::string rruleVal = *itRruleValue;
+    auto itExcludedDate = shareValuesBucket.valuesMap.find("exdate");
+    auto *itExcludedDateValue = std::get_if<std::string>(&itExcludedDate->second);
+    std::string excludedDate = *itExcludedDateValue;
+    EXPECT_EQ(event.identifier.value(), identifierVal);
+    EXPECT_EQ(event.isLunar.value(), isLunarVal);
+    EXPECT_EQ(rrule, rruleVal);
+    EXPECT_EQ(excludedDateStr, excludedDate);
 }
 
 }
