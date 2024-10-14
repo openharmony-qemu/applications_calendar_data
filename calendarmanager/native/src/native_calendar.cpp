@@ -288,7 +288,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     }
     ResultSetToEvents(events, result, resultSetField);
     for (auto &event : events) {
-        if (!event.id.has_value) {
+        if (!event.id.has_value()) {
             continue;
         }
         const auto eventId = event.id.value();
