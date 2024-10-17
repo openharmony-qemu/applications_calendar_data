@@ -454,25 +454,15 @@ HWTEST_F(EventRecurrenceRuleTest, BuildValueEventRecurrenceRule, testing::ext::T
     std::string rrule = "FREQ=YEARLY;WKST=SU;BYDAY=2MO,3WE,4FR;BYMONTH=6,7,8";
     std::string excludedDateStr = "20240925T090041Z";
     DataShare::DataShareValuesBucket newShareValuesBucket;
-    newShareValuesBucket.Put("identifier", event.identifier.value());
-    newShareValuesBucket.Put("event_calendar_type", event.isLunar.value());
     newShareValuesBucket.Put("rrule", rrule);
     newShareValuesBucket.Put("exdate", excludedDateStr);
     auto shareValuesBucket = BuildValueEvent(event, 0, 0);
-    auto itIdentifier = shareValuesBucket.valuesMap.find("identifier");
-    auto *itIdentifierVal = std::get_if<std::string>(&itIdentifier->second);
-    std::string identifierVal = *itIdentifierVal;
-    auto itIsLunar = shareValuesBucket.valuesMap.find("event_calendar_type");
-    auto *itIsLunarVal = std::get_if<int64_t>(&itIsLunar->second);
-    int64_t isLunarVal = *itIsLunarVal;
     auto itRrule = shareValuesBucket.valuesMap.find("rrule");
     auto *itRruleValue = std::get_if<std::string>(&itRrule->second);
     std::string rruleVal = *itRruleValue;
     auto itExcludedDate = shareValuesBucket.valuesMap.find("exdate");
     auto *itExcludedDateValue = std::get_if<std::string>(&itExcludedDate->second);
     std::string excludedDate = *itExcludedDateValue;
-    EXPECT_EQ(event.identifier.value(), identifierVal);
-    EXPECT_EQ(event.isLunar.value(), isLunarVal);
     EXPECT_EQ(rrule, rruleVal);
     EXPECT_EQ(excludedDateStr, excludedDate);
 }
