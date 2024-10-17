@@ -19,6 +19,7 @@
 #include "native_calendar.h"
 #include "calendar_log.h"
 #include "native_calendar_manager.h"
+#include "native_util.h"
 
 namespace OHOS::CalendarApi::Native {
 class CalendarTest : public testing::Test {
@@ -272,6 +273,25 @@ HWTEST_F(CalendarTest, UpdateEventNoID, testing::ext::TestSize.Level1)
     Event event;
     bool isUpdataEvent = calendar->UpdateEvent(event);
     ASSERT_EQ(isUpdataEvent, 0);
+}
+
+HWTEST_F(CalendarTest, BuildValueEventIsLunar, testing::ext::TestSize.Level1)
+{
+    Event event;
+    event.identifier = std::make_optional<std::string>("1111");
+    event.isLunar = std::make_optional<bool>(true);
+    DataShare::DataShareValuesBucket newShareValuesBucket;
+    newShareValuesBucket.Put("identifier", event.identifier.value());
+    newShareValuesBucket.Put("event_calendar_type", event.isLunar.value());
+    auto shareValuesBucket = BuildValueEvent(event, 0, 0);
+    auto itIdentifier = shareValuesBucket.valuesMap.find("identifier");
+    auto *itIdentifierVal = std::get_if<std::string>(&itIdentifier->second);
+    std::string identifierVal = *itIdentifierVal;
+    auto itIsLunar = shareValuesBucket.valuesMap.find("event_calendar_type");
+    auto *itIsLunarVal = std::get_if<bool>(&itIsLunar->second);
+    bool isLunarVal = *itIsLunarVal;
+    EXPECT_EQ(event.identifier.value(), identifierVal);
+    EXPECT_EQ(event.isLunar.value(), isLunarVal);
 }
 
 }  // namespace OHOS::CalendarApi::Native
