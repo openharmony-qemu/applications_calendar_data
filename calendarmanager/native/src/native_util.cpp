@@ -910,7 +910,12 @@ bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValu
     }
 
     LOG_DEBUG("color string size is 7 or 9");
-    colorValue.emplace<1>(std::stoll(colorStrSub, NULL, 16)); // 16 is convert hex string to number
+    try {
+        colorValue.emplace<1>(std::stoll(colorStrSub, NULL, 16));  // 16 is convert hex string to number
+    } catch (std::invalid_argument &ex) {
+        LOG_ERROR("Invalid_argument %{public}s", ex.what());
+        return false;
+    }
     if (std::get_if<1>(&colorValue)) {
         LOG_DEBUG("colorStrSub -> colorValue colorValue:%{public}s", std::to_string(std::get<1>(colorValue)).c_str());
         return true;
