@@ -863,7 +863,7 @@ int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &res
         return -1;
     }
     do {
-        int minutes;
+        int minutes = 0;
         GetValue(resultSet, "minutes", minutes);
         reminders.emplace_back(minutes);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
