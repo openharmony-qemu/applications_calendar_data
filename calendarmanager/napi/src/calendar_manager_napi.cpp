@@ -143,7 +143,9 @@ napi_value CalendarManagerNapi::GetCalendar(napi_env env, napi_callback_info inf
             ctxt->status = napi_generic_failure;
             CHECK_STATUS_RETURN_VOID(ctxt, "GetCalendar failed!");
         }
-        ctxt->calendar->SetNative(nativteCalendar);
+        if (ctxt->calendar != nullptr) {
+            ctxt->calendar->SetNative(nativteCalendar);
+        }
         ctxt->id = nativteCalendar->GetId();
     };
     auto output = [env, ctxt](napi_value& result) {
