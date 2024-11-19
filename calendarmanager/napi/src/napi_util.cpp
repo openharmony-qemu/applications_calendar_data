@@ -484,7 +484,7 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     status = SetValue(env, in.email, emailValue);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     napi_set_named_property(env, out, "email", emailValue);
-     if (in.role.has_value()) {
+    if (in.role.has_value()) {
         std::string value;
         if (in.role == PARTICIPANT) {
             value = "organizer";
@@ -509,11 +509,11 @@ napi_status GetValue(napi_env env, napi_value in, AttendeeStatus& out)
     NapiUtil::GetNamedPropertyOptional(env, in, "status", value);
     if (value == "RESPONSE_UNKNOWN") {
         out = RESPONSE_UNKNOWN;
-    } else if (value =="TENTATIVE"){
+    } else if (value =="TENTATIVE") {
         out = TENTATIVE;
-    } else if (value =="ACCEPT"){
+    } else if (value =="ACCEPT") {
         out = ACCEPT;
-    } else if (value =="DECLINE"){
+    } else if (value =="DECLINE") {
         out = DECLINE;
     } else {
         out = NOT_RESPONDED;
@@ -527,11 +527,11 @@ napi_status SetValue(napi_env env, const AttendeeStatus& in, napi_value& out)
     std::string value;
     if (in == RESPONSE_UNKNOWN) {
         value = "RESPONSE_UNKNOWN";
-    } else if (in == TENTATIVE){
+    } else if (in == TENTATIVE) {
         value = "TENTATIVE";
-    } else if (in == ACCEPT){
+    } else if (in == ACCEPT) {
         value = "ACCEPT";
-    } else if (in == DECLINE){
+    } else if (in == DECLINE) {
         value = "DECLINE";
     } else {
         value ="NOT_RESPONDED";
@@ -551,7 +551,7 @@ napi_status GetValue(napi_env env, napi_value in, AttendeeType& out)
     NapiUtil::GetNamedPropertyOptional(env, in, "type", value);
     if (value == "REQUIRED") {
         out = REQUIRED;
-    } else if (value =="OPTIONAL"){
+    } else if (value =="OPTIONAL") {
         out = OPTIONAL;
     } else {
         out = RESOURCE;
@@ -565,7 +565,7 @@ napi_status SetValue(napi_env env, const AttendeeType& in, napi_value& out)
     std::string value;
     if (in == REQUIRED) {
         value = "REQUIRED";
-    } else if (in == OPTIONAL){
+    } else if (in == OPTIONAL) {
         value = "OPTIONAL";
     } else {
         value ="RESOURCE";
