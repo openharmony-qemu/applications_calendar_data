@@ -70,6 +70,20 @@ static const std::vector<struct JsEnumString> g_attendeeRole = {
     { "PARTICIPANT", "participant" },
 };
 
+static const std::vector<struct JsEnumString> g_attendeeStatus = {
+    { "RESPONSE_UNKNOWN", "responseUnknown" },
+    { "TENTATIVE", "tentative" },
+    { "ACCEPT", "accept"},
+    { "DECLINE", "decline" },
+    { "NOT_RESPONDED", "notRespond"},
+};
+
+static const std::vector<struct JsEnumString> g_attendeeType = {
+    { "REQUIRED", "required" },
+    { "OPTIONAL", "optional" },
+    { "RESOURCE", "resource" },
+};
+
 static const std::map<std::string_view, const std::vector<struct JsEnumInt>&> g_intEnumClassMap = {
     { "EventType", g_eventType},
     { "RecurrenceFrequency", g_recurrenceFrequency},

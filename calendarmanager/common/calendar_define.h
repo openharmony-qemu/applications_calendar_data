@@ -58,13 +58,31 @@ enum RoleType  {
     ORGANIZER = 2,
 };
 
+enum AttendeeStatus {
+    RESPONSE_UNKNOWN = 0,
+    TENTATIVE = 1,
+    ACCEPT = 2,
+    DECLINE = 3,
+    NOT_RESPONDED = 4,
+};
+
+enum AttendeeType {
+    REQUIRED = 0,
+    OPTIONAL = 1,
+    RESOURCE = 2,
+};
+
 struct Attendee {
     string name;
     string email;
     optional<RoleType> role;
+    optional<AttendeeStatus> status;
+    optional<AttendeeType> type;
     bool operator==(const Attendee& other) const
     {
-        return name == other.name && email == other.email && role.value_or(NONE) == other.role.value_or(NONE);
+        return name == other.name && email == other.email && role.value_or(NONE) == other.role.value_or(NONE) &&
+               status == other.status &&
+               type == other.type;
     }
 };
 

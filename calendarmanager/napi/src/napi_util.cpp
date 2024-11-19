@@ -465,6 +465,8 @@ napi_status GetValue(napi_env env, napi_value in, Attendee& out)
     } else {
         out.role = PARTICIPANT;
     }
+    NapiUtil::GetNamedPropertyOptional(env, in, "status", out.status);
+    NapiUtil::GetNamedPropertyOptional(env, in, "status", out.type);
     return napi_ok;
 }
 
@@ -482,21 +484,99 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     status = SetValue(env, in.email, emailValue);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     napi_set_named_property(env, out, "email", emailValue);
-    if (!in.role.has_value()) {
-        return napi_ok;
+     if (in.role.has_value()) {
+        std::string value;
+        if (in.role == PARTICIPANT) {
+            value = "organizer";
+        } else {
+            value = "participant";
+        }
+        napi_value roleValue = nullptr;
+        status = SetValue(env, value, roleValue);
+        CHECK_RETURN((status == napi_ok), "invalid role", status);
+        napi_set_named_property(env, out, "role", roleValue);
     }
-    std::string value;
-    if (in.role == PARTICIPANT) {
-        value = "organizer";
-    } else {
-        value = "participant";
-    }
-    napi_value roleValue = nullptr;
-    status = SetValue(env, value, roleValue);
-    CHECK_RETURN((status == napi_ok), "invalid role", status);
-    napi_set_named_property(env, out, "role", roleValue);
+    SetNamedPropertyOptional(env, "status", in.status, out);
+    SetNamedPropertyOptional(env, "type", in.type, out);
     return napi_ok;
 }
+
+/* napi_value <-> AttendeeStatus */
+napi_status GetValue(napi_env env, napi_value in, AttendeeStatus& out)
+{
+    LOG_DEBUG("napi_value -> AttendeeStatus");
+    optional<std::string> value;
+    NapiUtil::GetNamedPropertyOptional(env, in, "status", value);
+    if (value == "RESPONSE_UNKNOWN") {
+        out = RESPONSE_UNKNOWN;
+    } else if (value =="TENTATIVE"){
+        out = TENTATIVE;
+    } else if (value =="ACCEPT"){
+        out = ACCEPT;
+    } else if (value =="DECLINE"){
+        out = DECLINE;
+    } else {
+        out = NOT_RESPONDED;
+    }
+    return napi_ok;
+}
+
+napi_status SetValue(napi_env env, const AttendeeStatus& in, napi_value& out)
+{
+    LOG_DEBUG("AttendeeStatus -> napi_value");
+    std::string value;
+    if (in == RESPONSE_UNKNOWN) {
+        value = "RESPONSE_UNKNOWN";
+    } else if (in == TENTATIVE){
+        value = "TENTATIVE";
+    } else if (in == ACCEPT){
+        value = "ACCEPT";
+    } else if (in == DECLINE){
+        value = "DECLINE";
+    } else {
+        value ="NOT_RESPONDED";
+    }
+    napi_value statusValue = nullptr;
+    napi_status status = SetValue(env, value, statusValue);
+    CHECK_RETURN((status == napi_ok), "invalid status", status);
+    napi_set_named_property(env, out, "status", statusValue);
+    return status;
+}
+
+/* napi_value <-> AttendeeType */
+napi_status GetValue(napi_env env, napi_value in, AttendeeType& out)
+{
+    LOG_DEBUG("napi_value -> AttendeeType");
+    optional<std::string> value;
+    NapiUtil::GetNamedPropertyOptional(env, in, "type", value);
+    if (value == "REQUIRED") {
+        out = REQUIRED;
+    } else if (value =="OPTIONAL"){
+        out = OPTIONAL;
+    } else {
+        out = RESOURCE;
+    }
+    return napi_ok;
+}
+
+napi_status SetValue(napi_env env, const AttendeeType& in, napi_value& out)
+{
+    LOG_DEBUG("AttendeeType -> napi_value");
+    std::string value;
+    if (in == REQUIRED) {
+        value = "REQUIRED";
+    } else if (in == OPTIONAL){
+        value = "OPTIONAL";
+    } else {
+        value ="RESOURCE";
+    }
+    napi_value typeValue = nullptr;
+    napi_status status = SetValue(env, value, typeValue);
+    CHECK_RETURN((status == napi_ok), "invalid role", status);
+    napi_set_named_property(env, out, "role", typeValue);
+    return status;
+}
+
 
 /* napi_value <-> std::vector<Attendee> */
 napi_status GetValue(napi_env env, napi_value in, std::vector<Attendee>& out)
