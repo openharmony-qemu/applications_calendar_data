@@ -466,7 +466,7 @@ napi_status GetValue(napi_env env, napi_value in, Attendee& out)
         out.role = PARTICIPANT;
     }
     NapiUtil::GetNamedPropertyOptional(env, in, "status", out.status);
-    NapiUtil::GetNamedPropertyOptional(env, in, "status", out.type);
+    NapiUtil::GetNamedPropertyOptional(env, in, "type", out.type);
     return napi_ok;
 }
 
