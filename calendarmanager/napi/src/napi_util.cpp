@@ -504,7 +504,7 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     status = SetValue(env, in.email, emailValue);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     napi_set_named_property(env, out, "email", emailValue);
-     if (in.role.has_value()) {
+    if (in.role.has_value()) {
         std::string value;
         if (in.role == PARTICIPANT) {
             value = "organizer";
