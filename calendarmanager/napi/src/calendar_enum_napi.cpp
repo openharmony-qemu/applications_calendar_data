@@ -93,6 +93,8 @@ static const std::map<std::string_view, const std::vector<struct JsEnumString>&>
     { "CalendarType", g_calendarTypeKey },
     { "ServiceType", g_serviceType },
     { "AttendeeRole", g_attendeeRole },
+    { "AttendeeStatus", g_attendeeStatus },
+    { "AttendeeType", g_attendeeType }
 };
 
 napi_value CalendarEnumNapi::JsEnumIntInit(napi_env env, napi_value exports)
