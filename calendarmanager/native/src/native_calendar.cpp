@@ -226,7 +226,8 @@ std::vector<Attendee> Calendar::GetAttendeesByEventId(int id)
 {
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("event_id", id);
-    std::vector<std::string> columns = {"attendeeName", "attendeeEmail", "attendeeRelationship", "attendeeStatus", "attendeeType"};
+    std::vector<std::string> columns = {"attendeeName", "attendeeEmail",
+    "attendeeRelationship", "attendeeStatus", "attendeeType"};
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_attendeeUri.get()), predicates, columns, &error);
     std::vector<Attendee> attendees;
