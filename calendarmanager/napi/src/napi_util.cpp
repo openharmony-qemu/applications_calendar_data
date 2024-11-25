@@ -506,7 +506,7 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     napi_set_named_property(env, out, "email", emailValue);
     if (in.role.has_value()) {
         std::string value;
-        if (in.role == PARTICIPANT) {
+        if (in.role == ORGANIZER) {
             value = "organizer";
         } else {
             value = "participant";
