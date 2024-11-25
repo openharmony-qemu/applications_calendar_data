@@ -66,9 +66,11 @@ HWTEST_F(EventAttendeeTest, AddEventWithOneAttendee, testing::ext::TestSize.Leve
     string title = "AddEventWithOneAttendee";
     event.title = title;
     vector<Attendee> testAttendees {
-        {"test_attendee_name", "test_attendee@abc.com", ORGANIZER},
-        {"test_attendee_name1", "test_attendee1@abc.com", PARTICIPANT},
-        {"test_attendee_name2", "test_attendee2@abc.com",  PARTICIPANT}
+        {"test_attendee_name", "test_attendee@abc.com", ORGANIZER, RESPONSE_UNKNOWN, REQUIRED},
+        {"test_attendee_name1", "test_attendee1@abc.com", PARTICIPANT, TENTATIVE, OPTIONAL},
+        {"test_attendee_name2", "test_attendee2@abc.com", PARTICIPANT, ACCEPT, OPTIONAL},
+        {"test_attendee_name3", "test_attendee3@abc.com", PARTICIPANT, DECLINE, OPTIONAL},
+        {"test_attendee_name4", "test_attendee4@abc.com", PARTICIPANT, NOT_RESPONDED, RESOURCE}
     };
     event.attendees = testAttendees;
     auto eventId = calendar->AddEvent(event);
@@ -89,9 +91,11 @@ HWTEST_F(EventAttendeeTest, DelEventWithAttendee, testing::ext::TestSize.Level1)
     string title2 = "DelEventWithAttendee2";
     event2.title = title2;
     vector<Attendee> testAttendees {
-        {"test_attendee_name", "test_attendee@abc.com", ORGANIZER},
-        {"test_attendee_name1", "test_attendee1@abc.com", PARTICIPANT},
-        {"test_attendee_name2", "test_attendee2@abc.com",  PARTICIPANT}
+        {"test_attendee_name", "test_attendee@abc.com", ORGANIZER, RESPONSE_UNKNOWN, REQUIRED},
+        {"test_attendee_name1", "test_attendee1@abc.com", PARTICIPANT, TENTATIVE, OPTIONAL},
+        {"test_attendee_name2", "test_attendee2@abc.com", PARTICIPANT, ACCEPT, OPTIONAL},
+        {"test_attendee_name3", "test_attendee3@abc.com", PARTICIPANT, DECLINE, OPTIONAL},
+        {"test_attendee_name4", "test_attendee4@abc.com", PARTICIPANT, NOT_RESPONDED, RESOURCE}
     };
     event1.attendees = testAttendees;
     event2.attendees = testAttendees;
@@ -112,9 +116,11 @@ HWTEST_F(EventAttendeeTest, UpdateEventWithAttendee, testing::ext::TestSize.Leve
 {
     Event event;
     vector<Attendee> testAttendees {
-        {"test_attendee_name", "test_attendee@abc.com", ORGANIZER},
-        {"test_attendee_name1", "test_attendee1@abc.com", PARTICIPANT},
-        {"test_attendee_name2", "test_attendee2@abc.com",  PARTICIPANT}
+        {"test_attendee_name", "test_attendee@abc.com", ORGANIZER, RESPONSE_UNKNOWN, REQUIRED},
+        {"test_attendee_name1", "test_attendee1@abc.com", PARTICIPANT, TENTATIVE, OPTIONAL},
+        {"test_attendee_name2", "test_attendee2@abc.com", PARTICIPANT, ACCEPT, OPTIONAL},
+        {"test_attendee_name3", "test_attendee3@abc.com", PARTICIPANT, DECLINE, OPTIONAL},
+        {"test_attendee_name4", "test_attendee4@abc.com", PARTICIPANT, NOT_RESPONDED, RESOURCE}
     };
     event.attendees = testAttendees;
     auto eventId = calendar->AddEvent(event);
@@ -124,9 +130,11 @@ HWTEST_F(EventAttendeeTest, UpdateEventWithAttendee, testing::ext::TestSize.Leve
     auto resultEvent = events.at(0);
     ASSERT_THAT(resultEvent.attendees, testing::ElementsAreArray(testAttendees));
     vector<Attendee> newTestAttendees {
-        {"test_attendee_name_new", "test_attendee@abc.com", ORGANIZER},
-        {"test_attendee_name_new1", "test_attendee1@abc.com", PARTICIPANT},
-        {"test_attendee_name_new2", "test_attendee2@abc.com", PARTICIPANT}
+        {"test_attendee_name", "test_attendee@abc.com", ORGANIZER, RESPONSE_UNKNOWN, REQUIRED},
+        {"test_attendee_name1", "test_attendee1@abc.com", PARTICIPANT, TENTATIVE, OPTIONAL},
+        {"test_attendee_name2", "test_attendee2@abc.com", PARTICIPANT, ACCEPT, OPTIONAL},
+        {"test_attendee_name3", "test_attendee3@abc.com", PARTICIPANT, DECLINE, OPTIONAL},
+        {"test_attendee_name4", "test_attendee4@abc.com", PARTICIPANT, NOT_RESPONDED, RESOURCE}
     };
     resultEvent.attendees = newTestAttendees;
     calendar->UpdateEvent(resultEvent);
