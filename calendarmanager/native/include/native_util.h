@@ -51,6 +51,7 @@ namespace OHOS::CalendarApi::Native {
         DataShareResultSetPtr &resultSet, const std::set<std::string>& columns);
     int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet);
     int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet);
+    void ResultSetToConfig(CalendarConfig &config, DataShareResultSetPtr &resultSet);
     void SetField(const std::vector<string>& eventKey,
         std::vector<string>& queryField, std::set<string>& resultSetField);
 
