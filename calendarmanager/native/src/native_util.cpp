@@ -887,7 +887,6 @@ void ResultSetToConfig(CalendarConfig &config, DataShareResultSetPtr &resultSet)
         config.enableReminder = static_cast<bool>(enableReminder);
         LOG_INFO("enableReminder is %{public}d", enableReminder);
         config.color = color;
-        LOG_INFO("color is %{public}ld", color);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
 }
 
