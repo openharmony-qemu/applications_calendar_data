@@ -527,16 +527,16 @@ napi_status SetAttendeeStatus(napi_env env, const Attendee& in, napi_value& out)
 {
     std::string value;
     if (in.status.has_value()) {
-        if (in.status == RESPONSE_UNKNOWN) {
-            value = "responseUnknown";
+        if (in.status == UNKNOWN) {
+            value = "unknown";
         } else if (in.status == TENTATIVE) {
             value = "tentative";
-        } else if (in.status == ACCEPT) {
-            value = "accept";
-        } else if (in.status == DECLINE) {
-            value = "decline";
+        } else if (in.status == ACCEPTED) {
+            value = "accepted";
+        } else if (in.status == DECLINED) {
+            value = "declined";
         } else {
-            value = "notResponded";
+            value = "unresponsive";
         }
         napi_value statusValue = nullptr;
         napi_status status = SetValue(env, value, statusValue);
