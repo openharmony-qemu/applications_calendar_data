@@ -870,6 +870,26 @@ int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &res
     return 0;
 }
 
+void ResultSetToConfig(CalendarConfig &config, DataShareResultSetPtr &resultSet)
+{
+    int rowCount = 0;
+    resultSet->GetRowCount(rowCount);
+    LOG_INFO("GetRowCount is %{public}d", rowCount);
+    auto err = resultSet->GoToFirstRow();
+    if (err != DataShare::E_OK) {
+        LOG_ERROR("Failed GoToFirstRow %{public}d", err);
+    }
+    do {
+        int enableReminder;
+        std::int64_t color;
+        GetValue(resultSet, "canReminder", enableReminder);
+        GetValue(resultSet, "calendar_color", color);
+        config.enableReminder = static_cast<bool>(enableReminder);
+        LOG_INFO("enableReminder is %{public}d", enableReminder);
+        config.color = color;
+    } while (resultSet->GoToNextRow() == DataShare::E_OK);
+}
+
 bool IsValidHexString(const std::string& colorStr)
 {
     if (colorStr.empty()) {
