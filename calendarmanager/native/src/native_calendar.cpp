@@ -128,21 +128,6 @@ bool Calendar::DeleteEvent(int id)
     predicates.EqualTo("_id", id);
     predicates.EqualTo("calendar_id", GetId());
     auto ret = DataShareHelperManager::GetInstance().Delete(*(m_eventUri.get()), predicates);
-    LOG_INFO("DeleteEvent number %{public}d", ret);
-    {
-        // delete attendee
-        DataShare::DataSharePredicates predicates;
-        predicates.EqualTo("event_id", id);
-        auto ret = DataShareHelperManager::GetInstance().Delete(*(m_attendeeUri.get()), predicates);
-        LOG_INFO("Delete attendee num %{public}d", ret);
-    }
-    {
-        // delete reminder
-        DataShare::DataSharePredicates predicates;
-        predicates.EqualTo("event_id", id);
-        auto ret = DataShareHelperManager::GetInstance().Delete(*(m_reminderUrl.get()), predicates);
-        LOG_INFO("Delete reminder num %{public}d", ret);
-    }
     return ret == 1;
 }
 
@@ -307,6 +292,15 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
 
 CalendarConfig Calendar::GetConfig()
 {
+    DataShare::DataSharePredicates predicates;
+    predicates.EqualTo("_id", m_id);
+    std::vector<std::string> columns = {"calendar_color", "canReminder"};
+    DataShare::DatashareBusinessError error;
+    auto result = DataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
+    if (result != nullptr) {
+        ResultSetToConfig(m_config, result);
+    };
+    LOG_INFO(" query config finished");
     return m_config;
 }
 
