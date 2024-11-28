@@ -405,7 +405,13 @@ DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, in
     if (attendee.role.has_value()) {
         valuesBucket.Put("attendeeRelationship", attendee.role.value());
     }
-    
+    if (attendee.status.has_value()) {
+        valuesBucket.Put("attendeeStatus", attendee.status.value());
+    }
+    if (attendee.type.has_value()) {
+        valuesBucket.Put("attendeeType", attendee.type.value());
+    }
+
     return valuesBucket;
 }
 
@@ -515,7 +521,7 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
     if (latitudeValue != -1) {
         out.latitude = std::make_optional<double>(latitudeValue);
     }
-    
+
     if (ret != DataShare::E_OK) {
         return std::nullopt;
     }
@@ -572,7 +578,7 @@ std::time_t TimeToUTC(const std::string &strTime)
     const int monCount = 12;
     const int monRectify = 11;
     const int micSecond = 1000;
-    
+
     std::tm expireTime = { 0 };
     expireTime.tm_year = StringToInt(strTime.substr(0, yearOffset)) - baseYear;
     expireTime.tm_mon = (StringToInt(strTime.substr(monBase, offset)) + monRectify) % monCount;
@@ -588,7 +594,7 @@ std::time_t TimeToUTC(const std::string &strTime)
     }
 
     std::time_t utcTime = mktime(&expireTime) * micSecond; //精确到微秒
-   
+
     return utcTime;
 }
 
@@ -785,7 +791,7 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
     if (columns.count("recurrenceRule")) {
         event.recurrenceRule = ResultSetToRecurrenceRule(resultSet);
     }
-   
+
     if (columns.count("identifier")) {
         GetValueOptional(resultSet, "identifier", event.identifier);
     }
@@ -819,6 +825,36 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
     return 0;
 }
 
+void ResultSetToAttendeeStatus(Attendee &attendee, DataShareResultSetPtr &resultSet)
+{
+    int statusValue = 0;
+    GetValue(resultSet, "attendeeStatus", statusValue);
+    if (statusValue == UNKNOWN) {
+        attendee.status = std::make_optional<AttendeeStatus>(UNKNOWN);
+    } else if (statusValue == TENTATIVE) {
+        attendee.status = std::make_optional<AttendeeStatus>(TENTATIVE);
+    } else if (statusValue == ACCEPTED) {
+        attendee.status = std::make_optional<AttendeeStatus>(ACCEPTED);
+    } else if (statusValue == DECLINED) {
+        attendee.status = std::make_optional<AttendeeStatus>(DECLINED);
+    } else {
+        attendee.status = std::make_optional<AttendeeStatus>(UNRESPONSIVE);
+    }
+}
+
+void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSet)
+{
+    int typeValue = 0;
+    GetValue(resultSet, "attendeeType", typeValue);
+    if (typeValue == REQUIRED) {
+        attendee.type = std::make_optional<AttendeeType>(REQUIRED);
+    } else if (typeValue == OPTIONAL) {
+        attendee.type = std::make_optional<AttendeeType>(OPTIONAL);
+    } else {
+        attendee.type = std::make_optional<AttendeeType>(RESOURCE);
+    }
+}
+
 int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet)
 {
     int rowCount = 0;
@@ -843,7 +879,9 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         } else if (roleValue == ORGANIZER) {
             attendee.role = std::make_optional<RoleType>(ORGANIZER);
         }
-        
+
+        ResultSetToAttendeeStatus(attendee, resultSet);
+        ResultSetToAttendeeType(attendee, resultSet);
         attendees.emplace_back(attendee);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
