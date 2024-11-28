@@ -465,16 +465,16 @@ napi_status GetValue(napi_env env, napi_value in, Attendee& out)
     }
     NapiUtil::GetNamedPropertyOptional(env, in, "status", value);
     if (value.has_value()) {
-        if (value == "responseUnknown") {
-            out.status = RESPONSE_UNKNOWN;
+        if (value == "unknown") {
+            out.status = UNKNOWN;
         } else if (value == "tentative") {
             out.status = TENTATIVE;
-        } else if (value == "accept") {
-            out.status = ACCEPT;
-        } else if (value == "decline") {
-            out.status = DECLINE;
+        } else if (value == "accepted") {
+            out.status = ACCEPTED;
+        } else if (value == "declined") {
+            out.status = DECLINED;
         } else {
-            out.status = NOT_RESPONDED;
+            out.status = UNRESPONSIVE;
         }
     }
     NapiUtil::GetNamedPropertyOptional(env, in, "type", value);

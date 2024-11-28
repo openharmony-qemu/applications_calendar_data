@@ -71,11 +71,11 @@ static const std::vector<struct JsEnumString> g_attendeeRole = {
 };
 
 static const std::vector<struct JsEnumString> g_attendeeStatus = {
-    { "RESPONSE_UNKNOWN", "responseUnknown" },
+    { "UNKNOWN", "unknown" },
     { "TENTATIVE", "tentative" },
-    { "ACCEPT", "accept"},
-    { "DECLINE", "decline" },
-    { "NOT_RESPONDED", "notResponded"},
+    { "ACCEPTED", "accepted"},
+    { "DECLINED", "declined" },
+    { "UNRESPONSIVE", "unresponsive"},
 };
 
 static const std::vector<struct JsEnumString> g_attendeeType = {

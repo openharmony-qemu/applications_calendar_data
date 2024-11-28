@@ -829,16 +829,16 @@ void ResultSetToAttendeeStatus(Attendee &attendee, DataShareResultSetPtr &result
 {
     int statusValue = 0;
     GetValue(resultSet, "attendeeStatus", statusValue);
-    if (statusValue == RESPONSE_UNKNOWN) {
-        attendee.status = std::make_optional<AttendeeStatus>(RESPONSE_UNKNOWN);
+    if (statusValue == UNKNOWN) {
+        attendee.status = std::make_optional<AttendeeStatus>(UNKNOWN);
     } else if (statusValue == TENTATIVE) {
         attendee.status = std::make_optional<AttendeeStatus>(TENTATIVE);
-    } else if (statusValue == ACCEPT) {
-        attendee.status = std::make_optional<AttendeeStatus>(ACCEPT);
-    } else if (statusValue == DECLINE) {
-        attendee.status = std::make_optional<AttendeeStatus>(DECLINE);
+    } else if (statusValue == ACCEPTED) {
+        attendee.status = std::make_optional<AttendeeStatus>(ACCEPTED);
+    } else if (statusValue == DECLINED) {
+        attendee.status = std::make_optional<AttendeeStatus>(DECLINED);
     } else {
-        attendee.status = std::make_optional<AttendeeStatus>(NOT_RESPONDED);
+        attendee.status = std::make_optional<AttendeeStatus>(UNRESPONSIVE);
     }
 }
 
