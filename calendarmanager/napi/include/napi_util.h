@@ -122,6 +122,12 @@ namespace OHOS::CalendarApi::NapiUtil {
     napi_status GetValue(napi_env env, napi_value in, std::vector<Event>& out);
     napi_status SetValue(napi_env env, const std::vector<Event>& in, napi_value& out);
 
+    /* AttendeeStatus -> napi_value */
+    napi_status SetAttendeeStatus(napi_env env, const Attendee& in, napi_value& out);
+
+    /* AttendeeType -> napi_value */
+    napi_status SetAttendeeType(napi_env env, const Attendee& in, napi_value& out);
+
     /* napi_get_named_property wrapper */
     template <typename T>
     napi_status GetNamedProperty(napi_env env, napi_value in, const std::string& prop, T& value)

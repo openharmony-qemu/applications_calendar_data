@@ -100,4 +100,6 @@ export default {
   EventService: calendarManager.EventService,
   ServiceType: calendarManager.ServiceType,
   AttendeeRole: calendarManager.AttendeeRole,
+  AttendeeStatus: calendarManager.AttendeeStatus,
+  AttendeeType: calendarManager.AttendeeType,
 };
