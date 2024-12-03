@@ -134,11 +134,9 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     event.startTime = 17230000;
     event.endTime = 17630000;
     event.isAllDay = true;
-    event.attendees =  {
-        {"xiaoming", "xiaoming@abc.com"},
-        {"xiaoqiang", "test_attendee1@abc.com"},
-        {"abc", "test_attendee2@abc.com"}
-    };
+    event.attendees = {{"xiaoming", "xiaoming@abc.com", NONE, UNKNOWN, REQUIRED},
+        {"xiaoqiang", "test_attendee1@abc.com", PARTICIPANT, TENTATIVE, OPTIONAL},
+        {"abc", "test_attendee2@abc.com", ORGANIZER, ACCEPTED, RESOURCE}};
     event.timeZone = "UTC";
     event.reminderTime = {0, 1, 2};
     event.description = "UpdateEvent_test_2_disp";
