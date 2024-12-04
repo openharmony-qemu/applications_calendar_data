@@ -360,6 +360,9 @@ napi_status SetValue(napi_env env, const CalendarConfig& in, napi_value& out)
         ss >> color;
         const int rgbLen = 5;
         const int argbLen = 7;
+        while (color.size() < rgbLen) {
+            color = '0' + color;
+        }
         if (color.size() == rgbLen || color.size() == argbLen) {
             color = '0' + color;
         }
