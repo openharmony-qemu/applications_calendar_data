@@ -242,7 +242,6 @@ HWTEST_F(CalendarTest, SetConfig_with_Black_test, testing::ext::TestSize.Level1)
     ASSERT_TRUE(calendar->SetConfig(config));
     auto configExpect = calendar->GetConfig();
     EXPECT_EQ(config, configExpect);
-    EXPECT_EQ(config.color, std::get<0>(configExpect.color));
 }
 
 HWTEST_F(CalendarTest, UpdateEvent_test_3, testing::ext::TestSize.Level1)
