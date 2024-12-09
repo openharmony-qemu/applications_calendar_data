@@ -88,8 +88,7 @@ static const std::map<std::string_view, const std::vector<struct JsEnumInt>&> g_
     { "EventType", g_eventType},
     { "RecurrenceFrequency", g_recurrenceFrequency},
     {"AttendeeStatus", g_attendeeStatus},
-    {"AttendeeType", g_attendeeType}};
-
+    {"AttendeeType", g_attendeeType}
 };
 
 static const std::map<std::string_view, const std::vector<struct JsEnumString>&> g_stringEnumClassMap = {
