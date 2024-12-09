@@ -578,12 +578,18 @@ std::time_t TimeToUTC(const std::string &strTime)
     const int monCount = 12;
     const int monRectify = 11;
     const int micSecond = 1000;
+    const int timeStrLenMin = 8;
+    const int timeStrLen = 15;
 
-    std::tm expireTime = { 0 };
+    std::tm expireTime = {0};
+    if (strTime.size() < timeStrLenMin) {
+        LOG_DEBUG("strTime length error");
+        return 0;
+    }
     expireTime.tm_year = StringToInt(strTime.substr(0, yearOffset)) - baseYear;
     expireTime.tm_mon = (StringToInt(strTime.substr(monBase, offset)) + monRectify) % monCount;
     expireTime.tm_mday = StringToInt(strTime.substr(dayBase, offset));
-    if (strTime.find("T") != std::string::npos) {
+    if (strTime.find("T") != std::string::npos && strTime.length() >= timeStrLen) {
         expireTime.tm_hour = StringToInt(strTime.substr(hourBase, offset));
         expireTime.tm_min = StringToInt(strTime.substr(minBase, offset));
         expireTime.tm_sec = StringToInt(strTime.substr(secBase,  offset));
