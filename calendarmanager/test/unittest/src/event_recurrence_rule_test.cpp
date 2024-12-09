@@ -266,6 +266,15 @@ HWTEST_F(EventRecurrenceRuleTest, TimeToUTC, testing::ext::TestSize.Level1)
     EXPECT_EQ(timeValue, timeUTCValue);
 }
 
+HWTEST_F(EventRecurrenceRuleTest, TimeToUTCError, testing::ext::TestSize.Level1)
+{
+    const int64_t timeValue = 0;
+    const std::string timeStr = "202404";
+
+    const int64_t timeUTCValue = TimeToUTC(timeStr);
+
+    EXPECT_EQ(timeValue, timeUTCValue);
+}
 HWTEST_F(EventRecurrenceRuleTest, GetRuleWithDay, testing::ext::TestSize.Level1)
 {
     const int64_t timeValue = 1713672150000;

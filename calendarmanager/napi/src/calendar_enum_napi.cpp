@@ -70,31 +70,31 @@ static const std::vector<struct JsEnumString> g_attendeeRole = {
     { "PARTICIPANT", "participant" },
 };
 
-static const std::vector<struct JsEnumString> g_attendeeStatus = {
-    { "UNKNOWN", "unknown" },
-    { "TENTATIVE", "tentative" },
-    { "ACCEPTED", "accepted"},
-    { "DECLINED", "declined" },
-    { "UNRESPONSIVE", "unresponsive"},
+static const std::vector<struct JsEnumInt> g_attendeeStatus = {
+    {"UNKNOWN", AttendeeStatus::UNKNOWN},
+    {"TENTATIVE", AttendeeStatus::TENTATIVE},
+    {"ACCEPTED", AttendeeStatus::ACCEPTED},
+    {"DECLINED", AttendeeStatus::DECLINED},
+    {"UNRESPONSIVE", AttendeeStatus::UNRESPONSIVE},
 };
 
-static const std::vector<struct JsEnumString> g_attendeeType = {
-    { "REQUIRED", "required" },
-    { "OPTIONAL", "optional" },
-    { "RESOURCE", "resource" },
+static const std::vector<struct JsEnumInt> g_attendeeType = {
+    {"REQUIRED", AttendeeType::REQUIRED},
+    {"OPTIONAL", AttendeeType::OPTIONAL},
+    {"RESOURCE", AttendeeType::RESOURCE},
 };
 
 static const std::map<std::string_view, const std::vector<struct JsEnumInt>&> g_intEnumClassMap = {
     { "EventType", g_eventType},
     { "RecurrenceFrequency", g_recurrenceFrequency},
+    {"AttendeeStatus", g_attendeeStatus},
+    {"AttendeeType", g_attendeeType}
 };
 
 static const std::map<std::string_view, const std::vector<struct JsEnumString>&> g_stringEnumClassMap = {
     { "CalendarType", g_calendarTypeKey },
     { "ServiceType", g_serviceType },
     { "AttendeeRole", g_attendeeRole },
-    { "AttendeeStatus", g_attendeeStatus },
-    { "AttendeeType", g_attendeeType }
 };
 
 napi_value CalendarEnumNapi::JsEnumIntInit(napi_env env, napi_value exports)

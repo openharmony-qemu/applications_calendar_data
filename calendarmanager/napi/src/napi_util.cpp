@@ -452,43 +452,30 @@ napi_status SetValue(napi_env env, const RecurrenceRule& in, napi_value& out)
 }
 
 /* napi_value <-> Attendee */
-napi_status GetValue(napi_env env, napi_value in, Attendee& out)
+napi_status GetValue(napi_env env, napi_value in, Attendee &out)
 {
     LOG_DEBUG("Attendee -> napi_value ");
     NapiUtil::GetNamedProperty(env, in, "name", out.name);
     NapiUtil::GetNamedProperty(env, in, "email", out.email);
-    optional<std::string> value;
-    NapiUtil::GetNamedPropertyOptional(env, in, "role", value);
-    if (value.has_value()) {
-        if (value == "organizer") {
+    optional<std::string> role = std::nullopt;
+    optional<int> status = std::nullopt;
+    optional<int> type = std::nullopt;
+    NapiUtil::GetNamedPropertyOptional(env, in, "role", role);
+    if (role.has_value()) {
+        if (role == "organizer") {
             out.role = ORGANIZER;
         } else {
             out.role = PARTICIPANT;
         }
     }
-    NapiUtil::GetNamedPropertyOptional(env, in, "status", value);
-    if (value.has_value()) {
-        if (value == "unknown") {
-            out.status = UNKNOWN;
-        } else if (value == "tentative") {
-            out.status = TENTATIVE;
-        } else if (value == "accepted") {
-            out.status = ACCEPTED;
-        } else if (value == "declined") {
-            out.status = DECLINED;
-        } else {
-            out.status = UNRESPONSIVE;
-        }
+    NapiUtil::GetNamedPropertyOptional(env, in, "status", status);
+    if (status.has_value()) {
+        out.status = static_cast<AttendeeStatus>(status.value());
+        LOG_INFO("status.value() %{public}d", status.value());
     }
-    NapiUtil::GetNamedPropertyOptional(env, in, "type", value);
-    if (value.has_value()) {
-        if (value == "required") {
-            out.type = REQUIRED;
-        } else if (value == "optional") {
-            out.type = OPTIONAL;
-        }  else {
-            out.type = RESOURCE;
-        }
+    NapiUtil::GetNamedPropertyOptional(env, in, "type", type);
+    if (type.has_value()) {
+        out.type = static_cast<AttendeeType>(type.value());
     }
     return napi_ok;
 }
@@ -507,64 +494,21 @@ napi_status SetValue(napi_env env, const Attendee& in, napi_value& out)
     status = SetValue(env, in.email, emailValue);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
     napi_set_named_property(env, out, "email", emailValue);
+    optional<std::string> value = std::nullopt;
     if (in.role.has_value()) {
-        std::string value;
         if (in.role == ORGANIZER) {
             value = "organizer";
         } else {
             value = "participant";
         }
-        napi_value roleValue = nullptr;
-        status = SetValue(env, value, roleValue);
-        CHECK_RETURN((status == napi_ok), "invalid role", status);
-        napi_set_named_property(env, out, "role", roleValue);
     }
-    status = NapiUtil::SetAttendeeStatus(env, in, out);
+    if (value.has_value()) {
+        SetNamedPropertyOptional(env, "role", value, out);
+    }
+    SetNamedPropertyOptional(env, "status", in.status, out);
     CHECK_RETURN((status == napi_ok), "invalid status", status);
-    status = NapiUtil::SetAttendeeType(env, in, out);
+    SetNamedPropertyOptional(env, "type", in.type, out);
     CHECK_RETURN((status == napi_ok), "invalid type", status);
-    return napi_ok;
-}
-
-napi_status SetAttendeeStatus(napi_env env, const Attendee& in, napi_value& out)
-{
-    std::string value;
-    if (in.status.has_value()) {
-        if (in.status == UNKNOWN) {
-            value = "unknown";
-        } else if (in.status == TENTATIVE) {
-            value = "tentative";
-        } else if (in.status == ACCEPTED) {
-            value = "accepted";
-        } else if (in.status == DECLINED) {
-            value = "declined";
-        } else {
-            value = "unresponsive";
-        }
-        napi_value statusValue = nullptr;
-        napi_status status = SetValue(env, value, statusValue);
-        napi_set_named_property(env, out, "status", statusValue);
-        return status;
-    }
-    return napi_ok;
-}
-
-napi_status SetAttendeeType(napi_env env, const Attendee& in, napi_value& out)
-{
-    std::string value;
-    if (in.type.has_value()) {
-        if (in.type == REQUIRED) {
-            value = "required";
-        } else if (in.type == OPTIONAL) {
-            value = "optional";
-        } else {
-            value = "resource";
-        }
-        napi_value typeValue = nullptr;
-        napi_status status = SetValue(env, value, typeValue);
-        napi_set_named_property(env, out, "type", typeValue);
-        return status;
-    }
     return napi_ok;
 }
 
