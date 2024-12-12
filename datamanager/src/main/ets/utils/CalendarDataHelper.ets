@@ -243,14 +243,14 @@ let CREATE_CALENDAR_METADATA_TABLE_SQL = `CREATE TABLE IF NOT EXISTS `
  * the create EventsRawTimes table sql
  */
 let CREATE_EVENTS_RAW_TIMES_TABLE_SQL = `CREATE TABLE IF NOT EXISTS `
-+ `${EventsRawTimesColumns.TABLE_NAME} (`
-+ `${EventsRawTimesColumns.ID} INTEGER PRIMARY KEY, `
-+ `${EventsRawTimesColumns.EVENT_ID} INTEGER NOT NULL, `
-+ `${EventsRawTimesColumns.DT_START_2445} TEXT, `
-+ `${EventsRawTimesColumns.DT_END_2445} TEXT, `
-+ `${EventsRawTimesColumns.ORIGINAL_INSTANCE_TIME2445} TEXT, `
-+ `${EventsRawTimesColumns.LAST_DATE2445} TEXT, `
-+ `UNIQUE (${EventsRawTimesColumns.EVENT_ID}))`;
+  + `${EventsRawTimesColumns.TABLE_NAME} (`
+  + `${EventsRawTimesColumns.ID} INTEGER PRIMARY KEY, `
+  + `${EventsRawTimesColumns.EVENT_ID} INTEGER NOT NULL, `
+  + `${EventsRawTimesColumns.DT_START_2445} TEXT, `
+  + `${EventsRawTimesColumns.DT_END_2445} TEXT, `
+  + `${EventsRawTimesColumns.ORIGINAL_INSTANCE_TIME2445} TEXT, `
+  + `${EventsRawTimesColumns.LAST_DATE2445} TEXT, `
+  + `UNIQUE (${EventsRawTimesColumns.EVENT_ID}))`;
 
 /**
  * the create map_address_history table sql
@@ -552,20 +552,20 @@ class CalendarDataHelper {
     Log.log(TAG, 'call createDeleteEventTriggers start');
     let EVENTS_CLEANUP_TRIGGER_SQL =
       `DELETE FROM ${InstancesColumns.TABLE_NAME}` +
-        ` WHERE ${InstancesColumns.EVENT_ID} = old.${EventColumns.ID};` +
-        `DELETE FROM ${EventsRawTimesColumns.TABLE_NAME}` +
-        ` WHERE ${EventsRawTimesColumns.EVENT_ID} = old.${EventColumns.ID};` +
-        `DELETE FROM ${AttendeesColumns.TABLE_NAME}` +
-        ` WHERE ${AttendeesColumns.EVENT_ID} = old.${EventColumns.ID};` +
-        `DELETE FROM ${ExtendCalendarEventColumns.TABLE_NAME}` +
-        ` WHERE ${ExtendCalendarEventColumns.HWEXT_EVENT_ID} = ` +
-        `old.${EventColumns.ID};` +
-        `DELETE FROM ${RemindersColumns.TABLE_NAME}` +
-        ` WHERE ${RemindersColumns.EVENT_ID} = old.${EventColumns.ID};` +
-        `DELETE FROM ${CalendarAlertsColumns.TABLE_NAME}` +
-        ` WHERE ${CalendarAlertsColumns.EVENT_ID} = old.${EventColumns.ID};` +
-        `DELETE FROM ${ExtendedPropertiesColumns.TABLE_NAME}` +
-        ` WHERE ${ExtendedPropertiesColumns.EVENT_ID} = old.${EventColumns.ID};`
+      ` WHERE ${InstancesColumns.EVENT_ID} = old.${EventColumns.ID};` +
+      `DELETE FROM ${EventsRawTimesColumns.TABLE_NAME}` +
+      ` WHERE ${EventsRawTimesColumns.EVENT_ID} = old.${EventColumns.ID};` +
+      `DELETE FROM ${AttendeesColumns.TABLE_NAME}` +
+      ` WHERE ${AttendeesColumns.EVENT_ID} = old.${EventColumns.ID};` +
+      `DELETE FROM ${ExtendCalendarEventColumns.TABLE_NAME}` +
+      ` WHERE ${ExtendCalendarEventColumns.HWEXT_EVENT_ID} = ` +
+      `old.${EventColumns.ID};` +
+      `DELETE FROM ${RemindersColumns.TABLE_NAME}` +
+      ` WHERE ${RemindersColumns.EVENT_ID} = old.${EventColumns.ID};` +
+      `DELETE FROM ${CalendarAlertsColumns.TABLE_NAME}` +
+      ` WHERE ${CalendarAlertsColumns.EVENT_ID} = old.${EventColumns.ID};` +
+      `DELETE FROM ${ExtendedPropertiesColumns.TABLE_NAME}` +
+      ` WHERE ${ExtendedPropertiesColumns.EVENT_ID} = old.${EventColumns.ID};`
 
     let EVENTS_CLEANUP_TRIGGER = `CREATE TRIGGER events_cleanup_delete DELETE ON ` +
       `${EventColumns.TABLE_NAME} BEGIN ${EVENTS_CLEANUP_TRIGGER_SQL} END`
@@ -580,40 +580,40 @@ class CalendarDataHelper {
   private async createColorsTriggers() {
     Log.log(TAG, 'call createColorsTriggers start');
     let EVENT_UPDATE_COLOR_TRIGGER_SQL = `UPDATE ${EventColumns.TABLE_NAME}` +
-      ` SET eventColor=(SELECT ${ColorsColumns.COLOR} FROM ` +
-      `${ColorsColumns.TABLE_NAME}` +
-      ` WHERE ${ColorsColumns.ACCOUNT_NAME} = (SELECT ` +
-      `${CalendarsColumns.ACCOUNT_NAME}` +
-      ` FROM ${CalendarsColumns.TABLE_NAME} WHERE ${CalendarsColumns.ID} =` +
-      ` new.${EventColumns.CALENDAR_ID}) AND ${ColorsColumns.ACCOUNT_TYPE}` +
-      ` = (SELECT ${CalendarsColumns.ACCOUNT_TYPE} FROM ` +
-      `${CalendarsColumns.TABLE_NAME}` +
-      ` WHERE ${CalendarsColumns.ID} = new.${EventColumns.CALENDAR_ID})` +
-      ` AND ${ColorsColumns.COLOR_INDEX} = ` +
-      `new.${EventColumns.EVENT_COLOR_INDEX}` +
-      ` AND ${ColorsColumns.COLOR_TYPE} = 1)` +
-      ` WHERE ${EventColumns.ID} = old.${EventColumns.ID};`
+    ` SET eventColor=(SELECT ${ColorsColumns.COLOR} FROM ` +
+    `${ColorsColumns.TABLE_NAME}` +
+    ` WHERE ${ColorsColumns.ACCOUNT_NAME} = (SELECT ` +
+    `${CalendarsColumns.ACCOUNT_NAME}` +
+    ` FROM ${CalendarsColumns.TABLE_NAME} WHERE ${CalendarsColumns.ID} =` +
+    ` new.${EventColumns.CALENDAR_ID}) AND ${ColorsColumns.ACCOUNT_TYPE}` +
+    ` = (SELECT ${CalendarsColumns.ACCOUNT_TYPE} FROM ` +
+    `${CalendarsColumns.TABLE_NAME}` +
+    ` WHERE ${CalendarsColumns.ID} = new.${EventColumns.CALENDAR_ID})` +
+    ` AND ${ColorsColumns.COLOR_INDEX} = ` +
+    `new.${EventColumns.EVENT_COLOR_INDEX}` +
+    ` AND ${ColorsColumns.COLOR_TYPE} = 1)` +
+    ` WHERE ${EventColumns.ID} = old.${EventColumns.ID};`
     let CREATE_EVENT_COLOR_UPDATE_TRIGGER = `CREATE TRIGGER ` +
-      `event_color_update UPDATE OF ${EventColumns.EVENT_COLOR_INDEX} ON ` +
-      `${EventColumns.TABLE_NAME} WHEN new.${EventColumns.EVENT_COLOR_INDEX} ` +
-      `NOT NULL BEGIN ${EVENT_UPDATE_COLOR_TRIGGER_SQL} END`
+    `event_color_update UPDATE OF ${EventColumns.EVENT_COLOR_INDEX} ON ` +
+    `${EventColumns.TABLE_NAME} WHEN new.${EventColumns.EVENT_COLOR_INDEX} ` +
+    `NOT NULL BEGIN ${EVENT_UPDATE_COLOR_TRIGGER_SQL} END`
 
     let CALENDAR_UPDATE_COLOR_TRIGGER_SQL = `UPDATE ${CalendarsColumns.TABLE_NAME} ` +
-      `SET ${CalendarsColumns.CALENDAR_COLOR} = (SELECT ` +
-      `${ColorsColumns.COLOR} FROM ${ColorsColumns.TABLE_NAME} WHERE ` +
-      `${ColorsColumns.ACCOUNT_NAME} = ` +
-      `new.${CalendarsColumns.ACCOUNT_NAME} AND ` +
-      `${ColorsColumns.ACCOUNT_TYPE} = ` +
-      `new.${CalendarsColumns.ACCOUNT_TYPE} AND ` +
-      `${ColorsColumns.COLOR_INDEX} = ` +
-      `new.${CalendarsColumns.CALENDAR_COLOR_INDEX} AND ` +
-      `${ColorsColumns.COLOR_TYPE} = 0) ` +
-      ` WHERE ${CalendarsColumns.ID} = old.${CalendarsColumns.ID};`
+    `SET ${CalendarsColumns.CALENDAR_COLOR} = (SELECT ` +
+    `${ColorsColumns.COLOR} FROM ${ColorsColumns.TABLE_NAME} WHERE ` +
+    `${ColorsColumns.ACCOUNT_NAME} = ` +
+    `new.${CalendarsColumns.ACCOUNT_NAME} AND ` +
+    `${ColorsColumns.ACCOUNT_TYPE} = ` +
+    `new.${CalendarsColumns.ACCOUNT_TYPE} AND ` +
+    `${ColorsColumns.COLOR_INDEX} = ` +
+    `new.${CalendarsColumns.CALENDAR_COLOR_INDEX} AND ` +
+    `${ColorsColumns.COLOR_TYPE} = 0) ` +
+    ` WHERE ${CalendarsColumns.ID} = old.${CalendarsColumns.ID};`
     let CREATE_CALENDAR_COLOR_UPDATE_TRIGGER = `CREATE TRIGGER ` +
-      `calendar_color_update UPDATE OF ${CalendarsColumns.CALENDAR_COLOR_INDEX}` +
-      ` ON ${CalendarsColumns.TABLE_NAME} WHEN` +
-      ` new.${CalendarsColumns.CALENDAR_COLOR_INDEX} NOT NULL` +
-      ` BEGIN ${CALENDAR_UPDATE_COLOR_TRIGGER_SQL} END`
+    `calendar_color_update UPDATE OF ${CalendarsColumns.CALENDAR_COLOR_INDEX}` +
+    ` ON ${CalendarsColumns.TABLE_NAME} WHEN` +
+    ` new.${CalendarsColumns.CALENDAR_COLOR_INDEX} NOT NULL` +
+    ` BEGIN ${CALENDAR_UPDATE_COLOR_TRIGGER_SQL} END`
 
     try {
       Log.log(TAG, 'call CREATE_EVENT_COLOR_UPDATE_TRIGGER');
