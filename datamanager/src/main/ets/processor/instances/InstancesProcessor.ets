@@ -240,7 +240,12 @@ export async function expandOne(rdbStore: data_rdb.RdbStore, rowId: number, valu
 export async function acquireUpdateOne(rdbStore: data_rdb.RdbStore, eventId: number, event: Events | undefined) {
   const predicate = new dataSharePredicates.DataSharePredicates();
   predicate.equalTo(InstancesColumns.EVENT_ID, eventId);
-  await rdbStore.delete(InstancesColumns.TABLE_NAME, predicate);
+  try {
+    await rdbStore.delete(InstancesColumns.TABLE_NAME, predicate);
+  } catch (err) {
+    Log.error(TAG, `acquireUpdateOne delete err:${err?.message}`);
+  }
+
   acquireExpandOne(rdbStore, eventId, event);
 }
 
@@ -280,13 +285,13 @@ function doInstancesQuery(rdbStore: data_rdb.RdbStore, columns: Array<string>, p
     Log.error(TAG, `generate empty sql, the params maybe invalid`);
     return;
   }
-  Log.info(TAG, `instances query sql=${sql}`);
+
   try {
     let instancesQueryFun = (err: BusinessError, resultSet: data_rdb.ResultSet) => {
       callback(err, resultSet);
     }
     rdbStore.querySql(sql, [], instancesQueryFun);
   } catch (err) {
-    Log.error(TAG, `doInstancesQuery querySql get err:${err?.message}, SQL:${sql}`);
+    Log.error(TAG, `doInstancesQuery querySql get err:${err?.message}`);
   }
 }

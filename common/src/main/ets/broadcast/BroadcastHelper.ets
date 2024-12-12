@@ -27,16 +27,21 @@ const TAG = 'BroadcastHelper';
  * @param data 广播携带数据，数据结构参考系统api：CommonEventPublishData
  */
 export function sendBroadcast(action: string, data?: commonEventManager.CommonEventPublishData): void {
-  const callback = (err: BusinessError): void => {
-    if (err?.code) {
-      Log.error(TAG, `sendBroadcast [${action}] get err:${err?.code}, msg=${err?.message}`);
+  try{
+    const callback = (err: BusinessError): void => {
+      if (err?.code) {
+        Log.error(TAG, `sendBroadcast [${action}] get err:${err?.code}, msg=${err?.message}`);
+      } else {
+        Log.info(TAG, `sendBroadcast [${action}] successful`);
+      }
+    };
+    if (data) {
+      commonEventManager.publish(action, data, callback);
     } else {
-      Log.info(TAG, `sendBroadcast [${action}] successful`);
+      commonEventManager.publish(action, callback);
     }
-  };
-  if (data) {
-    commonEventManager.publish(action, data, callback);
-  } else {
-    commonEventManager.publish(action, callback);
+  } catch (err) {
+    Log.error(TAG, `sendBroadcast err:${err?.message}`);
   }
+
 }

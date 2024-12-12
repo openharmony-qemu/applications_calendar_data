@@ -235,7 +235,12 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
         Log.warn(this.logTag, `query get err:${err?.code}, ${err?.message}`);
       }
     }
-    rdbStore.query(table, predicates, columns, queryInnerFun);
+    try{
+      rdbStore.query(table, predicates, columns, queryInnerFun);
+    } catch (err) {
+      Log.error(TAG, `doQuery get err:${err?.message}`);
+    }
+
   }
 
   /**
