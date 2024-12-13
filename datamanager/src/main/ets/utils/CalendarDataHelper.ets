@@ -248,9 +248,9 @@ let CREATE_EVENTS_RAW_TIMES_TABLE_SQL = `CREATE TABLE IF NOT EXISTS `
   + `${EventsRawTimesColumns.EVENT_ID} INTEGER NOT NULL, `
   + `${EventsRawTimesColumns.DT_START_2445} TEXT, `
   + `${EventsRawTimesColumns.DT_END_2445} TEXT, `
-+ `${EventsRawTimesColumns.ORIGINAL_INSTANCE_TIME2445} TEXT, `
-+ `${EventsRawTimesColumns.LAST_DATE2445} TEXT, `
-+ `UNIQUE (${EventsRawTimesColumns.EVENT_ID}))`;
+  + `${EventsRawTimesColumns.ORIGINAL_INSTANCE_TIME2445} TEXT, `
+  + `${EventsRawTimesColumns.LAST_DATE2445} TEXT, `
+  + `UNIQUE (${EventsRawTimesColumns.EVENT_ID}))`;
 
 /**
  * the create map_address_history table sql
@@ -359,47 +359,52 @@ class CalendarDataHelper {
       await this.createEventsTable();
       Log.log(TAG, "initRdbStore createEventsTable succeed");
     } catch (err) {
-      Log.error(TAG, `initRdbStore createEventsTable get err:${err}`);
+      Log.error(TAG, `initRdbStore createEventsTable get err:${err.message}`);
     }
     Log.log(TAG, "initRdbStore executeSql start");
-    await this.rdbStore?.executeSql(CREATE_CALENDARS_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore createCalendarsTable succeed");
-    await this.rdbStore?.executeSql(CREATE_REMINDERS_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_REMINDERS_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_INSTANCES_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_INSTANCES_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_COLORS_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_COLORS_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_ATTENDEES_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_ATTENDEES_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_CALENDAR_ALERTS_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_CALENDAR_ALERTS_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_CALENDAR_CACHE_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_CALENDAR_CACHE_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_CALENDAR_METADATA_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_CALENDAR_METADATA_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_EVENTS_RAW_TIMES_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_EVENTS_RAW_TIMES_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_MAP_ADDRESS_HISTORY_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_MAP_ADDRESS_HISTORY_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_EXTENDED_PROPERTIES_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_EXTENDED_PROPERTIES_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_SYNC_STATE_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_SYNC_STATE_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_SYNC_STATE_METADATA_TABLE_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_SYNC_STATE_METADATA_TABLE_SQL succeed");
-    await this.rdbStore?.executeSql(CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL, []);
-    Log.log(TAG, "initRdbStore CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL succeed");
+    try {
+      await this.rdbStore?.executeSql(CREATE_CALENDARS_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore createCalendarsTable succeed");
+      await this.rdbStore?.executeSql(CREATE_REMINDERS_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_REMINDERS_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_INSTANCES_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_INSTANCES_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_COLORS_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_COLORS_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_ATTENDEES_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_ATTENDEES_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_CALENDAR_ALERTS_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_CALENDAR_ALERTS_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_CALENDAR_CACHE_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_CALENDAR_CACHE_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_CALENDAR_METADATA_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_CALENDAR_METADATA_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_EVENTS_RAW_TIMES_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_EVENTS_RAW_TIMES_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_MAP_ADDRESS_HISTORY_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_MAP_ADDRESS_HISTORY_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_EXTENDED_PROPERTIES_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_EXTENDED_PROPERTIES_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_SYNC_STATE_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_SYNC_STATE_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_SYNC_STATE_METADATA_TABLE_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_SYNC_STATE_METADATA_TABLE_SQL succeed");
+      await this.rdbStore?.executeSql(CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL, []);
+      Log.log(TAG, "initRdbStore CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL succeed");
 
-    this.createSyncIdUpdateTrigger();
-    Log.log(TAG, "initRdbStore createSyncIdUpdateTrigger succeed");
-    this.createDeleteEventTriggers();
-    Log.log(TAG, "initRdbStore createDeleteEventTriggers succeed");
-    this.createColorsTriggers();
-    Log.log(TAG, "initRdbStore createColorsTriggers succeed");
-    this.createCalendarCleanupTrigger();
-    Log.log(TAG, "initRdbStore createCalendarCleanupTrigger succeed");
-    Log.log(TAG, "initRdbStore executeSql end");
+      this.createSyncIdUpdateTrigger();
+      Log.log(TAG, "initRdbStore createSyncIdUpdateTrigger succeed");
+      this.createDeleteEventTriggers();
+      Log.log(TAG, "initRdbStore createDeleteEventTriggers succeed");
+      this.createColorsTriggers();
+      Log.log(TAG, "initRdbStore createColorsTriggers succeed");
+      this.createCalendarCleanupTrigger();
+      Log.log(TAG, "initRdbStore createCalendarCleanupTrigger succeed");
+      Log.log(TAG, "initRdbStore executeSql end");
+    } catch (err) {
+      Log.error(TAG, `initRdbStore err:${err.message}`);
+    }
+
   }
 
   private async createEventsTable() {
@@ -563,9 +568,13 @@ class CalendarDataHelper {
       ` WHERE ${ExtendedPropertiesColumns.EVENT_ID} = old.${EventColumns.ID};`
 
     let EVENTS_CLEANUP_TRIGGER = `CREATE TRIGGER events_cleanup_delete DELETE ON ` +
-    `${EventColumns.TABLE_NAME} BEGIN ${EVENTS_CLEANUP_TRIGGER_SQL} END`
-    await this.rdbStore?.executeSql(EVENTS_CLEANUP_TRIGGER, []);
-    Log.log(TAG, 'call createDeleteEventTriggers end');
+      `${EventColumns.TABLE_NAME} BEGIN ${EVENTS_CLEANUP_TRIGGER_SQL} END`
+    try {
+      await this.rdbStore?.executeSql(EVENTS_CLEANUP_TRIGGER, []);
+      Log.log(TAG, 'call createDeleteEventTriggers end');
+    } catch (err) {
+      Log.error(TAG, `createDeleteEventTriggers err:${err?.message}`);
+    }
   }
 
   private async createColorsTriggers() {
@@ -606,38 +615,51 @@ class CalendarDataHelper {
     ` new.${CalendarsColumns.CALENDAR_COLOR_INDEX} NOT NULL` +
     ` BEGIN ${CALENDAR_UPDATE_COLOR_TRIGGER_SQL} END`
 
-    Log.log(TAG, 'call CREATE_EVENT_COLOR_UPDATE_TRIGGER');
-    await this.rdbStore?.executeSql(CREATE_EVENT_COLOR_UPDATE_TRIGGER, [])
-    Log.log(TAG, 'call CREATE_CALENDAR_COLOR_UPDATE_TRIGGER');
-    await this.rdbStore?.executeSql(CREATE_CALENDAR_COLOR_UPDATE_TRIGGER, [])
-    Log.log(TAG, 'call createColorsTriggers end');
+    try {
+      Log.log(TAG, 'call CREATE_EVENT_COLOR_UPDATE_TRIGGER');
+      await this.rdbStore?.executeSql(CREATE_EVENT_COLOR_UPDATE_TRIGGER, [])
+      Log.log(TAG, 'call CREATE_CALENDAR_COLOR_UPDATE_TRIGGER');
+      await this.rdbStore?.executeSql(CREATE_CALENDAR_COLOR_UPDATE_TRIGGER, [])
+      Log.log(TAG, 'call createColorsTriggers end');
+    } catch (err) {
+      Log.error(TAG, `createColorsTriggers err:${err?.message}`);
+    }
+
   }
 
   private async createCalendarCleanupTrigger() {
     Log.log(TAG, 'call createCalendarCleanupTrigger start')
     let CALENDAR_CLEANUP_TRIGGER_SQL = `DELETE FROM ` +
-    `${EventColumns.TABLE_NAME} WHERE ` +
-    `${EventColumns.CALENDAR_ID} = old.${EventColumns.ID};`
+      `${EventColumns.TABLE_NAME} WHERE ` +
+      `${EventColumns.CALENDAR_ID} = old.${EventColumns.ID};`
     let CALENDAR_CLEANUP_TRIGGER = `CREATE TRIGGER calendar_cleanup DELETE ON ` +
-    `${CalendarsColumns.TABLE_NAME} ` +
-    `BEGIN ${CALENDAR_CLEANUP_TRIGGER_SQL} END`
-    await this.rdbStore?.executeSql(CALENDAR_CLEANUP_TRIGGER, []);
-    Log.log(TAG, 'call createCalendarCleanupTrigger end');
+      `${CalendarsColumns.TABLE_NAME} ` +
+      `BEGIN ${CALENDAR_CLEANUP_TRIGGER_SQL} END`
+    try {
+      await this.rdbStore?.executeSql(CALENDAR_CLEANUP_TRIGGER, []);
+      Log.log(TAG, 'call createCalendarCleanupTrigger end');
+    } catch (err) {
+      Log.error(TAG, `createCalendarCleanupTrigger err:${err?.message}`);
+    }
   }
 
   private async createSyncIdUpdateTrigger() {
-    Log.log(TAG, 'call createSyncIdUpdateTrigger start');
-    let EVENTS_ORIGINAL_SYNC_TRIGGER_SQL = `UPDATE ${EventColumns.TABLE_NAME}` +
-    ` SET ${EventColumns.ORIGINAL_SYNC_ID} = ` +
-    `new.${EventColumns.SYNC_ID}` +
-      ` WHERE ${EventColumns.ORIGINAL_ID} =old.${EventColumns.ID};`
-    let CREATE_SYNC_ID_UPDATE_TRIGGER = `CREATE TRIGGER original_sync_update` +
-      ` UPDATE OF ${EventColumns.SYNC_ID}` +
-      ` ON ${EventColumns.TABLE_NAME}` +
-      ` BEGIN ${EVENTS_ORIGINAL_SYNC_TRIGGER_SQL} END`
+    try {
+      Log.log(TAG, 'call createSyncIdUpdateTrigger start');
+      let EVENTS_ORIGINAL_SYNC_TRIGGER_SQL = `UPDATE ${EventColumns.TABLE_NAME}` +
+        ` SET ${EventColumns.ORIGINAL_SYNC_ID} = ` +
+        `new.${EventColumns.SYNC_ID}` +
+        ` WHERE ${EventColumns.ORIGINAL_ID} =old.${EventColumns.ID};`
+      let CREATE_SYNC_ID_UPDATE_TRIGGER = `CREATE TRIGGER original_sync_update` +
+        ` UPDATE OF ${EventColumns.SYNC_ID}` +
+        ` ON ${EventColumns.TABLE_NAME}` +
+        ` BEGIN ${EVENTS_ORIGINAL_SYNC_TRIGGER_SQL} END`
 
-    await this.rdbStore?.executeSql(CREATE_SYNC_ID_UPDATE_TRIGGER, []);
-    Log.log(TAG, 'call createSyncIdUpdateTrigger end');
+      await this.rdbStore?.executeSql(CREATE_SYNC_ID_UPDATE_TRIGGER, []);
+      Log.log(TAG, 'call createSyncIdUpdateTrigger end');
+    } catch (err) {
+      Log.error(TAG, `createSyncIdUpdateTrigger err:${err?.message}`);
+    }
   }
 }
 

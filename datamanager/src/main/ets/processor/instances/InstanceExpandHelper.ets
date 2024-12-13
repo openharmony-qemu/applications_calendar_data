@@ -33,7 +33,11 @@ const TAG = "InstanceExpandHelper"
  */
 export async function deleteAllInstances(rdbStore: data_rdb.RdbStore): Promise<boolean> {
   const predicate = new data_rdb.RdbPredicates(InstancesColumns.TABLE_NAME);
-  const result = await rdbStore.delete(predicate);
+  try {
+    const result = await rdbStore.delete(predicate);
+  } catch (err) {
+    Log.error(TAG, `deleteAllInstances delete err:${err?.message}`);
+  }
   return result >= 0;
 }
 
