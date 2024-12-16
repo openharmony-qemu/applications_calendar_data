@@ -924,8 +924,8 @@ void ResultSetToConfig(CalendarConfig &config, DataShareResultSetPtr &resultSet)
         LOG_ERROR("Failed GoToFirstRow %{public}d", err);
     }
     do {
-        int enableReminder;
-        std::int64_t color;
+        int enableReminder = 0;
+        std::int64_t color = 0;
         GetValue(resultSet, "canReminder", enableReminder);
         GetValue(resultSet, "calendar_color", color);
         config.enableReminder = static_cast<bool>(enableReminder);
