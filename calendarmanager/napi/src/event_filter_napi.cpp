@@ -114,8 +114,8 @@ napi_value EventFilterNapi::FilterByTime(napi_env env, napi_callback_info info)
     napi_value argv[paramNumber] = { 0 };
     napi_get_cb_info(env, info, &argc, argv, &thisVar, nullptr);
     NAPI_ASSERT(env, argc == paramNumber, "requires 2 parameter");
-    int64_t start;
-    int64_t end;
+    int64_t start = 0;
+    int64_t end = 0;
     napi_status status = NapiUtil::GetValue(env, argv[0], start);
     NAPI_ASSERT(env, status == napi_ok, "GetValue start failed");
     status = NapiUtil::GetValue(env, argv[1], end);

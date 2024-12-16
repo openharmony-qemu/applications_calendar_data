@@ -328,7 +328,7 @@ napi_status GetValue(napi_env env, napi_value in, CalendarConfig& out)
         return napi_ok;
     }
     LOG_DEBUG("napi_value color is number");
-    int64_t colorValue;
+    int64_t colorValue = 0;
     napi_status statusToGetInt64 = napi_get_value_int64(env, value, &colorValue);
     if (statusToGetInt64 == napi_ok) {
         out.color.emplace<1>(colorValue);
