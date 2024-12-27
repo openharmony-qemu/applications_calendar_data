@@ -33,8 +33,9 @@ const TAG = "InstanceExpandHelper"
  */
 export async function deleteAllInstances(rdbStore: data_rdb.RdbStore): Promise<boolean> {
   const predicate = new data_rdb.RdbPredicates(InstancesColumns.TABLE_NAME);
+  let result: number =0;
   try {
-    const result = await rdbStore.delete(predicate);
+    result = await rdbStore.delete(predicate);
   } catch (err) {
     Log.error(TAG, `deleteAllInstances delete err:${err?.message}`);
   }
@@ -235,6 +236,7 @@ function instancesValuesToString(values: data_rdb.ValuesBucket): string {
  */
 class InstancesMap extends Map<string, Array<data_rdb.ValuesBucket>> {
   instancesList: Array<data_rdb.ValuesBucket> = [];
+
   /**
    * 以syncIdKey为key，将Instances对应的ValuesBucket放入集合Map中
    * 注：每个key对应一个Instances列表

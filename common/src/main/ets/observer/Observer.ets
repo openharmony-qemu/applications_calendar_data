@@ -25,7 +25,7 @@ export interface Observer {
   /**
    * 观察者被通知后，执行该方法实现行为
    */
-  onChange(message?: ObserverMessage);
+  onChange(message?: ObserverMessage): void;
 }
 
 export class ObserverMessage implements ObservableMessage {

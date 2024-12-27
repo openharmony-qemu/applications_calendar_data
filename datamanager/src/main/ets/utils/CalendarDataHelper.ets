@@ -37,6 +37,7 @@ import { Constants } from '@ohos/datastructure/src/main/ets/Constants';
 import { CalendarMetaDataColumns } from '@ohos/datastructure/src/main/ets/calendarmetadata/CalendarMetaDataColumns';
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { GlobalThis } from '@ohos/common/src/main/ets/utils/GlobalThis';
+import { BusinessError } from '@kit.BasicServicesKit';
 
 /**
  * the create Events table sql. OS has a limit of 1024 bytes for each sql string, and this sql string is beyond
@@ -319,7 +320,7 @@ let TAG = "CalendarDataHelper"
 class CalendarDataHelper {
   private static instance: CalendarDataHelper;
 
-  private rdbStore: ohosDataRdb.RdbStore | null = null;
+  private rdbStore: ohosDataRdb.RdbStore | undefined = undefined;
 
   private constructor() {
   }
@@ -350,7 +351,7 @@ class CalendarDataHelper {
     this.rdbStore = await ohosDataRdb.getRdbStore(GlobalThis.getExtensionContext(), {
       name: Constants.DB_NAME,
       securityLevel: ohosDataRdb.SecurityLevel.S1,
-    });
+    }).then();//IDE识别接口有问题，暂时改成这样，待后续更新IDE改回
     if (this.rdbStore == null || this.rdbStore == undefined) {
       Log.error(TAG, 'initRdbStore rdbStore is null');
       return;

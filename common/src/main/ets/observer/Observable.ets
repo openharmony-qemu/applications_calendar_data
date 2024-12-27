@@ -25,17 +25,17 @@ export interface Observable {
   /**
    * 增加一个观察者
    */
-  addObserver(observer: Observer);
+  addObserver(observer: Observer): void;
 
   /**
    * 删除一个观察者
    */
-  removeObserver(observer: Observer);
+  removeObserver(observer: Observer): void;
 
   /**
    * 被观察者状态发生改变后，通知订阅的所有观察者更新
    */
-  notifyChanges(message?: ObservableMessage);
+  notifyChanges(message?: ObservableMessage): void;
 }
 
 export interface ObservableMessage {}
