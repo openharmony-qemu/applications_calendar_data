@@ -117,7 +117,7 @@ napi_status GetValue(napi_env env, napi_value in, std::string& out)
     if (maxLen == 0 || maxLen == UINT_MAX) {
         return status;
     }
-    LOG_DEBUG("napi_value -> std::string get length %{public}d", (int)maxLen);
+    LOG_DEBUG("napi_value -> std::string get length %{public}d", static_cast<int>(maxLen));
     char* buf = new (std::nothrow) char[STR_TAIL_LENGTH + maxLen];
     if (buf != nullptr) {
         size_t len = 0;
