@@ -351,7 +351,7 @@ class CalendarDataHelper {
     this.rdbStore = await ohosDataRdb.getRdbStore(GlobalThis.getExtensionContext(), {
       name: Constants.DB_NAME,
       securityLevel: ohosDataRdb.SecurityLevel.S1,
-    });
+    }).then();//IDE识别接口有问题，暂时改成这样，待后续更新IDE改回
     if (this.rdbStore == null || this.rdbStore == undefined) {
       Log.error(TAG, 'initRdbStore rdbStore is null');
       return;
