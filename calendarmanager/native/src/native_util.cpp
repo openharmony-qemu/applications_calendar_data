@@ -609,7 +609,7 @@ std::vector<std::string> SplitString(const std::string &str, const std::string &
     std::vector<std::string> result;
     std::string::size_type pos1 = 0;
     std::string::size_type pos2 = str.find(flag);
-    while (std::string::npos != pos2) {
+    while (pos2 != std::string::npos) {
         result.push_back(str.substr(pos1, pos2 - pos1));
         pos1 = pos2 + flag.size();
         pos2 = str.find(flag, pos1);

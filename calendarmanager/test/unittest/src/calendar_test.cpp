@@ -131,8 +131,8 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     event.type = EventType::Important;
     Location testLocation { "test", 123, 456 };
     event.location = std::make_optional<Location>(testLocation);
-    event.startTime = 17230000;
-    event.endTime = 17630000;
+    event.startTime = 1766620800000;
+    event.endTime = 1766620900000;
     event.isAllDay = true;
     event.attendees = {{"xiaoming", "xiaoming@abc.com", NONE, UNKNOWN, REQUIRED},
         {"xiaoqiang", "test_attendee1@abc.com", PARTICIPANT, TENTATIVE, OPTIONAL},

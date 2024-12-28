@@ -31,7 +31,8 @@ export interface DatabaseProcessor {
    * @param values 插入的数据
    * @param callback 回调方法
    */
-  insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function): void;
+  insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                        values: data_rdb.ValuesBucket, callback: Function): void;
 
   /**
    * 高权限批量插入接口
@@ -52,7 +53,8 @@ export interface DatabaseProcessor {
    * @param values 插入的数据
    * @param callback 回调方法
    */
-  insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function): void;
+  insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                       values: data_rdb.ValuesBucket, callback: Function): void;
 
   /**
    * 低权限批量插入接口
