@@ -182,7 +182,7 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
         notifyProviderChange(table, OPERATION_DELETE);
         const deleteValue: data_rdb.ValuesBucket = {
           'deleteCounts': count
-        }
+        };
         Log.log(this.logTag, `deleteValue: [deleteCounts]: ${deleteValue['deleteCounts']}`);
         this.notifyAlertsChanges(DELETE_OPERATION_NAME, table, deleteValue);
       } else {
@@ -235,12 +235,11 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
         Log.warn(this.logTag, `query get err:${err?.code}, ${err?.message}`);
       }
     }
-    try{
+    try {
       rdbStore.query(table, predicates, columns, queryInnerFun);
     } catch (err) {
       Log.error(TAG, `doQuery get err:${err?.message}`);
     }
-
   }
 
   /**
@@ -263,7 +262,7 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
   notifyChanges(message: ObserverMessage) {
     this.mObserverList.forEach((observer) => {
       observer.onChange(message);
-    })
+    });
   }
 
   notifyAlertsChanges(operationName: string, table: string,
