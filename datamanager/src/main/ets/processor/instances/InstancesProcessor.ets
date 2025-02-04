@@ -17,7 +17,7 @@
 import data_rdb from '@ohos.data.relationalStore';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
 
-import { Log } from "@ohos/common/src/main/ets/utils/Log";
+import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { isEmptyStr } from '@ohos/common/src/main/ets/utils/TextUtils';
 import { isContainsOneOfKeys } from '@ohos/common/src/main/ets/utils/ValuesUtils';
 import { getBundleNameByUri } from '@ohos/common/src/main/ets/utils/UrlUtils';
@@ -27,15 +27,15 @@ import { Events } from '@ohos/datastructure/src/main/ets/events/Events';
 import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns';
 
 import { notifyProviderChange, OPERATION_UNKNOWN, } from '../../commonevents/notify/ProviderChangeNotifier';
-import { DefaultProcessor } from "./../DefaultProcessor";
+import { DefaultProcessor } from './../DefaultProcessor';
 import { ErrorCode } from '../../constants/ErrorCode';
 import { deleteAllInstances, expandAllByRange, expandOneInRange } from './InstanceExpandHelper';
 import { generateInstancesQuerySql } from './InstancesQuerySqlGenerator';
-import { isInExpandedRange, updateExpandedRange, getExpandedBegin, getExpandedEnd } from "./ExpandRangeManager";
+import { isInExpandedRange, updateExpandedRange, getExpandedBegin, getExpandedEnd } from './ExpandRangeManager';
 import { InstancesQueryParams, parseParamsFromUri, isValidQueryParams } from './InstanceQueryParams';
 import { BusinessError } from '@ohos.base';
 
-const TAG = "InstancesProcessor";
+const TAG = 'InstancesProcessor';
 
 /**
  * the instances table processor
@@ -47,7 +47,8 @@ export class InstancesProcessor extends DefaultProcessor {
     this.logTag = TAG;
   }
 
-  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                              values: data_rdb.ValuesBucket, callback: Function) {
     Log.warn(this.logTag, 'not support insert operation');
     const err: BusinessError = {
       code: ErrorCode.UN_SUPPORT_OPERATION,
@@ -57,11 +58,13 @@ export class InstancesProcessor extends DefaultProcessor {
     callback(err, 0);
   }
 
-  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+  async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             values: data_rdb.ValuesBucket, callback: Function) {
     this.insertByHighAuthority(rdbStore, uri, values, callback);
   }
 
-  async deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                              predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     Log.warn(this.logTag, 'not support delete operation');
     const err: BusinessError = {
       code: ErrorCode.UN_SUPPORT_OPERATION,
@@ -71,11 +74,13 @@ export class InstancesProcessor extends DefaultProcessor {
     callback(err, 0);
   }
 
-  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.deleteByHighAuthority(rdbStore, uri, predicates, callback);
   }
 
-  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                              predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     Log.warn(this.logTag, 'not support update operation');
     const err: BusinessError = {
       code: ErrorCode.UN_SUPPORT_OPERATION,
@@ -85,16 +90,19 @@ export class InstancesProcessor extends DefaultProcessor {
     callback(err, 0);
   }
 
-  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     this.updateByHighAuthority(rdbStore, uri, values, predicates, callback);
   }
 
-  async queryByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async queryByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = '';
     this.queryByInstanceUri(rdbStore, uri, columns, callerName, callback);
   }
 
-  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
+                            predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
     const callerName = getBundleNameByUri(uri);
     this.queryByInstanceUri(rdbStore, uri, columns, callerName, callback);
   }
@@ -108,7 +116,8 @@ export class InstancesProcessor extends DefaultProcessor {
    * @param callerName 调用方app的bundle_name
    * @param callback 回调方法
    */
-  async queryByInstanceUri(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>, callerName: string, callback: Function) {
+  async queryByInstanceUri(rdbStore: data_rdb.RdbStore, uri: string,
+                           columns: Array<string>, callerName: string, callback: Function) {
     const params: InstancesQueryParams = parseParamsFromUri(uri) as InstancesQueryParams;
     if (!isValidQueryParams(params)) {
       const err: BusinessError = {
@@ -148,7 +157,7 @@ export async function acquireExpandAll(rdbStore: data_rdb.RdbStore, acquireBegin
 
   let shouldSendBroadcast: boolean = false;
   if (expandedEnd === 0) {
-    Log.info(TAG, "acquireExpandAll first expand");
+    Log.info(TAG, 'acquireExpandAll first expand');
     await deleteAllInstances(rdbStore);
     let isSuccess = await expandAllByRange(rdbStore, acquireBegin, acquireEnd);
     if (isSuccess) {
@@ -194,12 +203,13 @@ export async function acquireExpandAll(rdbStore: data_rdb.RdbStore, acquireBegin
  * @param eventId 日程ID
  * @param values ValuesBucket数据（创建时）或Events数据（更新时）
  */
-export async function acquireExpandOne(rdbStore: data_rdb.RdbStore, rowId: number, values: data_rdb.ValuesBucket | Events | undefined) {
+export async function acquireExpandOne(rdbStore: data_rdb.RdbStore, rowId: number,
+                                       values: data_rdb.ValuesBucket | Events | undefined) {
   const isSuccess = await expandOne(rdbStore, rowId, values);
   if (isSuccess) {
     notifyProviderChange(InstancesColumns.TABLE_NAME, OPERATION_UNKNOWN);
   } else {
-    Log.warn(TAG, "expandOneByRange failed");
+    Log.warn(TAG, 'expandOneByRange failed');
   }
 }
 
@@ -209,7 +219,8 @@ export async function acquireExpandOne(rdbStore: data_rdb.RdbStore, rowId: numbe
  * @param eventId 日程ID
  * @param values ValuesBucket数据（创建时）或Events数据（更新时）
  */
-export async function expandOne(rdbStore: data_rdb.RdbStore, rowId: number, values: data_rdb.ValuesBucket | Events | undefined): Promise<boolean> {
+export async function expandOne(rdbStore: data_rdb.RdbStore, rowId: number,
+                                values: data_rdb.ValuesBucket | Events | undefined): Promise<boolean> {
   if (values === null || values === undefined) {
     Log.error(TAG, 'acquireExpandOne get invalid params');
     return false;
@@ -279,7 +290,8 @@ function parseEventsFromValues(values: data_rdb.ValuesBucket, event: Events): vo
   event.creator = values[EventColumns.CREATOR] as string;
 }
 
-function doInstancesQuery(rdbStore: data_rdb.RdbStore, columns: Array<string>, params: InstancesQueryParams, callerName: string, callback: Function): void {
+function doInstancesQuery(rdbStore: data_rdb.RdbStore, columns: Array<string>,
+                          params: InstancesQueryParams, callerName: string, callback: Function): void {
   const sql = generateInstancesQuerySql(columns, params, callerName);
   if (!sql || isEmptyStr(sql)) {
     Log.error(TAG, `generate empty sql, the params maybe invalid`);
