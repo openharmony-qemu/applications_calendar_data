@@ -51,6 +51,8 @@ Calendar::Calendar(CalendarAccount account, int id)
 }
 void Calendar::InsertReminders(int eventId, vector<int> reminders)
 {
+    std::sort(reminders.begin(), reminders.end());
+    reminders.erase(std::unique(reminders.begin(), reminders.end()), reminders.end());
     for (const auto &reminder : reminders) {
             DataShare::DataShareValuesBucket valuesBucket;
             valuesBucket.Put("event_id", eventId);
