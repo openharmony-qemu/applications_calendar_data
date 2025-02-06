@@ -59,7 +59,7 @@ public:
 private:
     CalendarAccount m_account;
     CalendarConfig m_config;
-    int m_id;
+    int m_id = 0;
     std::unique_ptr<Uri> m_eventUri;
     std::unique_ptr<Uri> m_attendeeUri;
     std::unique_ptr<Uri> m_calendarUri;
