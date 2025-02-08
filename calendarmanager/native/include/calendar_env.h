@@ -28,7 +28,7 @@ public:
     uint64_t GetTokenId();
 private:
     std::string m_bundleName;
-    uint64_t m_tokenId;
+    uint64_t m_tokenId = 0;
 };
 
 }

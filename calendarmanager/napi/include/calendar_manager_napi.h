@@ -42,7 +42,7 @@ public:
         string event;
         napi_value _jsContext;
         string caller;
-        int32_t _sessionId;
+        int32_t _sessionId = 0;
         Ace::UIContent *_uiContent = nullptr;
         napi_value id;
     };
