@@ -59,7 +59,6 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
 
 std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount &account)
 {
-    int maxErrNum = 3;
     auto valueEvent = BuildValueCalendarAccount(account);
     int errNum = 0;
     int index = 0;
@@ -129,7 +128,6 @@ std::vector<std::shared_ptr<Calendar>> CalendarManager::GetAllCalendars()
 
 bool CalendarManager::DeleteCalendar(const Calendar &calendar)
 {
-    int maxErrNum = 3;
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("_id", calendar.GetId());
     int errNum = 0;
