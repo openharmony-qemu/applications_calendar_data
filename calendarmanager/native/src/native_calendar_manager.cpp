@@ -20,8 +20,8 @@
 #include "native_util.h"
 
 namespace OHOS::CalendarApi::Native {
-DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount& account);
-const CalendarAccount defaultAccount {"phone", "local", ""};
+DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &account);
+const CalendarAccount defaultAccount{"phone", "local", ""};
 const string calendarUrl = "datashare:///calendardata/Calendars";
 
 CalendarManager::CalendarManager()
@@ -29,6 +29,7 @@ CalendarManager::CalendarManager()
     uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
     auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
     auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
+    LOG_INFO("bundleName_tokeId: %{public}s", bundleName_tokeId.c_str());
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
 }
 
@@ -55,11 +56,20 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
     return valuesBucket;
 }
 
-std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount& account)
+std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount &account)
 {
+    int maxErrNum = 3;
     auto valueEvent = BuildValueCalendarAccount(account);
-    auto index = DataShareHelperManager::GetInstance().Insert(*(m_calendarUri.get()), valueEvent);
-    LOG_DEBUG("Insert index %{public}d", index);
+    int errNum = 0;
+    int index = 0;
+    do {
+        index = DataShareHelperManager::GetInstance().Insert(*(m_calendarUri.get()), valueEvent);
+        if (index <= 0) {
+            LOG_DEBUG("Insert index %{public}d", index);
+            LOG_DEBUG("Insert indexNum %{public}d", errNum);
+            errNum++;
+        }
+    } while (errNum > 0 && errNum <= maxErrNum);
     if (index <= 0) {
         LOG_ERROR("Insert failed");
         return nullptr;
@@ -67,8 +77,7 @@ std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount&
     return std::make_shared<Calendar>(account, index);
 }
 
-
-DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount& account)
+DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &account)
 {
     DumpCalendarAccount(account);
     DataShare::DataSharePredicates predicates;
@@ -78,7 +87,7 @@ DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount& accoun
     return predicates;
 }
 
-std::shared_ptr<Calendar> CalendarManager::GetCalendar(const std::optional<CalendarAccount>& account)
+std::shared_ptr<Calendar> CalendarManager::GetCalendar(const std::optional<CalendarAccount> &account)
 {
     DataShare::DataSharePredicates predicates;
     if (account) {
@@ -117,13 +126,21 @@ std::vector<std::shared_ptr<Calendar>> CalendarManager::GetAllCalendars()
     return ResultSetToCalendars(queryResult);
 }
 
-
-bool CalendarManager::DeleteCalendar(const Calendar& calendar)
+bool CalendarManager::DeleteCalendar(const Calendar &calendar)
 {
+    int maxErrNum = 3;
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("_id", calendar.GetId());
-    auto result = DataShareHelperManager::GetInstance().Delete(*(m_calendarUri.get()), predicates);
-    LOG_INFO("DeleteCalendar %{public}d", result);
+    int errNum = 0;
+    int result = 0;
+    do {
+        result = DataShareHelperManager::GetInstance().Delete(*(m_calendarUri.get()), predicates);
+        if (result <= 0) {
+            LOG_INFO("DeleteCalendar %{public}d", result);
+            LOG_INFO("DeleteCalendarNum %{public}d", errNum);
+            errNum++;
+        }
+    } while (errNum > 0 && errNum <= maxErrNum);
     return result == 1;
 }
 
@@ -131,12 +148,12 @@ int CalendarManager::DeleteAllCalendars()
 {
     auto calendars = GetAllCalendars();
     int count = 0;
-    for (const auto &calendar: calendars) {
+    for (const auto &calendar : calendars) {
         if (DeleteCalendar(*calendar.get())) {
-            count +=1;
+            count += 1;
         }
     }
     return count;
 }
 
-}
+}  // namespace OHOS::CalendarApi::Native
