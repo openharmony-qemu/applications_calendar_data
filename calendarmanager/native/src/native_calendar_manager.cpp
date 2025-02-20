@@ -23,7 +23,7 @@ namespace OHOS::CalendarApi::Native {
 DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &account);
 const CalendarAccount defaultAccount{"phone", "local", ""};
 const string calendarUrl = "datashare:///calendardata/Calendars";
-const maxErrNum = 3;
+const int maxErrNum = 3;
 
 CalendarManager::CalendarManager()
 {
