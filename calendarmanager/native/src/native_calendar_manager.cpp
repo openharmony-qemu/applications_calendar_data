@@ -30,7 +30,6 @@ CalendarManager::CalendarManager()
     uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
     auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
     auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
-    LOG_INFO("bundleName_tokeId: %{public}s", bundleName_tokeId.c_str());
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
 }
 
