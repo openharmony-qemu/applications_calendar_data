@@ -23,6 +23,7 @@ namespace OHOS::CalendarApi::Native {
 DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &account);
 const CalendarAccount defaultAccount{"phone", "local", ""};
 const string calendarUrl = "datashare:///calendardata/Calendars";
+const maxErrNum = 3;
 
 CalendarManager::CalendarManager()
 {
@@ -65,8 +66,8 @@ std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount 
     do {
         index = DataShareHelperManager::GetInstance().Insert(*(m_calendarUri.get()), valueEvent);
         if (index <= 0) {
-            LOG_DEBUG("Insert index %{public}d", index);
-            LOG_DEBUG("Insert indexNum %{public}d", errNum);
+            LOG_WARN("Insert index %{public}d", index);
+            LOG_WARN("Insert indexNum %{public}d", errNum);
             errNum++;
         }
     } while (errNum > 0 && errNum <= maxErrNum);
@@ -136,8 +137,8 @@ bool CalendarManager::DeleteCalendar(const Calendar &calendar)
     do {
         result = DataShareHelperManager::GetInstance().Delete(*(m_calendarUri.get()), predicates);
         if (result <= 0) {
-            LOG_INFO("DeleteCalendar %{public}d", result);
-            LOG_INFO("DeleteCalendarNum %{public}d", errNum);
+            LOG_WARN("DeleteCalendar %{public}d", result);
+            LOG_WARN("DeleteCalendarNum %{public}d", errNum);
             errNum++;
         }
     } while (errNum > 0 && errNum <= maxErrNum);
