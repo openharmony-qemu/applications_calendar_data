@@ -25,6 +25,7 @@ namespace {
     const string attendeeUrl = "datashare:///calendardata/Attendees";
     const string calendarUrl = "datashare:///calendardata/Calendars";
     const string reminderUrl = "datashare:///calendardata/Reminders";
+    const string instanceUrl = "datashare:///calendardata/Instances";
 }
 namespace OHOS::CalendarApi::Native {
 Calendar::Calendar(int id)
@@ -48,6 +49,7 @@ Calendar::Calendar(CalendarAccount account, int id)
     m_attendeeUri = std::make_unique<Uri>(attendeeUrl + bundleName_tokeId);
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
     m_reminderUrl = std::make_unique<Uri>(reminderUrl + bundleName_tokeId);
+    m_instanceUrl = std::make_unique<Uri>(instanceUrl + bundleName_tokeId);
 }
 void Calendar::InsertReminders(int eventId, vector<int> reminders)
 {
@@ -289,6 +291,73 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
         DumpEvent(event);
     }
     LOG_INFO("query finished");
+    return events;
+}
+
+void Calendar::FillEventsInfo(std::vector<Event> &events, const std::set<std::string>& resultSetField)
+{
+    std::vector<Attendee> attendees;
+    std::optional<std::vector<int>> reminders;
+    for (size_t i = 0; i < events.size(); i++) {
+        if (!events[i].id.has_value()) {
+            continue;
+        }
+        const auto eventId = events[i].id.value();
+        if (resultSetField.count("attendee")) {
+            if (i !=0 && eventId == events[i - 1].id.value()) {
+                events[i].attendees = attendees;
+            } else {
+                attendees = GetAttendeesByEventId(eventId);
+                events[i].attendees = attendees;
+            }
+        }
+        if (resultSetField.count("reminderTime")) {
+            if (i !=0 && eventId == events[i - 1].id.value()) {
+                events[i].reminderTime = reminders;
+            } else {
+                reminders = GetRemindersByEventId(eventId);
+                events[i].reminderTime = reminders;
+            }
+        }
+    }
+}
+
+std::vector<Event> Calendar::QueryEventInstances(int64_t start, int64_t end, const std::vector<int> &ids,
+    const std::vector<string>& eventKey)
+{
+    LOG_INFO("query instance start");
+    std::vector<Event> events;
+    std::shared_ptr<DataShare::DataSharePredicates> predicates = std::make_shared<DataShare::DataSharePredicates>();
+    predicates->EqualTo("calendar_id", GetId());
+    std::vector<string> queryField = {};
+    std::set<string> resultSetField;
+    if (eventKey.size() > 0) {
+        queryField.emplace_back("Events._id");
+        SetField(eventKey, queryField, resultSetField);
+    } else {
+        resultSetField = {"id", "title", "startTime", "endTime", "instanceStartTime", "instanceEndTime",
+        "isAllDay", "description", "timeZone", "location", "service"};
+        queryField = {"Events._id", "title", "dtstart", "dtend", "service_type", "service_cp_bz_uri",
+        "service_description", "allDay", "eventTimezone", "description", "eventLocation",
+         "location_longitude", "location_latitude", "begin", "end"};
+    }
+    auto url = "&begin=" + std::to_string(start) + "&end=" + std::to_string(end) +
+         "&calendarId=" + std::to_string(GetId()) +"&orderByAsc=startDay";
+    std::string idsString = EventIdsToString(ids);
+    if (!idsString.empty()) {
+        url = url + "&eventIds=" + idsString;
+    }
+    m_instanceUrl = std::make_unique<Uri>(m_instanceUrl->ToString() + url);
+    DataShare::DatashareBusinessError error;
+    auto result = DataShareHelperManager::GetInstance().Query(*(m_instanceUrl.get()),
+        *(predicates.get()), queryField, &error);
+    if (!result) {
+        LOG_ERROR("query failed");
+        return events;
+    }
+    ResultSetToEvents(events, result, resultSetField);
+    FillEventsInfo(events, resultSetField);
+    LOG_INFO("query instance finished");
     return events;
 }
 

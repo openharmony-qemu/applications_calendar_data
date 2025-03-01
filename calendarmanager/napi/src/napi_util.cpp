@@ -611,6 +611,8 @@ napi_status GetValue(napi_env env, napi_value in, Event& out)
     GetNamedPropertyOptional(env, in, "service", out.service);
     GetNamedPropertyOptional(env, in, "identifier", out.identifier);
     GetNamedPropertyOptional(env, in, "isLunar", out.isLunar);
+    GetNamedPropertyOptional(env, in, "instanceStartTime", out.instanceStartTime);
+    GetNamedPropertyOptional(env, in, "instanceEndTime", out.instanceEndTime);
     return status;
 }
 
@@ -647,6 +649,8 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
     SetNamedPropertyOptional(env, "recurrenceRule", in.recurrenceRule, out);
     SetNamedPropertyOptional(env, "identifier", in.identifier, out);
     SetNamedPropertyOptional(env, "isLunar", in.isLunar, out);
+    SetNamedPropertyOptional(env, "instanceStartTime", in.instanceStartTime, out);
+    SetNamedPropertyOptional(env, "instanceEndTime", in.instanceEndTime, out);
     return status;
 }
 

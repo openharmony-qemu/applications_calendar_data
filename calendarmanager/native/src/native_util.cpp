@@ -801,6 +801,12 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
     if (columns.count("identifier")) {
         GetValueOptional(resultSet, "identifier", event.identifier);
     }
+    if (columns.count("instanceStartTime")) {
+        GetValueOptional(resultSet, "begin", event.instanceStartTime);
+    }
+    if (columns.count("instanceEndTime")) {
+        GetValueOptional(resultSet, "end", event.instanceEndTime);
+    }
 
     if (columns.count("isLunar")) {
         int isLunar = 0;
@@ -891,6 +897,18 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         attendees.emplace_back(attendee);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
+}
+
+std::string EventIdsToString(const std::vector<int> &ids)
+{
+    std::string result;
+    for (const auto &id : ids) {
+        result = result + std::to_string(id);
+        if (&id != &ids.back()) {
+            result = result + ",";
+        }
+    }
+    return result;
 }
 
 int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet)
@@ -1027,6 +1045,16 @@ void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& quer
         }
         if (field == "isLunar") {
             queryField.emplace_back("event_calendar_type");
+            resultSetField.insert(field);
+            continue;
+        }
+        if (field == "instanceStartTime") {
+            queryField.emplace_back("begin");
+            resultSetField.insert(field);
+            continue;
+        }
+        if (field == "instanceEndTime") {
+            queryField.emplace_back("end");
             resultSetField.insert(field);
             continue;
         }

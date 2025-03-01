@@ -44,6 +44,7 @@ public:
     static napi_value GetConfig(napi_env env, napi_callback_info info);
     static napi_value SetConfig(napi_env env, napi_callback_info info);
     static napi_value GetAccount(napi_env env, napi_callback_info info);
+    static napi_value QueryEventInstances(napi_env env, napi_callback_info info);
 private:
     std::shared_ptr<Native::Calendar> calendar_ = nullptr;
 };

@@ -63,7 +63,7 @@ namespace OHOS::CalendarApi::Native {
     std::string GetUTCTimes(const std::vector<int64_t> &timeValues);
     std::string GetRule(const Event &event);
     std::time_t TimeToUTC(const std::string &strTime);
-
+    std::string EventIdsToString(const std::vector<int> &ids);
     template<typename T>
     int GetValue(DataShareResultSetPtr &resultSet, string_view fieldName, T& out)
     {

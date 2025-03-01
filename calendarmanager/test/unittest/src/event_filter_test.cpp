@@ -296,4 +296,51 @@ HWTEST_F(EventFilterTest, FilterByTime_and_eventKey_003, testing::ext::TestSize.
     EXPECT_EQ(newEvent.service.value().uri, event.service.value().uri);
     EXPECT_EQ(newEvent.service.value().description.value(), event.service.value().description.value());
 }
+
+HWTEST_F(EventFilterTest, QueryEventInstances_001, testing::ext::TestSize.Level1)
+{
+    const string title = "QueryEventInstances_001";
+    Event event;
+    event.title = title;
+    auto timeNow = Now();
+    const int64_t interval = 100;
+    event.startTime = timeNow;
+    event.endTime = timeNow + interval;
+    event.reminderTime = {0, 1, 2};
+    event.description = "QueryEventInstances_001 description";
+    optional<string> description = std::make_optional<string>("QueryEventInstances_001 description");
+    EventService service = {"Meeting", "QueryEventInstances_001 uri", description};
+    event.service = std::make_optional<EventService>(service);
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto eventResult = calendar->QueryEventInstances(event.startTime, event.endTime + 100, {eventId},
+     {"title", "reminderTime", "description", "service"});
+    const auto newEvent = eventResult.at(0);
+    EXPECT_EQ(newEvent.title.value(), title);
+    ASSERT_EQ(newEvent.reminderTime.has_value(), true);
+    EXPECT_EQ(newEvent.reminderTime.value(), event.reminderTime.value());
+    EXPECT_EQ(newEvent.description.value(), event.description.value());
+    ASSERT_EQ(newEvent.service.has_value(), true);
+    EXPECT_EQ(newEvent.service.value().type, event.service.value().type);
+    EXPECT_EQ(newEvent.service.value().uri, event.service.value().uri);
+    EXPECT_EQ(newEvent.service.value().description.value(), event.service.value().description.value());
+}
+
+HWTEST_F(EventFilterTest, QueryEventInstances_002, testing::ext::TestSize.Level1)
+{
+    const string title = "QueryEventInstances_002";
+    Event event;
+    event.type = EventType::Important;
+    event.title = title;
+    auto timeNow = Now();
+    event.startTime = timeNow;
+    const int64_t interval = 100;
+    event.endTime = timeNow + interval;
+    auto eventId = calendar->AddEvent(event);
+    auto eventResult = calendar->QueryEventInstances(event.startTime, event.endTime + 100, {eventId}, {});
+    const auto newEvent = eventResult.at(0);
+    EXPECT_EQ(newEvent.title.value(), title);
+    EXPECT_EQ(newEvent.startTime, event.startTime);
+    EXPECT_EQ(newEvent.endTime, event.endTime);
+}
 }

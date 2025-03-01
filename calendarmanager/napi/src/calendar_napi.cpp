@@ -38,6 +38,7 @@ napi_value CalendarNapi::Constructor(napi_env env)
         DECLARE_NAPI_FUNCTION("getConfig", GetConfig),
         DECLARE_NAPI_FUNCTION("setConfig", SetConfig),
         DECLARE_NAPI_FUNCTION("getAccount", GetAccount),
+        DECLARE_NAPI_FUNCTION("queryEventInstances", QueryEventInstances),
     };
     size_t count = sizeof(properties) / sizeof(properties[0]);
     return NapiUtil::DefineClass(env, "Calendar", properties, count, CalendarNapi::New);
@@ -287,6 +288,58 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
         ctxt->events = nativeCalendar->GetEvents(nativeFilter, ctxt->eventKeys);
+        ctxt->status = (true) ? napi_ok : napi_generic_failure;
+        CHECK_STATUS_RETURN_VOID(ctxt, "GetEvents failed!");
+    };
+    auto output = [env, ctxt](napi_value& result) {
+        ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->events, result);
+        CHECK_STATUS_RETURN_VOID(ctxt, "output failed");
+    };
+    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
+}
+
+napi_value CalendarNapi::QueryEventInstances(napi_env env, napi_callback_info info)
+{
+    struct GetEventsContext : public ContextBase {
+        int64_t start;
+        int64_t end;
+        std::vector<int> ids;
+        std::vector<std::string> eventKeys;
+        std::vector<Event> events;
+    };
+    auto ctxt = std::make_shared<GetEventsContext>();
+    auto input = [env, ctxt](size_t argc, napi_value* argv) {
+        CHECK_ARGS_RETURN_VOID(ctxt, argc <= 4, "invalid arguments!");
+        if (argc >= 2) {
+            ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->start);
+            CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[0], i.e. invalid keys!");
+
+            ctxt->status = NapiUtil::GetValue(env, argv[1], ctxt->end);
+            CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[1], i.e. invalid keys!");
+        }
+        if (argc >= 3) {
+            bool isArray = false;
+            uint32_t length = 0;
+            napi_is_array(env, argv[2], &isArray);
+            napi_get_array_length(env, argv[2], &length);
+            if (isArray && length > 0) {
+                ctxt->status = NapiUtil::GetValue(env, argv[2], ctxt->ids);
+                CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[2], i.e. invalid keys!");
+            }
+        }
+
+        if (argc == 4) {
+            ctxt->status = NapiUtil::GetValue(env, argv[3], ctxt->eventKeys);
+            CHECK_STATUS_RETURN_VOID(ctxt, "invalid arg[3], i.e. invalid keys!");
+        }
+    };
+    ctxt->GetCbInfo(env, info, input);
+    auto execute = [ctxt]() {
+        auto calendar = reinterpret_cast<CalendarNapi*>(ctxt->native);
+        CHECK_RETURN_VOID(calendar != nullptr, "CalendarNapi nullptr");
+        auto nativeCalendar = calendar->GetNative();
+        CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
+        ctxt->events = nativeCalendar->QueryEventInstances(ctxt->start, ctxt->end, ctxt->ids, ctxt->eventKeys);
         ctxt->status = (true) ? napi_ok : napi_generic_failure;
         CHECK_STATUS_RETURN_VOID(ctxt, "GetEvents failed!");
     };

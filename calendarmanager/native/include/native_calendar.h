@@ -48,6 +48,9 @@ public:
     std::optional<std::vector<int>> GetRemindersByEventId(int id);
     void InsertReminders(int eventId, vector<int> reminders);
     int AddEventInfo(const Event& event, int channelId);
+    std::vector<Event> QueryEventInstances(int64_t start, int64_t end, const std::vector<int> &ids,
+     const std::vector<string>& eventKey);
+    void FillEventsInfo(std::vector<Event> &events, const std::set<std::string>& resultSetField);
     CalendarAccount GetAccount() const
     {
         return m_account;
@@ -64,6 +67,7 @@ private:
     std::unique_ptr<Uri> m_attendeeUri;
     std::unique_ptr<Uri> m_calendarUri;
     std::unique_ptr<Uri> m_reminderUrl;
+    std::unique_ptr<Uri> m_instanceUrl;
 };
 }  // namespace OHOS::Calendar
 #endif  //  NATIVE_CALENDAR_H
