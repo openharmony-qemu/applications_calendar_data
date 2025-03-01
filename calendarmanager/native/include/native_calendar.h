@@ -16,6 +16,7 @@
 #ifndef NATIVE_CALENDAR_H
 #define NATIVE_CALENDAR_H
 #include <vector>
+#include <set>
 #include "calendar_define.h"
 #include "event_filter.h"
 #include "uri.h"
