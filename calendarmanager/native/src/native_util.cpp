@@ -817,7 +817,7 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
         GetValue(resultSet, "event_calendar_type", isLunar);
         event.isLunar = static_cast<bool>(isLunar);
     }
-     ResultSetToInstanceTime(event, resultSet, columns);
+    ResultSetToInstanceTime(event, resultSet, columns);
 }
 
 int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultSet,
