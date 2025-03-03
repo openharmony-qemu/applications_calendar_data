@@ -298,27 +298,25 @@ void Calendar::FillEventsInfo(std::vector<Event> &events, const std::set<std::st
 {
     std::vector<Attendee> attendees;
     std::optional<std::vector<int>> reminders;
+    int previousEventId = 0;
     for (size_t i = 0; i < events.size(); i++) {
         if (!events[i].id.has_value()) {
             continue;
         }
         const auto eventId = events[i].id.value();
         if (resultSetField.count("attendee")) {
-            if (i !=0 && eventId == events[i - 1].id.value()) {
-                events[i].attendees = attendees;
-            } else {
+            if (eventId != previousEventId) {
                 attendees = GetAttendeesByEventId(eventId);
-                events[i].attendees = attendees;
             }
+            events[i].attendees = attendees;
         }
         if (resultSetField.count("reminderTime")) {
-            if (i !=0 && eventId == events[i - 1].id.value()) {
-                events[i].reminderTime = reminders;
-            } else {
+            if (eventId != previousEventId) {
                 reminders = GetRemindersByEventId(eventId);
-                events[i].reminderTime = reminders;
             }
+            events[i].reminderTime = reminders;
         }
+        previousEventId = eventId;
     }
 }
 

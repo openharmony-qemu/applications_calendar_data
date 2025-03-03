@@ -909,8 +909,7 @@ std::string EventIdsToString(const std::vector<int> &ids) {
     if (ids.empty()) {
         return "";
     }
-    return std::accumulate( 
-        std::next(ids.begin()), ids.end(), std::to_string(ids[0]),
+    return std::accumulate(std::next(ids.begin()), ids.end(), std::to_string(ids[0]),
         [](const std::string& a, int b) {
             std::stringstream ss;
             ss << a << ", " << b;
