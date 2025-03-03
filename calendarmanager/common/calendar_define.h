@@ -131,6 +131,8 @@ struct Event {
     optional<EventService> service;
     optional<string> identifier;
     optional<bool> isLunar;
+    optional<int64_t> instanceStartTime;
+    optional<int64_t> instanceEndTime;
 };
 
 

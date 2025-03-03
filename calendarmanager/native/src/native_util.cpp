@@ -17,6 +17,7 @@
 #include "calendar_log.h"
 #include "native_util.h"
 #include <ctime>
+#include <numeric>
 
 namespace OHOS::CalendarApi::Native {
 const int MIN_DAY_OF_WEEK = 1;
@@ -758,6 +759,17 @@ void SetByDayOfRRule(const std::vector<std::string> &weekDayList, RecurrenceRule
     }
 }
 
+void ResultSetToInstanceTime(Event &event, DataShareResultSetPtr &resultSet, const std::set<std::string>& columns)
+{
+    if (columns.count("instanceStartTime")) {
+        GetValueOptional(resultSet, "begin", event.instanceStartTime);
+    }
+
+    if (columns.count("instanceEndTime")) {
+        GetValueOptional(resultSet, "end", event.instanceEndTime);
+    }
+}
+
 void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std::set<std::string>& columns)
 {
     GetValueOptional(resultSet, "_id", event.id);
@@ -801,12 +813,12 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
     if (columns.count("identifier")) {
         GetValueOptional(resultSet, "identifier", event.identifier);
     }
-
     if (columns.count("isLunar")) {
         int isLunar = 0;
         GetValue(resultSet, "event_calendar_type", isLunar);
         event.isLunar = static_cast<bool>(isLunar);
     }
+    ResultSetToInstanceTime(event, resultSet, columns);
 }
 
 int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultSet,
@@ -891,6 +903,19 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         attendees.emplace_back(attendee);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
+}
+
+std::string EventIdsToString(const std::vector<int> &ids) {
+    if (ids.empty()) {
+        return "";
+    }
+    return std::accumulate(std::next(ids.begin()), ids.end(), std::to_string(ids[0]),
+        [](const std::string& a, int b) {
+            std::stringstream ss;
+            ss << a << ", " << b;
+            return ss.str();
+        }
+    );
 }
 
 int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet)
@@ -988,53 +1013,78 @@ bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValu
     return false;
 }
 
-void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,
-    std::set<string>& resultSetField, const std::map<string, string> eventField)
+void SetLocationFieldInfo(std::vector<string>& queryField)
 {
-    for (const auto& field : eventKey) {
-        if (field == "location") {
-            queryField.emplace_back("eventLocation");
-            queryField.emplace_back("location_longitude");
-            queryField.emplace_back("location_latitude");
-            resultSetField.insert(field);
-            continue;
+    queryField.emplace_back("eventLocation");
+    queryField.emplace_back("location_longitude");
+    queryField.emplace_back("location_latitude");
+}
+
+void SetServiceFieldInfo(std::vector<string>& queryField)
+{
+    queryField.emplace_back("service_type");
+    queryField.emplace_back("service_cp_bz_uri");
+    queryField.emplace_back("service_description");
+}
+
+void FillFieldInfo(const std::string field, std::vector<string>& queryField, std::set<string>& resultSetField,
+    const std::map<string, string> eventField)
+{
+    if (field == "location") {
+            SetLocationFieldInfo(queryField);
+            return;
         }
         if (field == "service") {
-            queryField.emplace_back("service_type");
-            queryField.emplace_back("service_cp_bz_uri");
-            queryField.emplace_back("service_description");
+            SetServiceFieldInfo(queryField);
             resultSetField.insert(field);
-            continue;
+            return;
         }
         if (field == "attendee") {
             resultSetField.insert(field);
-            continue;
+            return;
         }
         if (field == "reminderTime") {
             resultSetField.insert(field);
-            continue;
+            return;
         }
         if (field == "identifier") {
             queryField.emplace_back("identifier");
             resultSetField.insert(field);
-            continue;
+            return;
         }
         if (field == "recurrenceRule") {
             queryField.emplace_back("rrule");
             queryField.emplace_back("exdate");
             resultSetField.insert(field);
-            continue;
+            return;
         }
         if (field == "isLunar") {
             queryField.emplace_back("event_calendar_type");
             resultSetField.insert(field);
-            continue;
+            return;
         }
-        if (field == "id") {
-            continue;
+        if (field == "instanceStartTime") {
+            queryField.emplace_back("begin");
+            resultSetField.insert(field);
+            return;
+        }
+        if (field == "instanceEndTime") {
+            queryField.emplace_back("end");
+            resultSetField.insert(field);
+            return;
         }
         queryField.emplace_back(eventField.at(field));
         resultSetField.insert(field);
+}
+
+void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,
+    std::set<string>& resultSetField, const std::map<string, string> eventField)
+{
+    for (const auto& field : eventKey) {
+        if (field == "id") {
+            continue;
+        }
+        FillFieldInfo(field, queryField, resultSetField, eventField);
     }
 }
 
