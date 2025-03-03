@@ -17,6 +17,7 @@
 #include "calendar_log.h"
 #include "native_util.h"
 #include <ctime>
+#include <numeric>
 
 namespace OHOS::CalendarApi::Native {
 const int MIN_DAY_OF_WEEK = 1;
@@ -904,16 +905,18 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
     return 0;
 }
 
-std::string EventIdsToString(const std::vector<int> &ids)
-{
-    std::string result;
-    for (const auto &id : ids) {
-        result = result + std::to_string(id);
-        if (&id != &ids.back()) {
-            result = result + ",";
-        }
+std::string EventIdsToString(const std::vector<int> &ids) {
+    if (ids.empty()) {
+        return "";
     }
-    return result;
+    return std::accumulate( 
+        std::next(ids.begin()), ids.end(), std::to_string(ids[0]),
+        [](const std::string& a, int b) {
+            std::stringstream ss;
+            ss << a << ", " << b;
+            return ss.str();
+        }
+    );
 }
 
 int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet)
