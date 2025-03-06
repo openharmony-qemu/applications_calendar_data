@@ -118,6 +118,7 @@ ohos_static_library("calendarmanager_static") {
     debug = false
   }
   sources = [
+    "./napi/src/napi_env.cpp",
     "./native/src/calendar_env.cpp",
     "./native/src/data_share_helper_manager.cpp",
     "./native/src/event_filter.cpp",
@@ -138,6 +139,7 @@ ohos_static_library("calendarmanager_static") {
     "ability_runtime:abilitykit_native",
     "ability_runtime:data_ability_helper",
     "ability_runtime:napi_base_context",
+    "access_token:libaccesstoken_sdk",
     "c_utils:utils",
     "data_share:datashare_common",
     "data_share:datashare_consumer",

@@ -48,33 +48,23 @@ napi_status CalendarEnvNapi::GetContext(napi_env env, napi_value value)
 
 void CalendarEnvNapi::Init(napi_env env, napi_value value)
 {
-    const std::string CALENDAR_DATA_URI = "datashare:///calendardata";
-    const std::string CALENDAR_DATA_WHOLE_URI = "datashare:///calendardata_whole";
-    const std::string PERMISSION_NAME = "ohos.permission.READ_WHOLE_CALENDAR";
     if (hasInited) {
         return;
     }
     LOG_INFO("CalendarEnvNapi Init.");
     auto status = GetContext(env, value);
     if (status != napi_ok) {
+        LOG_ERROR("CalendarEnvNapi::Init error");
         return;
     }
     std::string bundleName = m_context->GetBundleName();
     uint64_t tokenId = IPCSkeleton::GetSelfTokenID();
     CalendarEnv::GetInstance().Init(bundleName, tokenId);
-
-    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(IPCSkeleton::GetCallingTokenID(),
-                                                                           PERMISSION_NAME);
-    LOG_INFO("verify access result=%{public}d", ret);
-    if (ret == Security::AccessToken::PERMISSION_GRANTED) {
-        auto dataShareHelper = DataShare::DataShareHelper::Creator(m_context->GetToken(), CALENDAR_DATA_WHOLE_URI);
-        LOG_INFO("dataShareHelper high create result=%{public}d", dataShareHelper != nullptr);
-        DataShareHelperManager::GetInstance().SetDataShareHelper(dataShareHelper);
-    } else {
-        auto dataShareHelper = DataShare::DataShareHelper::Creator(m_context->GetToken(), CALENDAR_DATA_URI);
-        LOG_INFO("dataShareHelper low create result=%{public}d", dataShareHelper != nullptr);
-        DataShareHelperManager::GetInstance().SetDataShareHelper(dataShareHelper);
-    }
     hasInited = true;
+}
+
+std::shared_ptr<OHOS::AbilityRuntime::Context> CalendarEnvNapi::getContext()
+{
+    return m_context;
 }
 };

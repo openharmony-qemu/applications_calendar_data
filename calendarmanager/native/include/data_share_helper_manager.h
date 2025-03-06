@@ -24,6 +24,11 @@ namespace OHOS::CalendarApi {
 class DataShareHelperManager : public OHOS::Singleton<DataShareHelperManager> {
 public:
     void SetDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> helper);
+     /**
+     * @brief Get the dataShareHelper instance.
+     *
+     * @return Returns DataShareHelper instance or nullptr when failed.
+     */
     std::shared_ptr<DataShare::DataShareHelper> GetDataShareHelper();
     /**
      * @brief Inserts a single data record into the database.
@@ -81,7 +86,33 @@ public:
         const DataShare::DataSharePredicates &predicates, std::vector<std::string> &columns,
         DataShare::DatashareBusinessError *businessError = nullptr);
 private:
-    std::shared_ptr<DataShare::DataShareHelper> dataShareHelper;
+     /**
+     * @brief Create a dataShareHelper instance.
+     *
+     * @return Returns DataShareHelper instance or nullptr when failed.
+     */
+    std::shared_ptr<DataShare::DataShareHelper> CreateDataShareHelper();
+     /**
+     * @brief Destroy the dataShareHelper instance when there is no dataShare operations for a period of time,
+     * otherwise no destruction is performed.
+     *
+     * @return Returns a boolean whether the dataShare helper is destroyed.
+     */
+    bool DestroyDataShareHelper();
+     /**
+     * @brief set the timer when DataShareHelper should be destoried when there is no operations
+     * during a period of time, default to 3000 milliseconds
+     *
+     * @param milliseconds set the timer in milliseconds to destory dataShareHeloer when there is no
+     * operation performed, default to 3000 millis.
+     *
+     * @return void.
+     */
+    void SetDataShareHelperTimer(unsigned int milliseconds = 3000);
+    std::shared_ptr<DataShare::DataShareHelper> m_dataShareHelper;
+    std::atomic<unsigned long long> expire = 0;
+    std::atomic<uint32_t> useCount = 0;
+    std::recursive_mutex dataShareLock;
 };
 } // namespace OHOS::CalendarApi
 
