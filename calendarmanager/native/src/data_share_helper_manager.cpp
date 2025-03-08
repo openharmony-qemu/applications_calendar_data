@@ -57,7 +57,6 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper()
                 CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_WHOLE_URI);
             LOG_INFO("CreateDataShareHelper dataShareHelper create with whole authority result=%{public}d",
                 m_dataShareHelper != nullptr);
-            break;
         } else {
             m_dataShareHelper = DataShareHelper::Creator(
                 CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_URI);
