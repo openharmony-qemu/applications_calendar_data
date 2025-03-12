@@ -1032,6 +1032,7 @@ void FillFieldInfo(const std::string field, std::vector<string>& queryField, std
 {
     if (field == "location") {
             SetLocationFieldInfo(queryField);
+            resultSetField.insert(field);
             return;
         }
         if (field == "service") {
