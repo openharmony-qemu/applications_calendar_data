@@ -29,7 +29,7 @@ const std::string PERMISSION_NAME = "ohos.permission.READ_WHOLE_CALENDAR";
 const int DESTROY_DATASHARE_DELAY = 2 * 60 * 1000;
 const int CHECK_INTERVAL_DIVIDER = 4;
 const int MAX_RETRY_ATTEMPTS = 3;
-}
+}  // namespace
 
 using namespace OHOS::DataShare;
 using namespace std::chrono;
@@ -53,13 +53,21 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper()
             Security::AccessToken::AccessTokenKit::VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), PERMISSION_NAME);
         LOG_INFO("CreateDataShareHelper verify access result=%{public}d", ret);
         if (ret == Security::AccessToken::PERMISSION_GRANTED) {
+            if (!CalendarEnvNapi::GetInstance().getContext()) {
+                LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
+                break;
+            }
             m_dataShareHelper = DataShareHelper::Creator(
                 CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_WHOLE_URI);
             LOG_INFO("CreateDataShareHelper dataShareHelper create with whole authority result=%{public}d",
                 m_dataShareHelper != nullptr);
         } else {
-            m_dataShareHelper = DataShareHelper::Creator(
-                CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_URI);
+            if (!CalendarEnvNapi::GetInstance().getContext()) {
+                LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
+                break;
+            }
+            m_dataShareHelper =
+                DataShareHelper::Creator(CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_URI);
             LOG_INFO("CreateDataShareHelper dataShareHelper create with low authority result=%{public}d",
                 m_dataShareHelper != nullptr);
         }
@@ -145,8 +153,8 @@ int DataShareHelperManager::BatchInsert(const Uri &uri, const std::vector<DataSh
     return res;
 }
 
-int DataShareHelperManager::Update(const Uri &uri, const DataSharePredicates &predicates,
-    const DataShareValuesBucket &value)
+int DataShareHelperManager::Update(
+    const Uri &uri, const DataSharePredicates &predicates, const DataShareValuesBucket &value)
 {
     auto dataShareHelper = CreateDataShareHelper();
     if (!dataShareHelper) {
@@ -185,4 +193,4 @@ std::shared_ptr<DataShareResultSet> DataShareHelperManager::Query(const Uri &uri
     useCount.fetch_sub(1, std::memory_order_seq_cst);
     return res;
 }
-}
+}  // namespace OHOS::CalendarApi
