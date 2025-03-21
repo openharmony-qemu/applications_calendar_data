@@ -67,6 +67,8 @@ std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount 
             LOG_WARN("Insert index %{public}d", index);
             LOG_WARN("Insert indexNum %{public}d", errNum);
             errNum++;
+        } else {
+            break;
         }
     } while (errNum > 0 && errNum <= MAX_ERR_NUM);
     if (index <= 0) {
@@ -137,6 +139,8 @@ bool CalendarManager::DeleteCalendar(const Calendar &calendar)
             LOG_WARN("DeleteCalendar %{public}d", result);
             LOG_WARN("DeleteCalendarNum %{public}d", errNum);
             errNum++;
+        } else {
+            break;
         }
     } while (errNum > 0 && errNum <= MAX_ERR_NUM);
     return result == 1;
