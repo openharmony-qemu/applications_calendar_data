@@ -87,7 +87,7 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper()
 bool DataShareHelperManager::DestroyDataShareHelper()
 {
     std::lock_guard<std::recursive_mutex> lock(dataShareLock);
-    uint64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t now = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     if (useCount.load() > 0) {
         LOG_INFO("DestroyDataShareHelper dataShareHelper in use count: %{public}d", useCount.load());
         return false;
@@ -106,9 +106,9 @@ bool DataShareHelperManager::DestroyDataShareHelper()
     return false;
 }
 
-void DataShareHelperManager::SetDataShareHelperTimer(unsigned int milliseconds)
+void DataShareHelperManager::SetDataShareHelperTimer(int milliseconds)
 {
-    uint64_t curtime = duration_cast<std::chrono::milliseconds>(system_clock::now().time_since_epoch()).count();
+    int64_t curtime = duration_cast<std::chrono::milliseconds>(system_clock::now().time_since_epoch()).count();
     expire.store(curtime + milliseconds, std::memory_order_seq_cst);
     if (m_dataShareHelper) {
         return;

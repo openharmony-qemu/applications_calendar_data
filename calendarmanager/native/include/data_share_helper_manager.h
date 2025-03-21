@@ -108,9 +108,9 @@ private:
      *
      * @return void.
      */
-    void SetDataShareHelperTimer(unsigned int milliseconds = 3000);
+    void SetDataShareHelperTimer(int milliseconds = 3000);
     std::shared_ptr<DataShare::DataShareHelper> m_dataShareHelper;
-    std::atomic<unsigned long long> expire = 0;
+    std::atomic<long long> expire = 0;
     std::atomic<uint32_t> useCount = 0;
     std::recursive_mutex dataShareLock;
 };
