@@ -110,7 +110,7 @@ private:
      */
     void SetDataShareHelperTimer(int milliseconds = 3000);
     std::shared_ptr<DataShare::DataShareHelper> m_dataShareHelper;
-    std::atomic<int64_t> expire = 0;
+    std::atomic<long long> expire = 0;
     std::atomic<uint32_t> useCount = 0;
     std::recursive_mutex dataShareLock;
 };
