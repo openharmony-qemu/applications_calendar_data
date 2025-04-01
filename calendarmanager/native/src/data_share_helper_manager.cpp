@@ -28,7 +28,7 @@ const std::string CALENDAR_DATA_WHOLE_URI = "datashare:///calendardata_whole";
 const std::string PERMISSION_NAME = "ohos.permission.READ_WHOLE_CALENDAR";
 const int DESTROY_DATASHARE_DELAY = 2 * 60 * 1000;
 const int CHECK_INTERVAL_DIVIDER = 4;
-const int MAX_RETRY_ATTEMPTS = 3;
+const uint32_t MAX_RETRY_ATTEMPTS = 3;
 }  // namespace
 
 using namespace OHOS::DataShare;
@@ -102,7 +102,7 @@ bool DataShareHelperManager::DestroyDataShareHelper()
         }
         return true;
     }
-    LOG_INFO("DestroyDataShareHelper dataShareHelper not expired %{public}lld remaining", expire - now);
+    LOG_INFO("DestroyDataShareHelper dataShareHelper not expired %{public}ld remaining", expire - now);
     return false;
 }
 
@@ -113,7 +113,7 @@ void DataShareHelperManager::SetDataShareHelperTimer(int milliseconds)
     if (m_dataShareHelper) {
         return;
     }
-    LOG_INFO("SetDataShareHelperTimer expireTime=%{public}lld", expire.load());
+    LOG_INFO("SetDataShareHelperTimer expireTime=%{public}ld", expire.load());
     std::thread th([&]() {
         do {
             std::this_thread::sleep_for(std::chrono::milliseconds(DESTROY_DATASHARE_DELAY / CHECK_INTERVAL_DIVIDER));
