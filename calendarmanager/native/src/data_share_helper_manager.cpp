@@ -102,7 +102,7 @@ bool DataShareHelperManager::DestroyDataShareHelper()
         }
         return true;
     }
-    LOG_INFO("DestroyDataShareHelper dataShareHelper not expired %{public}ld remaining", expire - now);
+    LOG_INFO("DestroyDataShareHelper dataShareHelper not expired %{public}lld remaining", expire - now);
     return false;
 }
 
@@ -113,7 +113,7 @@ void DataShareHelperManager::SetDataShareHelperTimer(int milliseconds)
     if (m_dataShareHelper) {
         return;
     }
-    LOG_INFO("SetDataShareHelperTimer expireTime=%{public}ld", expire.load());
+    LOG_INFO("SetDataShareHelperTimer expireTime=%{public}lld", expire.load());
     std::thread th([&]() {
         do {
             std::this_thread::sleep_for(std::chrono::milliseconds(DESTROY_DATASHARE_DELAY / CHECK_INTERVAL_DIVIDER));
