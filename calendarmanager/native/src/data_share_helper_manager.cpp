@@ -28,7 +28,7 @@ const std::string CALENDAR_DATA_WHOLE_URI = "datashare:///calendardata_whole";
 const std::string PERMISSION_NAME = "ohos.permission.READ_WHOLE_CALENDAR";
 const int DESTROY_DATASHARE_DELAY = 2 * 60 * 1000;
 const int CHECK_INTERVAL_DIVIDER = 4;
-const int MAX_RETRY_ATTEMPTS = 3;
+const uint32_t MAX_RETRY_ATTEMPTS = 3;
 }  // namespace
 
 using namespace OHOS::DataShare;
