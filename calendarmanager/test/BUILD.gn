@@ -28,7 +28,7 @@ ohos_unittest("calendarmanager_test") {
     debug = false
     blocklist = "./calendardata_blocklist.txt"
   }
-  module_out_path = "applications/calendardata"
+  module_out_path = "applications/calendar_data"
   sources = [
     "unittest/src/calendar_manager_test.cpp",
     "unittest/src/calendar_test.cpp",

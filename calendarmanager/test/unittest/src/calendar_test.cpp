@@ -175,6 +175,194 @@ HWTEST_F(CalendarTest, UpdateEvent_test_1, testing::ext::TestSize.Level1)
     EXPECT_EQ(events.at(0).title.value(), newTitle);
 }
 
+HWTEST_F(CalendarTest, UpdateEvent_DeleteLocation_test, testing::ext::TestSize.Level0)
+{
+    Event event;
+    event.title = "UpdateEvent_Location";
+    event.location = {
+        "test",
+        123,
+        456
+    };
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    auto newEvent = events.at(0);
+    newEvent.location = std::make_optional<Location>();
+    auto ret = calendar->UpdateEvent(newEvent);
+    EXPECT_EQ(ret, true);
+    events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    auto newLocation = events.at(0).location.value();
+    EXPECT_EQ(newLocation.location.has_value(), true);
+    EXPECT_EQ(newLocation.location.value(), "");
+    EXPECT_EQ(newLocation.longitude.has_value(), false);
+    EXPECT_EQ(newLocation.latitude.has_value(), false);
+}
+
+HWTEST_F(CalendarTest, UpdateEvent_AddLocation_test, testing::ext::TestSize.Level0)
+{
+    Event event;
+    event.title = "UpdateEvent_AddLocation_test";
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    auto newEvent = events.at(0);
+    EXPECT_EQ(newEvent.location.has_value(), true);
+    EXPECT_EQ(newEvent.location.value().location.has_value(), true);
+    EXPECT_EQ(newEvent.location.value().longitude.has_value(), false);
+    newEvent.location = {"test", 123, 456};
+    auto ret = calendar->UpdateEvent(newEvent);
+    
+    EXPECT_EQ(ret, true);
+    events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    auto newLocation = events.at(0).location.value();
+    EXPECT_EQ(newLocation.location.value(), newEvent.location.value().location.value());
+    EXPECT_EQ(newLocation.longitude.value(), newEvent.location.value().longitude.value());
+    EXPECT_EQ(newLocation.latitude.value(), newEvent.location.value().latitude.value());
+}
+
+HWTEST_F(CalendarTest, UpdateEvent_DeleteRule, testing::ext::TestSize.Level1)
+{
+    Event event;
+    event.title = "UpdateEvent_DeleteRule";
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.daysOfWeek = {1, 3, 5};
+    recurrenceRule.weeksOfMonth = {2, 3, 4};
+    recurrenceRule.monthsOfYear = {6, 7, 8};
+    event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    ASSERT_EQ(1, events.size());
+    auto newEvent = events.at(0);
+    newEvent.recurrenceRule.value().recurrenceFrequency = NORULE;
+    auto ret = calendar->UpdateEvent(newEvent);
+    EXPECT_EQ(ret, true);
+    events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    ASSERT_EQ(1, events.size());
+    auto newRecurrenceRule = events.at(0).recurrenceRule.value();
+    EXPECT_EQ(newRecurrenceRule.recurrenceFrequency, NORULE);
+    EXPECT_EQ(newRecurrenceRule.daysOfWeek.has_value(), false);
+    EXPECT_EQ(newRecurrenceRule.weeksOfMonth.has_value(), false);
+    EXPECT_EQ(newRecurrenceRule.monthsOfYear.has_value(), false);
+}
+
+HWTEST_F(CalendarTest, UpdateEvent_AddRule, testing::ext::TestSize.Level1)
+{
+    Event event;
+    event.title = "UpdateEvent_DeleteRule";
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    ASSERT_EQ(1, events.size());
+    auto newEvent = events.at(0);
+    EXPECT_EQ(newEvent.recurrenceRule.value().recurrenceFrequency, NORULE);
+    RecurrenceRule recurrenceRule;
+    recurrenceRule.recurrenceFrequency = YEARLY;
+    recurrenceRule.daysOfWeek = {1, 3, 5};
+    recurrenceRule.weeksOfMonth = {2, 3, 4};
+    recurrenceRule.monthsOfYear = {6, 7, 8};
+    newEvent.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
+
+    auto ret = calendar->UpdateEvent(newEvent);
+    EXPECT_EQ(ret, true);
+    events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    ASSERT_EQ(1, events.size());
+    auto newRecurrenceRule = events.at(0).recurrenceRule.value();
+    EXPECT_EQ(newRecurrenceRule.recurrenceFrequency, YEARLY);
+   
+    for (int i = 0; i < newRecurrenceRule.weeksOfMonth.value().size(); i++) {
+        EXPECT_EQ(newRecurrenceRule.daysOfWeek.value()[i], recurrenceRule.daysOfWeek.value()[i]);
+        EXPECT_EQ(newRecurrenceRule.weeksOfMonth.value()[i], recurrenceRule.weeksOfMonth.value()[i]);
+        EXPECT_EQ(newRecurrenceRule.monthsOfYear.value()[i], recurrenceRule.monthsOfYear.value()[i]);
+    }
+}
+
+HWTEST_F(CalendarTest, UpdateEvent_Title, testing::ext::TestSize.Level1)
+{
+    Event event;
+    event.title = "UpdateEvent_Title";
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    auto newEvent = events.at(0);
+    auto ret = calendar->UpdateEvent(newEvent);
+    EXPECT_EQ(ret, true);
+    events = calendar->GetEvents(FilterByTitle(newEvent.title.value()), {});
+    ASSERT_EQ(1, events.size());
+    EXPECT_EQ(events.at(0).title.value(), event.title.value());
+}
+
+HWTEST_F(CalendarTest, UpdateEvent_AddService, testing::ext::TestSize.Level1)
+{
+    Event event;
+    event.title = "UpdateEvent_AddService";
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    EXPECT_EQ(events.at(0).service.has_value(), false);
+    auto newEvent = events.at(0);
+    EventService testService {
+        "Meeting",
+        "//testuri",
+        "test_discription"
+    };
+    newEvent.service = std::make_optional<EventService>(testService);
+    auto ret = calendar->UpdateEvent(newEvent);
+    EXPECT_EQ(ret, true);
+    events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    auto newService = events.at(0).service.value();
+    EXPECT_EQ(newService.type, testService.type);
+    EXPECT_EQ(newService.uri, testService.uri);
+    EXPECT_EQ(newService.description.value(), testService.description.value());
+}
+
+HWTEST_F(CalendarTest, UpdateEvent_DeleteService, testing::ext::TestSize.Level1)
+{
+    Event event;
+    event.title = "UpdateEvent_DeleteService";
+    EventService testService {
+        "Meeting",
+        "//testuri",
+        "test_discription"
+    };
+    event.service = std::make_optional<EventService>(testService);
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    EXPECT_EQ(events.at(0).service.has_value(), true);
+    auto addService = events.at(0).service.value();
+    EXPECT_EQ(addService.type, testService.type);
+    EXPECT_EQ(addService.uri, testService.uri);
+    EXPECT_EQ(addService.description.value(), testService.description.value());
+    auto newEvent = events.at(0);
+    EventService testNewService {
+        "Meeting",
+        "",
+        std::nullopt
+    };
+    newEvent.service = std::make_optional<EventService>(testNewService);
+    auto ret = calendar->UpdateEvent(newEvent);
+    EXPECT_EQ(ret, true);
+    events = calendar->GetEvents(FilterById({eventId}), {});
+    ASSERT_EQ(1, events.size());
+    ASSERT_EQ(events.at(0).service.has_value(), true);
+    auto newService = events.at(0).service.value();
+    EXPECT_EQ(newService.type, testNewService.type);
+    EXPECT_EQ(newService.uri, testNewService.uri);
+    EXPECT_EQ(newService.description.has_value(), true);
+    EXPECT_EQ(newService.description.value(), "");
+}
+
 HWTEST_F(CalendarTest, UpdateEvents_test_1, testing::ext::TestSize.Level1)
 {
     Event event1;
@@ -281,7 +469,7 @@ HWTEST_F(CalendarTest, BuildValueEventIsLunar, testing::ext::TestSize.Level1)
     DataShare::DataShareValuesBucket newShareValuesBucket;
     newShareValuesBucket.Put("identifier", event.identifier.value());
     newShareValuesBucket.Put("event_calendar_type", event.isLunar.value());
-    auto shareValuesBucket = BuildValueEvent(event, 0, 0);
+    auto shareValuesBucket = BuildValueEvent(event, 0, 0, false);
     auto itIdentifier = shareValuesBucket.valuesMap.find("identifier");
     auto *itIdentifierVal = std::get_if<std::string>(&itIdentifier->second);
     std::string identifierVal = *itIdentifierVal;

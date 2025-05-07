@@ -465,7 +465,7 @@ HWTEST_F(EventRecurrenceRuleTest, BuildValueEventRecurrenceRule, testing::ext::T
     DataShare::DataShareValuesBucket newShareValuesBucket;
     newShareValuesBucket.Put("rrule", rrule);
     newShareValuesBucket.Put("exdate", excludedDateStr);
-    auto shareValuesBucket = BuildValueEvent(event, 0, 0);
+    auto shareValuesBucket = BuildValueEvent(event, 0, 0, false);
     auto itRrule = shareValuesBucket.valuesMap.find("rrule");
     auto *itRruleValue = std::get_if<std::string>(&itRrule->second);
     std::string rruleVal = *itRruleValue;
