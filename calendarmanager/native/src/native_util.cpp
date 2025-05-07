@@ -84,25 +84,34 @@ void BuildEventLocation(DataShare::DataShareValuesBucket &valuesBucket, const Ev
     auto location = event.location.value();
     if (location.location) {
         valuesBucket.Put("eventLocation", location.location.value());
+    } else {
+        valuesBucket.Put("eventLocation", "");
     }
     if (location.longitude) {
         // longitude is string in db
         valuesBucket.Put("location_longitude", std::to_string(location.longitude.value()));
+    } else {
+        valuesBucket.Put("location_longitude", "");
     }
     if (location.latitude) {
         // latitude is string in db
         valuesBucket.Put("location_latitude", std::to_string(location.latitude.value()));
+    } else {
+        valuesBucket.Put("location_latitude", "");
     }
 }
 
 void BuildEventService(DataShare::DataShareValuesBucket &valuesBucket, const Event &event)
 {
-    if (!event.service) {
+    if (!event.service.has_value()) {
+        LOG_INFO("BuildEventService event.service has no value ");
         return;
     }
     const auto service = event.service.value();
     if (service.description) {
         valuesBucket.Put("service_description", service.description.value());
+    } else {
+        valuesBucket.Put("service_description", "");
     }
     valuesBucket.Put("service_type", service.type);
     valuesBucket.Put("service_cp_bz_uri", service.uri);
@@ -181,6 +190,9 @@ std::string GetRule(const Event &event)
         if (time != nullptr) {
             rrule += GetYearlyRule(event, *time);
         }
+    } else if (recurrenceFrequency == NORULE) {
+        LOG_INFO(" recurrenceFrequency == NORULE");
+        rrule = "";
     }
 
     return rrule;
@@ -349,23 +361,26 @@ void BuildEventRecurrenceRule(DataShare::DataShareValuesBucket &valuesBucket, co
     }
     
     std::string rrule = GetRule(event);
-    if (!rrule.empty()) {
-        valuesBucket.Put("rrule", rrule);
-    }
-   
+    valuesBucket.Put("rrule", rrule);
+    
     if (event.recurrenceRule.value().excludedDates.has_value()) {
         const auto excludedDateStr = GetUTCTimes(event.recurrenceRule.value().excludedDates.value());
         valuesBucket.Put("exdate", excludedDateStr);
     }
 }
 
-DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId, int channelId)
+DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId, int channelId, bool isUpdate)
 {
     DataShare::DataShareValuesBucket valuesBucket;
     valuesBucket.Put("calendar_id", calendarId);
-
-    LOG_DEBUG("title %{private}s", event.title.value_or("").c_str());
-    valuesBucket.Put("title", event.title.value_or(""));
+    if (!isUpdate) {
+        LOG_DEBUG("title %{private}s", event.title.value_or("").c_str());
+        valuesBucket.Put("title", event.title.value_or(""));
+    } else {
+        if (event.title) {
+            valuesBucket.Put("title", event.title.value());
+        }
+    }
     valuesBucket.Put("important_event_type", event.type);
     valuesBucket.Put("dtstart", event.startTime);
     valuesBucket.Put("dtend", event.endTime);

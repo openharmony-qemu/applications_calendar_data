@@ -66,7 +66,7 @@ void Calendar::InsertReminders(int eventId, vector<int> reminders)
 
 int Calendar::AddEventInfo(const Event& event, int channelId)
 {
-    auto valueEvent = BuildValueEvent(event, m_id, channelId);
+    const auto valueEvent = BuildValueEvent(event, m_id, channelId, false);
     auto eventId = DataShareHelperManager::GetInstance().Insert(*(m_eventUri.get()), valueEvent);
     LOG_INFO("Insert Event eventId %{private}d", eventId);
     if (eventId <= 0) {
@@ -149,7 +149,7 @@ int Calendar::DeleteEvents(const std::vector<int>& ids)
     int count = 0;
     for (const auto &id : ids) {
         if (DeleteEvent(id)) {
-            count +=1;
+            count += 1;
         }
     }
     LOG_INFO("DeleteEvents %{public}d", count);
@@ -165,7 +165,7 @@ bool Calendar::UpdateEvent(const Event& event)
     const auto eventId = event.id.value();
     DataShare::DataSharePredicates m_predicates;
     m_predicates.EqualTo("_id", eventId);
-    auto valueEvent = BuildValueEvent(event, m_id, 0);
+    const auto valueEvent = BuildValueEvent(event, m_id, 0, true);
     auto ret = DataShareHelperManager::GetInstance().Update(*(m_eventUri.get()), m_predicates, valueEvent);
     LOG_INFO(" Update code %{public}d", ret);
     {

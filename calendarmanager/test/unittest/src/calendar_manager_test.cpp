@@ -38,7 +38,7 @@ public:
     }
 };
 
-HWTEST_F(CalendarManagerTest, getCalendar_with_not_account, testing::ext::TestSize.Level1)
+HWTEST_F(CalendarManagerTest, getCalendar_with_not_account, testing::ext::TestSize.Level0)
 {
     auto calendar = CalendarManager::GetInstance().GetCalendar(std::nullopt);
     ASSERT_TRUE(calendar != nullptr);

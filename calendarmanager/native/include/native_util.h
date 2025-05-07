@@ -30,7 +30,7 @@ namespace OHOS::CalendarApi::Native {
     using DataShareResultSetPtr = std::shared_ptr<DataShare::DataShareResultSet>;
     void DumpCalendarAccount(const CalendarAccount &account);
     void DumpEvent(const Event &event);
-    DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId, int channelId);
+    DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calendarId, int channelId, bool isUpdate);
     DataShare::DataShareValuesBucket BuildAttendeeValue(const Attendee &attendee, int eventId);
     int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, int& out);
     int GetIndexValue(const DataShareResultSetPtr &resultSet, int index, std::string& out);
