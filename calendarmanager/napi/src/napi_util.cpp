@@ -360,11 +360,16 @@ napi_status SetValue(napi_env env, const CalendarConfig& in, napi_value& out)
         ss >> color;
         const int rgbLen = 5;
         const int argbLen = 7;
+        const int appColorLen = 6;
+        const int maxColorLen = 8;
         while (color.size() < rgbLen) {
             color = '0' + color;
         }
         if (color.size() == rgbLen || color.size() == argbLen) {
             color = '0' + color;
+        }
+        if (color.size() > maxColorLen) {
+            color = color.substr(color.length() - appColorLen, appColorLen);
         }
         color = '#' + color;
         LOG_DEBUG("config.color: %{public}s", color.c_str());
