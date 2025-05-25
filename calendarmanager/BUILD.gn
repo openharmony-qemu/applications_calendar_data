@@ -39,7 +39,7 @@ action("gen_editor_abc") {
     rebase_path("${es2abc_build_path}"),
     "--module",
   ]
-  deps = [ "../../../../arkcompiler/ets_frontend/es2panda:es2panda_build" ]
+  deps = []
   inputs = [ jspath ]
   outputs = [ target_out_dir + "/editor.abc" ]
 }
@@ -102,6 +102,7 @@ ohos_shared_library("calendarmanager") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
+ 
   ]
 
   public_deps = []
