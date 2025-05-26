@@ -46,9 +46,6 @@ ohos_unittest("calendarmanager_test") {
     "//applications/standard/calendardata/calendarmanager:calendarmanager_static",
   ]
   include_dirs = [
-    "//utils/system/safwk/native/include",
-    "//base/security/access_token/frameworks/common/include",
-    "//foundation/ability/ability_runtime/services/abilitymgr/include",
     "//applications/standard/calendardata/calendarmanager/common",
     "//applications/standard/calendardata/calendarmanager/native/include",
   ]
