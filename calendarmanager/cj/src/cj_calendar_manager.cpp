@@ -97,7 +97,7 @@ int64_t CJCalendarManager::GetCalendar(CCalendarAccount calendarAccount, int32_t
 CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
 {
     std::vector<int64_t> calendarIds;
-    auto nativeCalendars = Native::CalendarManager::GetInstance().GetAllCalendars();
+    auto nativeCalendars = Native::CJNativeCalendarManager::GetInstance().GetAllCalendars();
     CArrI64 ret = {.head = nullptr, .size = 0};
     if (nativeCalendars.empty()) {
         LOG_ERROR("nativeCalendars is empty");
