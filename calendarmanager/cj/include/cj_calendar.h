@@ -29,7 +29,7 @@ char *IMallocCString(const std::string &origin);
 class CJCalendar : public OHOS::FFI::FFIData {
     DECL_TYPE(CJCalendar, OHOS::FFI::FFIData)
 public:
-    explicit CJCalendar(std::shared_ptrNative::Calendar calendar);
+    explicit CJCalendar(std::shared_ptr<Native::Calendar> calendar);
     ~CJCalendar() override = default;
     std::shared_ptrNative::Calendar& GetNative();
     Event CEventToEvent(CEvent event);

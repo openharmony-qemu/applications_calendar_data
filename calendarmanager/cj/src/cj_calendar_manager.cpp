@@ -43,9 +43,7 @@ void CJCalendarManager::GetCalendarManager(int64_t contextId, int32_t* errcode)
         *errcode = -1;
     }
 
-    std::string bundleName = context->GetBundleName();
-    uint64_t tokenId = IPCSkeleton::GetSelfTokenID();
-    CalendarEnv::GetInstance().Init(bundleName, tokenId);
+    OHOS::CalendarApi::CJCalendarEnv::Init(context)
 }
 
 int64_t CJCalendarManager::CreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode)

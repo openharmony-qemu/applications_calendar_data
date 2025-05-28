@@ -100,7 +100,7 @@ namespace CalendarApi {
         return nativeEvent;
     }
 
-    CJCalendar::CJCalendar(std::shared_ptrNative::Calendar calendar)
+    CJCalendar::CJCalendar(std::shared_ptr<Native::Calendar> calendar)
     {
         calendar_ = calendar;
     }
