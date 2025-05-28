@@ -15,8 +15,13 @@
 #include "ability_runtime/cj_ability_context.h"
 #include "calendar_manager_ffi.h"
 #include "cj_calendar_manager.h"
+#include "cj_calendar.h"
+#include "cj_event_filter.h"
 #include "native/ffi_remote_data.h"
 #include "ipc_skeleton.h"
+#include "calendar_define.h"
+#include "calendar_log.h"
+#include "calendar_env.h"
 
 using namespace OHOS;
 using namespace OHOS::AbilityRuntime;
@@ -35,7 +40,7 @@ namespace CalendarApi {
         return vec;
     }
 
-    char *IMallocCString(const std::string &origin)
+    char* IMallocCString(const std::string &origin)
     {
         if (origin.empty()) {
             return nullptr;
@@ -52,53 +57,65 @@ namespace CalendarApi {
     {
         Event nativeEvent;
         nativeEvent.id = event.id;
-        nativeEvent.type = event.`type` == 0 ? Normal : Important;
+        nativeEvent.type = event.type == 0 ? Normal : Important;
         nativeEvent.startTime = event.startTime;
         nativeEvent.endTime = event.endTime;
-        nativeEvent.title = std::to_string(event.title);
-        nativeEvent.location.location = std::to_string(event.location.location);
-        nativeEvent.location.longitude = event.location.longitude;
-        nativeEvent.location.latitude = event.location.latitude;
+        nativeEvent.title = event.title;
+        nativeEvent.location->location = event.location.location;
+        nativeEvent.location->longitude = event.location.longitude;
+        nativeEvent.location->latitude = event.location.latitude;
         nativeEvent.isAllDay = event.isAllDay;
         for (int64_t i = 0; i < event.attendee.size; i++) {
             Attendee attendee;
-            attendee.name = std::to_string(event.attendee.head[i].name);
-            attendee.email = std::to_string(event.attendee.head[i].email);
-            attendee.role = std::to_string(event.attendee.head[i].role);
+            attendee.name = event.attendee.head[i].name;
+            attendee.email = event.attendee.head[i].email;
+            attendee.role = std::make_optional<RoleType>(RoleType(event.attendee.head[i].role));
             nativeEvent.attendees.push_back(attendee);
         }
-        nativeEvent.timeZone = std::to_string(event.timeZone)
-        nativeEvent.reminderTime = ArrayI64ToVector(event.reminderTime);
+        nativeEvent.timeZone = std::make_optional<std::string>(event.timeZone);
+        std::vector<int> vec;
+        for (int64_t i = 0; i < event.reminderTime.size; i++) {
+            vec.push_back(static_cast<int>(event.reminderTime.head[i]));
+        }
+        nativeEvent.reminderTime = vec;
         
-        nativeEvent.recurrenceRule.recurrenceFrequency = event.recurrenceRule.recurrenceFrequency;
-        nativeEvent.recurrenceRule.expire = event.recurrenceRule.expire;
-        nativeEvent.recurrenceRule.count = event.recurrenceRule.count;
-        nativeEvent.recurrenceRule.interval = event.recurrenceRule.interval;
-        nativeEvent.recurrenceRule.excludedDates = ArrayI64ToVector(event.recurrenceRule.excludedDates);
-        nativeEvent.recurrenceRule.daysOfWeek = ArrayI64ToVector(event.recurrenceRule.daysOfWeek);
-        nativeEvent.recurrenceRule.daysOfMonth = ArrayI64ToVector(event.recurrenceRule.daysOfMonth);
-        nativeEvent.recurrenceRule.daysOfYear = ArrayI64ToVector(event.recurrenceRule.daysOfYear);
-        nativeEvent.recurrenceRule.weeksOfMonth = ArrayI64ToVector(event.recurrenceRule.weeksOfMonth);
-        nativeEvent.recurrenceRule.weeksOfYear = ArrayI64ToVector(event.recurrenceRule.weeksOfYear);
-        nativeEvent.recurrenceRule.monthsOfYear = ArrayI64ToVector(event.recurrenceRule.monthsOfYear);
+        nativeEvent.recurrenceRule->recurrenceFrequency = RecurrenceType(event.recurrenceRule.recurrenceFrequency);
+        nativeEvent.recurrenceRule->expire = std::make_optional<int64_t>(event.recurrenceRule.expire);
+        nativeEvent.recurrenceRule->count = std::make_optional<int64_t>(event.recurrenceRule.count);
+        nativeEvent.recurrenceRule->interval = std::make_optional<int64_t>(event.recurrenceRule.interval);
+        nativeEvent.recurrenceRule->excludedDates = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.excludedDates));
+        nativeEvent.recurrenceRule->daysOfWeek = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.daysOfWeek));
+        nativeEvent.recurrenceRule->daysOfMonth = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.daysOfMonth));
+        nativeEvent.recurrenceRule->daysOfYear = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.daysOfYear));
+        nativeEvent.recurrenceRule->weeksOfMonth = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.weeksOfMonth));
+        nativeEvent.recurrenceRule->weeksOfYear = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.weeksOfYear));
+        nativeEvent.recurrenceRule->monthsOfYear = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.monthsOfYear));
 
-        nativeEvent.description = std::to_string(event.description);
-        nativeEvent.service.`type` = std::to_string(event.service.`type`);
-        nativeEvent.service.uri = std::to_string(event.service.uri);
-        nativeEvent.service.description = std::to_string(event.service.description);
-        nativeEvent.identifier = std::to_string(event.identifier);
-        nativeEvent.isLunar = event.isLunar;
+        nativeEvent.description = std::make_optional<std::string>(event.description);
+        nativeEvent.service->type = event.service.type;
+        nativeEvent.service->uri = event.service.uri;
+        nativeEvent.service->description = std::make_optional<std::string>(event.service.description);
+        nativeEvent.identifier = std::make_optional<std::string>(event.identifier);
+        nativeEvent.isLunar = std::make_optional<bool>(event.isLunar);
         return nativeEvent;
     }
 
+    CJCalendar::CJCalendar(std::shared_ptrNative::Calendar calendar)
+    {
+        calendar_ = calendar;
+    }
 
+    std::shared_ptr<Native::Calendar>& CJCalendar::GetNative()
+    {
+        return calendar_;
+    }
 
     int64_t CJCalendar::AddEvent(CEvent event, int32_t* errcode)
     {
         Event nativeEvent = CEventToEvent(event);
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
         int64_t eventId = calendar_->AddEvent(nativeEvent);
         return eventId;
@@ -111,44 +128,43 @@ namespace CalendarApi {
             nativeEvents.push_back(CEventToEvent(event.head[i]));
         }
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
         int count = calendar_->AddEvents(nativeEvents);
-        if (count < 0)
-        {
-            HILOG_ERROR("add events failed");
-            errcode = -1;
+        if (count < 0) {
+            LOG_ERROR("add events failed");
+            *errcode = -1;
         }
     }
 
     void CJCalendar::DeleteEvent(int64_t eventId, int32_t* errcode)
     {
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
         bool ret = calendar_->DeleteEvent(eventId);
         if (!ret) {
-            HILOG_ERROR("delete event failed");
-            errcode = -1;
+            LOG_ERROR("delete event failed");
+            *errcode = -1;
         }
     }
 
     void CJCalendar::DeleteEvents(CArrI64 eventIds, int32_t* errcode)
     {
-        std::vector<int64_t> ids;
+        std::vector<int> ids;
         for (int64_t i = 0; i < eventIds.size; i++) {
-            ids.push_back(eventIds.head[i]);
+            ids.push_back(static_cast<int>(eventIds.head[i]));
         }
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
         int count = calendar_->DeleteEvents(ids);
         if (count < 0) {
-            HILOG_ERROR("delete events failed");
-            errcode = -1;
+            LOG_ERROR("delete events failed");
+            *errcode = -1;
         }
     }
 
@@ -156,13 +172,13 @@ namespace CalendarApi {
     {
         Event nativeEvent = CEventToEvent(event);
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
         bool ret = calendar_->UpdateEvent(nativeEvent);
         if (!ret) {
-            HILOG_ERROR("update event failed");
-            errcode = -1;
+            LOG_ERROR("update event failed");
+            *errcode = -1;
         }
     }
 
@@ -174,17 +190,17 @@ namespace CalendarApi {
         }
         auto instance = FFIData::GetData<CJEventFilter>(eventFilterId);
         if (instance == nullptr) {
-            HILOG_ERROR("CJEventFilter is nullptr");
-            errcode = -1;
+            LOG_ERROR("CJEventFilter is nullptr");
+            *errcode = -1;
         }
         auto eventFilter = instance->eventFilter_;
         if (eventFilter == nullptr) {
-            HILOG_ERROR("eventFilter is nullptr");
-            errcode = -1;
+            LOG_ERROR("eventFilter is nullptr");
+            *errcode = -1;
         }
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
         std::vector<Event> events = calendar_->GetEvents(eventFilter, keys);
         CArrEvents arr;
@@ -265,13 +281,13 @@ namespace CalendarApi {
     CCalendarConfig CJCalendar::GetConfig(int32_t* errcode)
     {
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
         CalendarConfig nativeConfig = calendar_->GetConfig();
         CCalendarConfig config;
-        config.enableReminder = nativeConfig.enableReminder;
-        config.color = nativeConfig.color;
+        config.enableReminder = nativeConfig.enableReminder.value();
+        config.color = std::get<int64_t>(nativeConfig.color);
         return config;
     }
 
@@ -281,28 +297,28 @@ namespace CalendarApi {
         nativeConfig.enableReminder = config.enableReminder;
         nativeConfig.color = config.color;
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
 
         bool ret = calendar_->SetConfig(nativeConfig);
         if (!ret) {
-            HILOG_ERROR("set config failed");
-            errcode = -1;
+            LOG_ERROR("set config failed");
+            *errcode = -1;
         }
     }
 
     CCalendarAccount CJCalendar::GetAccount(int32_t* errcode)
     {
         if (calendar_ == nullptr) {
-            HILOG_ERROR("calendar_ is nullptr");
-            errcode = -1;
+            LOG_ERROR("calendar_ is nullptr");
+            *errcode = -1;
         }
         CalendarAccount nativeAccount = calendar_->GetAccount();
         CCalendarAccount account;
         account.name = IMallocCString(nativeAccount.name);
-        account.`type` = IMallocCString(nativeAccount.type);
-        account.displayName = IMallocCString(nativeAccount.displayName);
+        account.type = IMallocCString(nativeAccount.type);
+        account.displayName = IMallocCString(nativeAccount.displayName.value());
         return account;
     }
 

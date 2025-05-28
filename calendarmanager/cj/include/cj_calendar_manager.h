@@ -19,6 +19,8 @@
 #include <vector>
 #include "cj_common_ffi.h"
 #include "ffi_remote_data.h"
+#include "calendar_manager_ffi.h"
+#include "native_calendar.h"
 
 namespace OHOS {
 namespace CalendarApi {
@@ -26,14 +28,12 @@ namespace CalendarApi {
 class CJCalendarManager : public OHOS::FFI::FFIData {
     DECL_TYPE(CJCalendarManager, OHOS::FFI::FFIData)
 public:
-    void GetCalendarManager(int64_t contextId, int32_t* errcode);
-    int64_t CreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
-    void DeleteCalendar(int64_t calendarId, int32_t* errcode);
-    int64_t GetCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
-    CArr64 GetAllCalendars(int32_t* errcode);
-    int64_t EditerEvent(int64_t contextId, char* eventstr, int32_t* errcode);
-private:
-    bool hasInited = false;
+    static void GetCalendarManager(int64_t contextId, int32_t* errcode);
+    static int64_t CreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
+    static void DeleteCalendar(int64_t calendarId, int32_t* errcode);
+    static int64_t GetCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
+    static CArrI64 GetAllCalendars(int32_t* errcode);
+    static int64_t EditerEvent(int64_t contextId, char* eventstr, int32_t* errcode);
 };
 
 }

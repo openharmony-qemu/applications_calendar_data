@@ -15,87 +15,83 @@
 #include "ability_runtime/cj_ability_context.h"
 #include "calendar_manager_ffi.h"
 #include "cj_calendar_manager.h"
+#include "cj_calendar.h"
+#include "cj_event_filter.h"
 #include "native/ffi_remote_data.h"
 #include "ipc_skeleton.h"
+#include "calendar_log.h"
+#include "native_calendar.h"
+#include "native_util.h"
+#include "native_calendar_manager.h"
+#include "calendar_env.h"
 
 using namespace OHOS;
 using namespace OHOS::AbilityRuntime;
 using namespace OHOS::CalendarApi;
 using namespace OHOS::FFI;
 using namespace OHOS::DataShare;
+using namespace OHOS::AppExecFwk;
 static const int INVALID_EVENT_ID = -1;
 
 namespace OHOS {
 namespace CalendarApi {
 void CJCalendarManager::GetCalendarManager(int64_t contextId, int32_t* errcode)
 {
-    sptr<CJAbilityContext> context = FFIData::GetContext<CJAbilityContext>(contextId);
+    sptr<CJAbilityContext> context = OHOS::FFI::FFIData::GetData<CJAbilityContext>(contextId);
     if (context == nullptr) {
-        HILOG_ERROR("Context is nullptr");
-        errcode = -1;
-    }
-    if (hasInited) {
-        HILOG_ERROR("calendar manager has been inited");
-        errcode = -1;
+        LOG_ERROR("Context is nullptr");
+        *errcode = -1;
     }
 
     std::string bundleName = context->GetBundleName();
     uint64_t tokenId = IPCSkeleton::GetSelfTokenID();
     CalendarEnv::GetInstance().Init(bundleName, tokenId);
-    hasInited = true;
 }
 
 int64_t CJCalendarManager::CreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode)
 {
-    CalendarAccount account = CalendarAccount(calendarAccount.name, calendarAccount.type, calendarAccount.displayName);
-    CJCalendar *CJCalendar = FFIData::Create<CJCalendar>();
-    if (CJCalendar == nullptr) {
-        HILOG_ERROR("CJCalendar is nullptr");
-        errcode = -1;
-    }
+    CalendarAccount account;
+    account.name = calendarAccount.name;
+    account.type = calendarAccount.type;
+    account.displayName = calendarAccount.displayName;
 
-    CJCalendar->calendar_ = Native::CalendarManager::GetInstance().CreateCalendar(account);
-    if (CJCalendar->calendar_ == nullptr) {
-        HILOG_ERROR("calendar_ is nullptr");
-        errcode = -1;
+    auto calendar_ = Native::CalendarManager::GetInstance().CreateCalendar(account);
+    if (calendar_ == nullptr) {
+        LOG_ERROR("calendar_ is nullptr");
+        *errcode = -1;
     }
-    return CJCalendar->GetId();
+    auto instance = OHOS::FFI::FFIData::Create<CJCalendar>(calendar_);
+    return instance->GetID();
 }
 
 void CJCalendarManager::DeleteCalendar(int64_t calendarId, int32_t* errcode)
 {
-    CJCalendar *CJCalendar = FFIData::Get<CJCalendar>(calendarId);
-    if (CJCalendar == nullptr) {
-        HILOG_ERROR("CJCalendar is nullptr");
-        errcode = -1;
+    auto instance = FFIData::GetData<CJCalendar>(calendarId);
+    if (instance == nullptr) {
+        LOG_ERROR("CJCalendar is nullptr");
+        *errcode = -1;
     }
-    auto nativeCalendar = CJCalendar->calendar_;
+    auto nativeCalendar = instance->calendar_;
     bool result = Native::CalendarManager::GetInstance().DeleteCalendar(*(nativeCalendar.get()));
-    if (result)
-    {
-        HILOG_ERROR("deleteCalendar failed");
-        errcode = -1;
+    if (result) {
+        LOG_ERROR("deleteCalendar failed");
+        *errcode = -1;
     }
 }
 
 int64_t CJCalendarManager::GetCalendar(CCalendarAccount calendarAccount, int32_t* errcode)
 {
-    CalendarAccount account = CalendarAccount(calendarAccount.name, calendarAccount.type, calendarAccount.displayName);
-    CJCalendar *CJCalendar = FFIData::Create<CJCalendar>();
-    if (CJCalendar == nullptr) {
-        HILOG_ERROR("CJCalendar is nullptr");
-        errcode = -1;
+    CalendarAccount account;
+    account.name = calendarAccount.name;
+    account.type = calendarAccount.type;
+    account.displayName = calendarAccount.displayName;
+    auto calendar_ = Native::CalendarManager::GetInstance().GetCalendar(account);
+    if (calendar_ == nullptr) {
+        LOG_ERROR("calendar_ is nullptr");
+        *errcode = -1;
     }
-    CJCalendar->calendar_ = Native::CalendarManager::GetInstance().GetCalendar(account);\
-    if (CJCalendar->calendar_ == nullptr) {
-        HILOG_ERROR("calendar_ is nullptr");
-        errcode = -1;
-    }
-    if (CJCalendar->calendar_->GetId() == -1) {
-        HILOG_ERROR("calendar id is -1");
-        errcode = -1;
-    }
-    return CJCalendar->GetId();
+    auto instance = OHOS::FFI::FFIData::Create<CJCalendar>(calendar_);
+    return instance->GetID();
 }
 
 CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
@@ -104,15 +100,15 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
     auto nativeCalendars = Native::CalendarManager::GetInstance().GetAllCalendars();
     CArrI64 ret = {.head = nullptr, .size = 0};
     if (nativeCalendars.empty()) {
-        HILOG_ERROR("nativeCalendars is empty");
-        errcode = -1;
+        LOG_ERROR("nativeCalendars is empty");
+        *errcode = -1;
         return ret;
     }
-    auto size - nativeCalendars.size();
+    auto size = nativeCalendars.size();
     auto arr = static_cast<int64_t*>(malloc(size * sizeof(int64_t)*size));
     if (arr == nullptr) {
-        HILOG_ERROR("arr is nullptr");
-        errcode = -1;
+        LOG_ERROR("arr is nullptr");
+        *errcode = -1;
         return ret;
     }
     
@@ -129,10 +125,10 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
 
 int64_t CJCalendarManager::EditerEvent(int64_t contextId, char* eventstr, int32_t* errcode)
 {
-    sptr<CJAbilityContext> abilityContext = FFIData::GetContext<CJAbilityContext>(contextId);
+    sptr<CJAbilityContext> abilityContext = FFIData::GetData<CJAbilityContext>(contextId);
     if (abilityContext == nullptr) {
-        HILOG_ERROR("Context is nullptr");
-        errcode = -1;
+        LOG_ERROR("Context is nullptr");
+        *errcode = -1;
     }
 
     int32_t _sessionId = 0;
@@ -150,27 +146,27 @@ int64_t CJCalendarManager::EditerEvent(int64_t contextId, char* eventstr, int32_
 
     callbacks = {
         .onRelease = [_uiContent, _sessionId](int32_t code) {
-            HILOG_INFO("editEvent onRelease callback.");
+            LOG_INFO("editEvent onRelease callback.");
             _uiContent->CloseModalUIExtension(_sessionId);
-            HILOG_INFO("editEvent onRelease done.");
+            LOG_INFO("editEvent onRelease done.");
         },
         .onResult = [_uiContent, _sessionId](int32_t code, const AAFwk::Want &wantRes) {
             auto eventId = wantRes.GetIntParam("eventId", INVALID_EVENT_ID);
-            HILOG_INFO("editEvent onResult. eventId=%{public}d", eventId);
+            LOG_INFO("editEvent onResult. eventId=%{public}d", eventId);
             id = eventId;
         },
         .onReceive = [_uiContent, _sessionId](const AAFwk::WantParams &wantParams) {
-            HILOG_INFO("editEvent onReceive.");
+            LOG_INFO("editEvent onReceive.");
         },
         .onError = [_uiContent, _sessionId](int32_t code, const std::string &event, const std::string &msg) {
-            HILOG_ERROR("editEvent onError.%{public}s", msg.c_str());
+            LOG_ERROR("editEvent onError.%{public}s", msg.c_str());
             uiContent->CloseModalUIExtension(_sessionId);
         },
         .onRemoteReady = [_uiContent, _sessionId](const std::shared_ptr<Ace::ModalUIExtensionProxy> &proxy) {
-            HILOG_INFO("editEvent onRemoteReady.");
+            LOG_INFO("editEvent onRemoteReady.");
         },
         .onDestroy = [_uiContent, _sessionId]{
-            HILOG_INFO("editEvent onDestroy.");
+            LOG_INFO("editEvent onDestroy.");
         },
     };
     Ace::ModalUIExtensionConfig config;

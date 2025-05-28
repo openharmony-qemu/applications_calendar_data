@@ -19,17 +19,21 @@
 #include <vector>
 #include "cj_common_ffi.h"
 #include "ffi_remote_data.h"
+#include "calendar_manager_ffi.h"
+#include "native_util.h"
+#include "native_calendar.h"
 
 namespace OHOS {
 namespace CalendarApi {
 class CJEventFilter : public OHOS::FFI::FFIData {
     DECL_TYPE(CJEventFilter, OHOS::FFI::FFIData)
 public:
-    int64_t FilterById(CArrI64 idsCArr, int32_t* errcode);
-    int64_t FilterByTime(int64_t startTime, int64_t end, int32_t* errcode);
-    int64_t FilterByTitle(char* title, int32_t* errcode);
-private:
-    std::share_ptr<Native::EventFilter> eventFilter_ = nullptr;
+    CJEventFilter();
+    ~CJEventFilter() override = default;
+    static int64_t FilterById(CArrI64 idsCArr, int32_t* errcode);
+    static int64_t FilterByTime(int64_t startTime, int64_t end, int32_t* errcode);
+    static int64_t FilterByTitle(char* title, int32_t* errcode);
+    std::shared_ptr<Native::EventFilter> eventFilter_ = nullptr;
 };
 
 }

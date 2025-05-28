@@ -15,16 +15,16 @@
 #ifndef CALENDAR_MANAGER_FFI_H
 #define CALENDAR_MANAGER_FFI_H
 #include <cstdint>
+#include <string>
 #include <vector>
 #include "cj_common_ffi.h"
 #include "ffi_remote_data.h"
+#include "native_util.h"
 
-namespace OHOS {
-namespace CalendarApi {
 extern "C" {
 struct CCalendarAccount {
     char* name;
-    char* `type`;
+    char* type;
     char* displayName;
 };
 
@@ -32,18 +32,18 @@ struct CLocation {
     char* location;
     float longitude;
     float latitude;
-}
+};
 
 struct CAttendee {
     char* name;
     char* email;
     char* role;
-}
+};
 
 struct CArrAttendee {
     CAttendee* head;
     int64_t size;
-}
+};
 
 struct CRecurrenceRule {
     int64_t recurrenceFrequency;
@@ -57,16 +57,16 @@ struct CRecurrenceRule {
     CArrI64 weeksOfMonth;
     CArrI64 weeksOfYear;
     CArrI64 monthsOfYear;
-}
+};
 
 struct CEventService {
-    char* `type`;
+    char* type;
     char* uri;
     char* description;
-}
+};
 
 struct CEvent {
-    int64_t `type`;
+    int64_t type;
     int64_t startTime;
     int64_t endTime;
     int64_t id;
@@ -81,26 +81,24 @@ struct CEvent {
     CEventService service;
     char* identifier;
     bool isLunar;
-}
+};
 
 struct CArrEvents {
     CEvent* head;
     int64_t size;
-}
+};
 
 struct CCalendarConfig {
     bool enableReminder;
     int64_t color;
 };
 
-
-
 // calendar manager
 FFI_EXPORT void FfiOHOSGetCalendarManager(int64_t contextId, int32_t* errcode);
 FFI_EXPORT int64_t FfiOHOSCalendarManagerCreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
 FFI_EXPORT void FfiOHOSCalendarManagerdeleteCalendar(int64_t calendarId, int32_t* errcode);
 FFI_EXPORT int64_t FfiOHOSCalendarManagerGetCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
-FFI_EXPORT CArr64 FfiOHOSCalendarManagerGetAllCalendars(int32_t* errcode);
+FFI_EXPORT CArrI64 FfiOHOSCalendarManagerGetAllCalendars(int32_t* errcode);
 FFI_EXPORT int64_t FfiOHOSCalendarManagerEditerEvent(int64_t contextId, char* eventstr, int32_t* errcode);
 // calendar
 FFI_EXPORT int64_t FfiOHOSCalendarAddEvent(int64_t id, CEvent event, int32_t* errcode);
@@ -117,6 +115,5 @@ FFI_EXPORT int64_t FfiOHOSEventFilterFilterById(CArrI64 idsCArr, int32_t* errcod
 FFI_EXPORT int64_t FfiOHOSEventFilterFilterByTime(int64_t startTime, int64_t end, int32_t* errcode);
 FFI_EXPORT int64_t FfiOHOSEventFilterFilterByTitle(char* title, int32_t* errcode);
 }
-}
-}
+
 #endif

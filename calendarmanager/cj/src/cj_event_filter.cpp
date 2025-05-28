@@ -17,6 +17,7 @@
 #include "cj_calendar_manager.h"
 #include "native/ffi_remote_data.h"
 #include "ipc_skeleton.h"
+#include "calendar_log.h"
 
 using namespace OHOS;
 using namespace OHOS::AbilityRuntime;
@@ -26,56 +27,57 @@ using namespace OHOS::DataShare;
 
 namespace OHOS {
 namespace CalendarApi {
+CJEventFilter::CJEventFilter(): FFIData() {}
 
 int64_t CJEventFilter::FilterById(CArrI64 idsCArr, int32_t* errcode)
 {
-    std::vector<int64_t> ids;
+    std::vector<int> ids;
     for (int64_t i = 0; i < idsCArr.size; i++) {
-        ids.push_back(idsCArr.head[i]);
+        ids.push_back(static_cast<int>(idsCArr.head[i]));
     }
-    CJEventFilter *cjEventFilter = FFIData::Create<CJEventFilter>();
+    CJEventFilter *cjEventFilter = FFI::FFIData::Create<CJEventFilter>();
     if (cjEventFilter == nullptr) {
-        HILOG_ERROR("cjEventFilter is nullptr");
-        errcode = -1;
+        LOG_ERROR("cjEventFilter is nullptr");
+        *errcode = -1;
     }
 
-    cjEventFilter->eventFilter_ = Native::FilterById(ids);
+    cjEventFilter->eventFilter_ = OHOS::CalendarApi::Native::FilterById(ids);
     if (cjEventFilter->eventFilter_ == nullptr) {
-        HILOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
-        errcode = -1;
+        LOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
+        *errcode = -1;
     }
-    return cjEventFilter->GetId();
+    return cjEventFilter->GetID();
 }
 
 int64_t CJEventFilter::FilterByTime(int64_t startTime, int64_t end, int32_t* errcode)
 {
-    CJEventFilter *cjEventFilter = FFIData::Create<CJEventFilter>();
+    CJEventFilter *cjEventFilter = FFI::FFIData::Create<CJEventFilter>();
     if (cjEventFilter == nullptr) {
-        HILOG_ERROR("cjEventFilter is nullptr");
-        errcode = -1;
+        LOG_ERROR("cjEventFilter is nullptr");
+        *errcode = -1;
     }
-    cjEventFilter->eventFilter_ = Native::FilterByTime(startTime, end);
+    cjEventFilter->eventFilter_ = OHOS::CalendarApi::Native::FilterByTime(startTime, end);
     if (cjEventFilter->eventFilter_ == nullptr) {
-        HILOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
-        errcode = -1;
+        LOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
+        *errcode = -1;
     }
-    return cjEventFilter->GetId();
+    return cjEventFilter->GetID();
 }
 
 int64_t CJEventFilter::FilterByTitle(char* title, int32_t* errcode)
 {
-    CJEventFilter *cjEventFilter = FFIData::Create<CJEventFilter>();
+    CJEventFilter *cjEventFilter = FFI::FFIData::Create<CJEventFilter>();
     std::string eventName = std::to_string(title);
     if (cjEventFilter == nullptr) {
-        HILOG_ERROR("cjEventFilter is nullptr");
-        errcode = -1;
+        LOG_ERROR("cjEventFilter is nullptr");
+        *errcode = -1;
     }
-    cjEventFilter->eventFilter_ = Native::FilterByTitle(eventName);
+    cjEventFilter->eventFilter_ = OHOS::CalendarApi::Native::FilterByTitle(eventName);
     if (cjEventFilter->eventFilter_ == nullptr) {
-        HILOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
-        errcode = -1;
+        LOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
+        *errcode = -1;
     }
-    return cjEventFilter->GetId();
+    return cjEventFilter->GetID();
 }
 
 }

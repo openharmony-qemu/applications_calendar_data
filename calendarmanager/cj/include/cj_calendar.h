@@ -17,8 +17,10 @@
 
 #include <cstdint>
 #include <vector>
+#include "calendar_manager_ffi.h"
 #include "cj_common_ffi.h"
 #include "ffi_remote_data.h"
+#include "native_calendar.h"
 
 namespace OHOS {
 namespace CalendarApi {
@@ -27,6 +29,9 @@ char *IMallocCString(const std::string &origin);
 class CJCalendar : public OHOS::FFI::FFIData {
     DECL_TYPE(CJCalendar, OHOS::FFI::FFIData)
 public:
+    explicit CJCalendar(std::shared_ptrNative::Calendar calendar);
+    ~CJCalendar() override = default;
+    std::shared_ptrNative::Calendar& GetNative();
     Event CEventToEvent(CEvent event);
     int64_t AddEvent(CEvent event, int32_t* errcode);
     void AddEvents(CArrEvents event, int32_t* errcode);
@@ -37,8 +42,7 @@ public:
     CCalendarConfig GetConfig(int32_t* errcode);
     void SetConfig(CCalendarConfig config, int32_t* errcode);
     CCalendarAccount GetAccount(int32_t* errcode);
-
-    std::share_ptr<Native::Calendar> calendar_ = nullptr;
+    std::shared_ptr<OHOS::CalendarApi::Native::Calendar> calendar_ = nullptr;
 };
 
 }
