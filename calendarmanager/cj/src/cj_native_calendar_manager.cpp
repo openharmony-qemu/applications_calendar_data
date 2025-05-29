@@ -62,7 +62,7 @@ std::shared_ptr<Calendar> CJNativeCalendarManager::CreateCalendar(const Calendar
     int errNum = 0;
     int index = 0;
     do {
-        index = DataShareHelperManager::GetInstance().Insert(*(m_calendarUri.get()), valueEvent);
+        index = CJDataShareHelperManager::GetInstance().Insert(*(m_calendarUri.get()), valueEvent);
         if (index <= 0) {
             LOG_WARN("Insert index %{public}d", index);
             LOG_WARN("Insert indexNum %{public}d", errNum);
@@ -99,7 +99,7 @@ std::shared_ptr<Calendar> CJNativeCalendarManager::GetCalendar(const std::option
     }
     std::vector<std::string> columns = {"_id", "account_name", "account_type", "calendar_displayName"};
     DataShare::DatashareBusinessError error;
-    auto resultSet = DataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
+    auto resultSet = CJDataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
     if (!resultSet) {
         LOG_ERROR("query failed %{public}d, %{public}s", error.GetCode(), error.GetMessage().c_str());
         return nullptr;
@@ -134,7 +134,7 @@ bool CJNativeCalendarManager::DeleteCalendar(const Calendar &calendar)
     int errNum = 0;
     int result = 0;
     do {
-        result = DataShareHelperManager::GetInstance().Delete(*(m_calendarUri.get()), predicates);
+        result = CJDataShareHelperManager::GetInstance().Delete(*(m_calendarUri.get()), predicates);
         if (result <= 0) {
             LOG_WARN("DeleteCalendar %{public}d", result);
             LOG_WARN("DeleteCalendarNum %{public}d", errNum);

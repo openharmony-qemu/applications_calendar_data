@@ -20,9 +20,11 @@
 #include "native/ffi_remote_data.h"
 #include "ipc_skeleton.h"
 #include "calendar_log.h"
-#include "native_calendar.h"
+#include "cj_native_calendar.h"
 #include "native_util.h"
 #include "native_calendar_manager.h"
+#include "cj_native_calendar_manager.h"
+#include "cj_calendar_env.h"
 #include "calendar_env.h"
 
 using namespace OHOS;
@@ -43,21 +45,22 @@ void CJCalendarManager::GetCalendarManager(int64_t contextId, int32_t* errcode)
         *errcode = -1;
     }
 
-    OHOS::CalendarApi::CJCalendarEnv::Init(context)
+    OHOS::CalendarApi::CJCalendarEnv::GetInstance().Init(context->GetAbilityContext());
 }
 
-int64_t CJCalendarManager::CreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode)
+int64_t CJCalendarManager::CreateCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode)
 {
     CalendarAccount account;
     account.name = calendarAccount.name;
     account.type = calendarAccount.type;
     account.displayName = calendarAccount.displayName;
 
-    auto calendar_ = Native::CalendarManager::GetInstance().CreateCalendar(account);
+    auto calendar_ = Native::CJNativeCalendarManager::GetInstance().CreateCalendar(account);
     if (calendar_ == nullptr) {
         LOG_ERROR("calendar_ is nullptr");
         *errcode = -1;
     }
+    *calendarId = calendar_->GetId();
     auto instance = OHOS::FFI::FFIData::Create<CJCalendar>(calendar_);
     return instance->GetID();
 }
@@ -70,7 +73,7 @@ void CJCalendarManager::DeleteCalendar(int64_t calendarId, int32_t* errcode)
         *errcode = -1;
     }
     auto nativeCalendar = instance->calendar_;
-    bool result = Native::CalendarManager::GetInstance().DeleteCalendar(*(nativeCalendar.get()));
+    bool result = Native::CJNativeCalendarManager::GetInstance().DeleteCalendar(*(nativeCalendar.get()));
     if (result) {
         LOG_ERROR("deleteCalendar failed");
         *errcode = -1;
@@ -83,7 +86,7 @@ int64_t CJCalendarManager::GetCalendar(CCalendarAccount calendarAccount, int32_t
     account.name = calendarAccount.name;
     account.type = calendarAccount.type;
     account.displayName = calendarAccount.displayName;
-    auto calendar_ = Native::CalendarManager::GetInstance().GetCalendar(account);
+    auto calendar_ = Native::CJNativeCalendarManager::GetInstance().GetCalendar(account);
     if (calendar_ == nullptr) {
         LOG_ERROR("calendar_ is nullptr");
         *errcode = -1;
@@ -131,7 +134,7 @@ int64_t CJCalendarManager::EditerEvent(int64_t contextId, char* eventstr, int32_
 
     int32_t _sessionId = 0;
     Ace::UIContent *_uiContent = nullptr;
-    std::string event = std::to_string(eventstr);
+    std::string event = eventstr;
     int64_t id = 0;
 
     _uiContent = abilityContext->GetUIContent();

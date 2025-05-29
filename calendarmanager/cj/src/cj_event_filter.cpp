@@ -18,6 +18,7 @@
 #include "native/ffi_remote_data.h"
 #include "ipc_skeleton.h"
 #include "calendar_log.h"
+#include "cj_event_filter.h"
 
 using namespace OHOS;
 using namespace OHOS::AbilityRuntime;
@@ -67,11 +68,11 @@ int64_t CJEventFilter::FilterByTime(int64_t startTime, int64_t end, int32_t* err
 int64_t CJEventFilter::FilterByTitle(char* title, int32_t* errcode)
 {
     CJEventFilter *cjEventFilter = FFI::FFIData::Create<CJEventFilter>();
-    std::string eventName = std::to_string(title);
     if (cjEventFilter == nullptr) {
         LOG_ERROR("cjEventFilter is nullptr");
         *errcode = -1;
     }
+    std::string eventName = title;
     cjEventFilter->eventFilter_ = OHOS::CalendarApi::Native::FilterByTitle(eventName);
     if (cjEventFilter->eventFilter_ == nullptr) {
         LOG_ERROR("cjEventFilter->eventFilter_ is nullptr");

@@ -20,6 +20,7 @@ ohos_shared_library("cj_calendar_manager_ffi") {
     "../native/include",
     "include",
   ]
+  configs = [ "//build/config/compiler:exceptions" ]
 
   sources = [
     "../native/src/calendar_env.cpp",

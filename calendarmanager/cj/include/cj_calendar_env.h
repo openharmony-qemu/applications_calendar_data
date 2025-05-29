@@ -25,7 +25,6 @@ public:
     static void Init(std::shared_ptr<OHOS::AbilityRuntime::Context> context);
     std::shared_ptr<OHOS::AbilityRuntime::Context> getContext();
 private:
-    bool GetContext(std::shared_ptr<OHOS::AbilityRuntime::Context> context);
     std::shared_ptr<OHOS::AbilityRuntime::Context> m_context;
     bool hasInited = false;
 };

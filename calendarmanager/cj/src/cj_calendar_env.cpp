@@ -30,25 +30,15 @@
 
 namespace OHOS::CalendarApi {
 
-bool CJCalendarEnv::GetContext(std::shared_ptr<OHOS::AbilityRuntime::Context> context)
-{
-    m_context = context;
-    if (m_context == nullptr) {
-        LOG_ERROR("GetStageModeContext contextRtm == nullptr.");
-        return false;
-    }
-    return true;
-}
-
 void CJCalendarEnv::Init(std::shared_ptr<OHOS::AbilityRuntime::Context> context)
 {
     if (hasInited) {
         return;
     }
-    LOG_INFO("CalendarEnvNapi Init.");
-    auto status = GetContext(context);
-    if (status) {
-        LOG_ERROR("CalendarEnvNapi::Init error");
+    LOG_INFO("CJCalendarEnv Init.");
+    m_context = context;
+    if (m_context == nullptr) {
+        LOG_ERROR("CJCalendarEnv::Init error");
         return;
     }
     std::string bundleName = m_context->GetBundleName();

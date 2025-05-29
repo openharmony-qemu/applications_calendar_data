@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
-#include "data_share_helper_manager.h"
+#include "cj_data_share_helper_manager.h"
 #include "calendar_log.h"
 #include "calendar_env.h"
-#include "napi_env.h"
+#include "cj_calendar_env.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
 #include <thread>
@@ -43,7 +43,7 @@ void CJDataShareHelperManager::SetDataShareHelper(std::shared_ptr<DataShare::Dat
 std::shared_ptr<DataShareHelper> CJDataShareHelperManager::CreateDataShareHelper()
 {
     std::lock_guard<std::recursive_mutex> lock(dataShareLock);
-    DataShareHelperManager::SetDataShareHelperTimer(DESTROY_DATASHARE_DELAY);
+    CJDataShareHelperManager::SetDataShareHelperTimer(DESTROY_DATASHARE_DELAY);
     if (m_dataShareHelper) {
         return m_dataShareHelper;
     }
@@ -53,21 +53,21 @@ std::shared_ptr<DataShareHelper> CJDataShareHelperManager::CreateDataShareHelper
             Security::AccessToken::AccessTokenKit::VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), PERMISSION_NAME);
         LOG_INFO("CreateDataShareHelper verify access result=%{public}d", ret);
         if (ret == Security::AccessToken::PERMISSION_GRANTED) {
-            if (!CalendarEnvNapi::GetInstance().getContext()) {
-                LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
+            if (!CJCalendarEnv::GetInstance().getContext()) {
+                LOG_INFO("CJCalendarEnv::GetInstance().getContext() is null");
                 break;
             }
             m_dataShareHelper = DataShareHelper::Creator(
-                CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_WHOLE_URI);
+                CJCalendarEnv::GetInstance().getContext()->GetToken(), CALENDAR_DATA_WHOLE_URI);
             LOG_INFO("CreateDataShareHelper dataShareHelper create with whole authority result=%{public}d",
                 m_dataShareHelper != nullptr);
         } else {
-            if (!CalendarEnvNapi::GetInstance().getContext()) {
-                LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
+            if (!CJCalendarEnv::GetInstance().getContext()) {
+                LOG_INFO("CJCalendarEnv::GetInstance().getContext() is null");
                 break;
             }
             m_dataShareHelper =
-                DataShareHelper::Creator(CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_URI);
+                DataShareHelper::Creator(CJCalendarEnv::GetInstance().getContext()->GetToken(), CALENDAR_DATA_URI);
             LOG_INFO("CreateDataShareHelper dataShareHelper create with low authority result=%{public}d",
                 m_dataShareHelper != nullptr);
         }

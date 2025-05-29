@@ -29,7 +29,7 @@ class CJCalendarManager : public OHOS::FFI::FFIData {
     DECL_TYPE(CJCalendarManager, OHOS::FFI::FFIData)
 public:
     static void GetCalendarManager(int64_t contextId, int32_t* errcode);
-    static int64_t CreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
+    static int64_t CreateCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
     static void DeleteCalendar(int64_t calendarId, int32_t* errcode);
     static int64_t GetCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
     static CArrI64 GetAllCalendars(int32_t* errcode);

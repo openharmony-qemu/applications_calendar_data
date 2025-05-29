@@ -26,14 +26,14 @@ extern "C" {
         return OHOS::CalendarApi::CJCalendarManager::GetCalendarManager(contextId, errcode);
     }
 
-    int64_t FfiOHOSCalendarManagerCreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode)
+    int64_t FfiOHOSCalendarManagerCreateCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode)
     {
-        return OHOS::CalendarApi::CJCalendarManager::CreateCalendar(calendarAccount, errcode);
+        return OHOS::CalendarApi::CJCalendarManager::CreateCalendar(calendarAccount, calendarId, errcode);
     }
 
     void FfiOHOSCalendarManagerdeleteCalendar(int64_t calendarId, int32_t* errcode)
     {
-        return OHOS::CalendarApi::CJCalendarManager::deleteCalendar(calendarId, errcode);
+        return OHOS::CalendarApi::CJCalendarManager::DeleteCalendar(calendarId, errcode);
     }
 
     int64_t FfiOHOSCalendarManagerGetCalendar(CCalendarAccount calendarAccount, int32_t* errcode)
@@ -53,7 +53,7 @@ extern "C" {
 
     int64_t FfiOHOSCalendarAddEvent(int64_t id, CEvent event, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;
@@ -63,7 +63,7 @@ extern "C" {
 
     void FfiOHOSCalendarAddEvents(int64_t id, CArrEvents event, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;
@@ -73,7 +73,7 @@ extern "C" {
 
     void FfiOHOSCalendarDeleteEvent(int64_t id, int64_t eventId, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;
@@ -83,7 +83,7 @@ extern "C" {
 
     void FfiOHOSCalendarDeleteEvents(int64_t id, CArrI64 eventIds, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;
@@ -93,7 +93,7 @@ extern "C" {
 
     void FfiOHOSCalendarUpdateEvent(int64_t id, CEvent event, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;
@@ -103,7 +103,7 @@ extern "C" {
 
     CArrEvents FfiOHOSCalendarGetEvents(int64_t id, int64_t eventFilterId, CArrString eventKey, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;
@@ -113,7 +113,7 @@ extern "C" {
 
     CCalendarConfig FfiOHOSCalendarGetConfig(int64_t id, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;
@@ -123,7 +123,7 @@ extern "C" {
 
     void FfiOHOSCalendarSetConfig(int64_t id, CCalendarConfig cCalendarConfig, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;
@@ -133,7 +133,7 @@ extern "C" {
 
     CCalendarAccount FfiOHOSCalendarGetAccount(int64_t id, int32_t* errcode)
     {
-        auto instance = OHOS::FFI::GetData<OHOS::CalendarApi::CJCalendar>(id);
+        auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = -1;

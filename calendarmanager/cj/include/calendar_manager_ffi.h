@@ -37,7 +37,7 @@ struct CLocation {
 struct CAttendee {
     char* name;
     char* email;
-    char* role;
+    int64_t role;
 };
 
 struct CArrAttendee {
@@ -95,7 +95,7 @@ struct CCalendarConfig {
 
 // calendar manager
 FFI_EXPORT void FfiOHOSGetCalendarManager(int64_t contextId, int32_t* errcode);
-FFI_EXPORT int64_t FfiOHOSCalendarManagerCreateCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
+FFI_EXPORT int64_t FfiOHOSCalendarManagerCreateCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
 FFI_EXPORT void FfiOHOSCalendarManagerdeleteCalendar(int64_t calendarId, int32_t* errcode);
 FFI_EXPORT int64_t FfiOHOSCalendarManagerGetCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
 FFI_EXPORT CArrI64 FfiOHOSCalendarManagerGetAllCalendars(int32_t* errcode);
