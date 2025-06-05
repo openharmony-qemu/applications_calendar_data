@@ -384,7 +384,6 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     valuesBucket.Put("important_event_type", event.type);
     valuesBucket.Put("dtstart", event.startTime);
     valuesBucket.Put("dtend", event.endTime);
-    valuesBucket.Put("channel_id", channelId);
 
     BuildEventLocation(valuesBucket, event);
     BuildEventService(valuesBucket, event);
@@ -398,13 +397,13 @@ DataShare::DataShareValuesBucket BuildValueEvent(const Event &event, int calenda
     if (event.timeZone.has_value()) {
         valuesBucket.Put("eventTimezone", event.timeZone.value());
     }
-    if (event.isAllDay.has_value()) {
+    if (event.isAllDay.has_value() && event.isAllDay.value() != false) {
         valuesBucket.Put("allDay", event.isAllDay.value());
     }
     if (event.identifier.has_value()) {
         valuesBucket.Put("identifier", event.identifier.value());
     }
-    if (event.isLunar.has_value()) {
+    if (event.isLunar.has_value() && event.isLunar.value()!= false) {
         valuesBucket.Put("event_calendar_type", event.isLunar.value());
     }
     return valuesBucket;

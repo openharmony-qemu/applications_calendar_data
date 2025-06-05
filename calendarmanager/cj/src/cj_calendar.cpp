@@ -137,7 +137,7 @@ namespace CalendarApi {
             LOG_ERROR("calendar_ is nullptr");
             *errcode = -1;
         }
-        native::DumpEvent(nativeEvent);
+        Native::DumpEvent(nativeEvent);
         int64_t eventId = cc->AddEvent(nativeEvent);
         return eventId;
     }
@@ -251,7 +251,7 @@ namespace CalendarApi {
                 arr.head[i].attendee.head[j].name = IMallocCString(events[i].attendees[j].name);
                 arr.head[i].attendee.head[j].email = IMallocCString(events[i].attendees[j].email);
                 if (events[i].attendees[j].role.has_value()) {
-                    arr.head[i].attendee.head[j].role = IMallocCString(events[i].attendees[j].role.value());
+                    arr.head[i].attendee.head[j].role = events[i].attendees[j].role.value();
                 }
             }
             if (events[i].timeZone.has_value()) {

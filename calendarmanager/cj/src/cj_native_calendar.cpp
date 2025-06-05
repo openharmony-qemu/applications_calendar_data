@@ -67,7 +67,11 @@ void CJNativeCalendar::InsertReminders(int eventId, vector<int> reminders)
 int CJNativeCalendar::AddEventInfo(const Event& event, int channelId)
 {
     const auto valueEvent = BuildValueEvent(event, m_id, channelId, false);
-    auto eventId = CJDataShareHelperManager::GetInstance().Insert(*(m_eventUri.get()), valueEvent);
+    uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
+    auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
+    auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
+    Uri eventUri(eventUrl + bundleName_tokeId);
+    auto eventId = CJDataShareHelperManager::GetInstance().Insert(eventUri, valueEvent);
     LOG_INFO("Insert Event eventId %{private}d", eventId);
     if (eventId <= 0) {
         return eventId;
@@ -93,7 +97,7 @@ int CJNativeCalendar::AddEventInfo(const Event& event, int channelId)
 
 int CJNativeCalendar::AddEvent(const Event& event)
 {
-    return Calendar::AddEventInfo(event, 0);
+    return CJNativeCalendar::AddEventInfo(event, 0);
 }
 #define SUPPORT_BATCH_INSERT 0
 
@@ -114,7 +118,7 @@ int CJNativeCalendar::AddEvents(const std::vector<Event>& events)
     int count = 0;
     int channelId = 0;
     for (const auto &event : events) {
-        auto index = Calendar::AddEventInfo(event, channelId);
+        auto index = CJNativeCalendar::AddEventInfo(event, channelId);
         if (index > 0) {
             count++;
         }

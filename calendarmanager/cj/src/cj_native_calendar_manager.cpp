@@ -56,7 +56,7 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
     return valuesBucket;
 }
 
-std::shared_ptr<Calendar> CJNativeCalendarManager::CreateCalendar(const CalendarAccount &account)
+std::shared_ptr<CJNativeCalendar> CJNativeCalendarManager::CreateCalendar(const CalendarAccount &account)
 {
     auto valueEvent = BuildValueCalendarAccount(account);
     int errNum = 0;
@@ -75,7 +75,7 @@ std::shared_ptr<Calendar> CJNativeCalendarManager::CreateCalendar(const Calendar
         LOG_ERROR("Insert failed");
         return nullptr;
     }
-    return std::make_shared<Calendar>(account, index);
+    return std::make_shared<CJNativeCalendar>(account, index);
 }
 
 DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &account)
@@ -88,7 +88,7 @@ DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &accoun
     return predicates;
 }
 
-std::shared_ptr<Calendar> CJNativeCalendarManager::GetCalendar(const std::optional<CalendarAccount> &account)
+std::shared_ptr<CJNativeCalendar> CJNativeCalendarManager::GetCalendar(const std::optional<CalendarAccount> &account)
 {
     DataShare::DataSharePredicates predicates;
     if (account) {
@@ -107,15 +107,15 @@ std::shared_ptr<Calendar> CJNativeCalendarManager::GetCalendar(const std::option
     auto calendarSet = ResultSetToCalendars(resultSet);
     if (calendarSet.empty()) {
         LOG_WARN("calendarSet empty");
-        return std::make_shared<Calendar>(-1);
+        return std::make_shared<CJNativeCalendar>(-1);
     }
     LOG_INFO("GetCalendar successed");
     return std::move(calendarSet.at(0));
 }
 
-std::vector<std::shared_ptr<Calendar>> CJNativeCalendarManager::GetAllCalendars()
+std::vector<std::shared_ptr<CJNativeCalendar>> CJNativeCalendarManager::GetAllCalendars()
 {
-    std::vector<std::shared_ptr<Calendar>> results;
+    std::vector<std::shared_ptr<CJNativeCalendar>> results;
     DataShare::DataSharePredicates predicates;
     std::vector<std::string> columns = {"_id", "account_name", "account_type", "calendar_displayName"};
     DataShare::DatashareBusinessError error;
@@ -127,10 +127,10 @@ std::vector<std::shared_ptr<Calendar>> CJNativeCalendarManager::GetAllCalendars(
     return ResultSetToCalendars(queryResult);
 }
 
-bool CJNativeCalendarManager::DeleteCalendar(const CJNativeCalendar &calendar)
+bool CJNativeCalendarManager::DeleteCalendar(const CJNativeCalendar &CJNativeCalendar)
 {
     DataShare::DataSharePredicates predicates;
-    predicates.EqualTo("_id", calendar.GetId());
+    predicates.EqualTo("_id", CJNativeCalendar.GetId());
     int errNum = 0;
     int result = 0;
     do {

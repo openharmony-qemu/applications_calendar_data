@@ -19,7 +19,7 @@
 #include <vector>
 #include "cj_common_ffi.h"
 #include "ffi_remote_data.h"
-#include "native_util.h"
+#include "cj_native_util.h"
 
 extern "C" {
 struct CCalendarAccount {

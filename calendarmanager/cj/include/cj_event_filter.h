@@ -20,7 +20,7 @@
 #include "cj_common_ffi.h"
 #include "ffi_remote_data.h"
 #include "calendar_manager_ffi.h"
-#include "native_util.h"
+#include "cj_native_util.h"
 #include "native_calendar.h"
 
 namespace OHOS {
