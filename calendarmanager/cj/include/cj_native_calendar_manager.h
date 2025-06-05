@@ -19,8 +19,10 @@
 #include <map>
 #include "singleton.h"
 #include "calendar_define.h"
-#include "native_calendar.h"
+#include "cj_native_calendar.h"
 #include "uri.h"
+#include "datashare_result_set.h"
+
 using Uri = OHOS::Uri;
 namespace OHOS::CalendarApi::Native {
 class CJNativeCalendarManager {
@@ -29,10 +31,10 @@ public:
     CJNativeCalendarManager();
     ~CJNativeCalendarManager() {};
     static bool IsDefaultAccount(const CalendarAccount& account);
-    std::shared_ptr<Calendar> CreateCalendar(const CalendarAccount& account);
-    std::shared_ptr<Calendar> GetCalendar(const std::optional<CalendarAccount>& account = std::nullopt);
-    std::vector<std::shared_ptr<Calendar>> GetAllCalendars();
-    bool DeleteCalendar(const Calendar& calendar);
+    std::shared_ptr<CJNativeCalendar> CreateCalendar(const CalendarAccount& account);
+    std::shared_ptr<CJNativeCalendar> GetCalendar(const std::optional<CalendarAccount>& account = std::nullopt);
+    std::vector<std::shared_ptr<CJNativeCalendar>> GetAllCalendars();
+    bool DeleteCalendar(const CJNativeCalendar& calendar);
 private:
     std::unique_ptr<Uri> m_calendarUri;
 };

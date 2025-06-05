@@ -18,7 +18,7 @@
 #include "calendar_log.h"
 #include "calendar_env.h"
 #include "data_ability_helper.h"
-#include "native_util.h"
+#include "cj_native_util.h"
 
 namespace {
     const string eventUrl = "datashare:///calendardata/Events";

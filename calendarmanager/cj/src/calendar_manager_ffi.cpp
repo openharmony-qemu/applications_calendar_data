@@ -36,9 +36,9 @@ extern "C" {
         return OHOS::CalendarApi::CJCalendarManager::DeleteCalendar(calendarId, errcode);
     }
 
-    int64_t FfiOHOSCalendarManagerGetCalendar(CCalendarAccount calendarAccount, int32_t* errcode)
+    int64_t FfiOHOSCalendarManagerGetCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode)
     {
-        return OHOS::CalendarApi::CJCalendarManager::GetCalendar(calendarAccount, errcode);
+        return OHOS::CalendarApi::CJCalendarManager::GetCalendar(calendarAccount, calendarId, errcode);
     }
 
     CArrI64 FfiOHOSCalendarManagerGetAllCalendars(int32_t* errcode)
@@ -46,9 +46,9 @@ extern "C" {
         return OHOS::CalendarApi::CJCalendarManager::GetAllCalendars(errcode);
     }
 
-    int64_t FfiOHOSCalendarManagerEditerEvent(int64_t contextId, char* eventstr, int32_t* errcode)
+    int64_t FfiOHOSCalendarManagerEditerEvent(char* eventstr, int32_t* errcode)
     {
-        return OHOS::CalendarApi::CJCalendarManager::EditerEvent(contextId, eventstr, errcode);
+        return OHOS::CalendarApi::CJCalendarManager::EditerEvent(eventstr, errcode);
     }
 
     int64_t FfiOHOSCalendarAddEvent(int64_t id, CEvent event, int32_t* errcode)

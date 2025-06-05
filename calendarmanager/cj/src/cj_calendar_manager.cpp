@@ -21,11 +21,11 @@
 #include "ipc_skeleton.h"
 #include "calendar_log.h"
 #include "cj_native_calendar.h"
-#include "native_util.h"
-#include "native_calendar_manager.h"
+#include "cj_native_util.h"
 #include "cj_native_calendar_manager.h"
 #include "cj_calendar_env.h"
 #include "calendar_env.h"
+#include "ui_content.h"
 
 using namespace OHOS;
 using namespace OHOS::AbilityRuntime;
@@ -72,15 +72,20 @@ void CJCalendarManager::DeleteCalendar(int64_t calendarId, int32_t* errcode)
         LOG_ERROR("CJCalendar is nullptr");
         *errcode = -1;
     }
-    auto nativeCalendar = instance->calendar_;
+    auto nativeCalendar = instance->GetNative();
+    if (nativeCalendar == nullptr) {
+        LOG_ERROR("nativeCalendar is nullptr");
+        *errcode = -1;
+    }
+    
     bool result = Native::CJNativeCalendarManager::GetInstance().DeleteCalendar(*(nativeCalendar.get()));
-    if (result) {
+    if (!result) {
         LOG_ERROR("deleteCalendar failed");
         *errcode = -1;
     }
 }
 
-int64_t CJCalendarManager::GetCalendar(CCalendarAccount calendarAccount, int32_t* errcode)
+int64_t CJCalendarManager::GetCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode)
 {
     CalendarAccount account;
     account.name = calendarAccount.name;
@@ -91,6 +96,7 @@ int64_t CJCalendarManager::GetCalendar(CCalendarAccount calendarAccount, int32_t
         LOG_ERROR("calendar_ is nullptr");
         *errcode = -1;
     }
+    *calendarId = calendar_->GetId();
     auto instance = OHOS::FFI::FFIData::Create<CJCalendar>(calendar_);
     return instance->GetID();
 }
@@ -124,20 +130,27 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
     return ret;
 }
 
-int64_t CJCalendarManager::EditerEvent(int64_t contextId, char* eventstr, int32_t* errcode)
+int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
 {
-    sptr<CJAbilityContext> abilityContext = FFIData::GetData<CJAbilityContext>(contextId);
-    if (abilityContext == nullptr) {
-        LOG_ERROR("Context is nullptr");
+    auto aContext = CJCalendarEnv::GetInstance().getContext();
+    if (aContext == nullptr) {
+        LOG_ERROR("aContext is nullptr");
         *errcode = -1;
     }
-
+    auto abilityContext = OHOS::AbilityRuntime::Context::ConvertTo<AbilityRuntime::AbilityContext>(aContext);
+    if (abilityContext == nullptr) {
+        LOG_ERROR("abilityContext is nullptr");
+        *errcode = -1;
+    }
     int32_t _sessionId = 0;
-    Ace::UIContent *_uiContent = nullptr;
     std::string event = eventstr;
     int64_t id = 0;
 
-    _uiContent = abilityContext->GetUIContent();
+    auto _uiContent = abilityContext->GetUIContent();
+    if (_uiContent == nullptr) {
+        LOG_ERROR("uiContent is nullptr");
+        *errcode = -1;
+    }
     AAFwk::Want want;
     want.SetElementName("com.ohos.calendardata", "EditorUIExtensionAbility");
     const std::string uiExtType = "sys/commonUI";
@@ -151,17 +164,17 @@ int64_t CJCalendarManager::EditerEvent(int64_t contextId, char* eventstr, int32_
             _uiContent->CloseModalUIExtension(_sessionId);
             LOG_INFO("editEvent onRelease done.");
         },
-        .onResult = [_uiContent, _sessionId](int32_t code, const AAFwk::Want &wantRes) {
+        .onResult = [_uiContent, _sessionId, &id](int32_t code, const AAFwk::Want &wantRes) {
             auto eventId = wantRes.GetIntParam("eventId", INVALID_EVENT_ID);
             LOG_INFO("editEvent onResult. eventId=%{public}d", eventId);
-            id = eventId;
+            id = static_cast<int64_t>(eventId);
         },
         .onReceive = [_uiContent, _sessionId](const AAFwk::WantParams &wantParams) {
             LOG_INFO("editEvent onReceive.");
         },
         .onError = [_uiContent, _sessionId](int32_t code, const std::string &event, const std::string &msg) {
             LOG_ERROR("editEvent onError.%{public}s", msg.c_str());
-            uiContent->CloseModalUIExtension(_sessionId);
+            _uiContent->CloseModalUIExtension(_sessionId);
         },
         .onRemoteReady = [_uiContent, _sessionId](const std::shared_ptr<Ace::ModalUIExtensionProxy> &proxy) {
             LOG_INFO("editEvent onRemoteReady.");

@@ -22,7 +22,7 @@
 namespace OHOS::CalendarApi {
 class CJCalendarEnv : public OHOS::Singleton<CJCalendarEnv> {
 public:
-    static void Init(std::shared_ptr<OHOS::AbilityRuntime::Context> context);
+    void Init(std::shared_ptr<OHOS::AbilityRuntime::Context> context);
     std::shared_ptr<OHOS::AbilityRuntime::Context> getContext();
 private:
     std::shared_ptr<OHOS::AbilityRuntime::Context> m_context;

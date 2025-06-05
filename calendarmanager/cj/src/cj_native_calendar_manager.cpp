@@ -13,11 +13,11 @@
  * limitations under the License.
  */
 
-#include "native_calendar_manager.h"
-#include "data_share_helper_manager.h"
+#include "cj_native_calendar_manager.h"
+#include "cj_data_share_helper_manager.h"
 #include "calendar_env.h"
 #include "calendar_log.h"
-#include "native_util.h"
+#include "cj_native_util.h"
 
 namespace OHOS::CalendarApi::Native {
 DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &account);
@@ -127,7 +127,7 @@ std::vector<std::shared_ptr<Calendar>> CJNativeCalendarManager::GetAllCalendars(
     return ResultSetToCalendars(queryResult);
 }
 
-bool CJNativeCalendarManager::DeleteCalendar(const Calendar &calendar)
+bool CJNativeCalendarManager::DeleteCalendar(const CJNativeCalendar &calendar)
 {
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("_id", calendar.GetId());

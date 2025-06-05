@@ -21,7 +21,7 @@
 #include "datashare_helper.h"
 
 namespace OHOS::CalendarApi {
-class CJDataShareHelperManager : public OHOS::Singleton<DataShareHelperManager> {
+class CJDataShareHelperManager : public OHOS::Singleton<CJDataShareHelperManager> {
 public:
     void SetDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> helper);
      /**

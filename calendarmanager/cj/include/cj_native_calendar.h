@@ -26,10 +26,10 @@ class CJNativeCalendar final {
 public:
     CJNativeCalendar(int id);
     CJNativeCalendar(CalendarAccount account, int id);
-    CJNativeCalendar(Calendar&& other) : m_account(std::move(other.m_account)), m_id(other.m_id)
+    CJNativeCalendar(CJNativeCalendar&& other) : m_account(std::move(other.m_account)), m_id(other.m_id)
     {
     }
-    CJNativeCalendar(const Calendar& other) : m_account(other.m_account), m_id(other.m_id)
+    CJNativeCalendar(const CJNativeCalendar& other) : m_account(other.m_account), m_id(other.m_id)
     {
     }
 

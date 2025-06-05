@@ -30,8 +30,8 @@ struct CCalendarAccount {
 
 struct CLocation {
     char* location;
-    float longitude;
-    float latitude;
+    double longitude;
+    double latitude;
 };
 
 struct CAttendee {
@@ -97,9 +97,9 @@ struct CCalendarConfig {
 FFI_EXPORT void FfiOHOSGetCalendarManager(int64_t contextId, int32_t* errcode);
 FFI_EXPORT int64_t FfiOHOSCalendarManagerCreateCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
 FFI_EXPORT void FfiOHOSCalendarManagerdeleteCalendar(int64_t calendarId, int32_t* errcode);
-FFI_EXPORT int64_t FfiOHOSCalendarManagerGetCalendar(CCalendarAccount calendarAccount, int32_t* errcode);
+FFI_EXPORT int64_t FfiOHOSCalendarManagerGetCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
 FFI_EXPORT CArrI64 FfiOHOSCalendarManagerGetAllCalendars(int32_t* errcode);
-FFI_EXPORT int64_t FfiOHOSCalendarManagerEditerEvent(int64_t contextId, char* eventstr, int32_t* errcode);
+FFI_EXPORT int64_t FfiOHOSCalendarManagerEditerEvent(char* eventstr, int32_t* errcode);
 // calendar
 FFI_EXPORT int64_t FfiOHOSCalendarAddEvent(int64_t id, CEvent event, int32_t* errcode);
 FFI_EXPORT void FfiOHOSCalendarAddEvents(int64_t id, CArrEvents event, int32_t* errcode);

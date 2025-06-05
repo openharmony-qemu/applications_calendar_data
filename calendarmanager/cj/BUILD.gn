@@ -24,11 +24,12 @@ ohos_shared_library("cj_calendar_manager_ffi") {
 
   sources = [
     "../native/src/calendar_env.cpp",
-    "../native/src/data_share_helper_manager.cpp",
+    "src/cj_calendar_env.cpp",
+    "src/cj_data_share_helper_manager.cpp",
     "../native/src/event_filter.cpp",
-    "../native/src/native_calendar.cpp",
-    "../native/src/native_calendar_manager.cpp",
-    "../native/src/native_util.cpp",
+    "src/cj_native_calendar.cpp",
+    "src/cj_native_calendar_manager.cpp",
+    "src/cj_native_util.cpp",
     "src/calendar_manager_ffi.cpp",
     "src/cj_calendar.cpp",
     "src/cj_calendar_manager.cpp",
