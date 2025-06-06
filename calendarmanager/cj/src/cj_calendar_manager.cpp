@@ -135,7 +135,7 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
     return ret;
 }
 
-shared_ptr<AbilityRuntime::AbilityContext> CJCalendarManager::GetAbilityContext(int32_t* errcode)
+std::shared_ptr<AbilityRuntime::AbilityContext> CJCalendarManager::GetAbilityContext(int32_t* errcode)
 {
     auto aContext = CJCalendarEnv::GetInstance().getContext();
     if (aContext == nullptr) {
