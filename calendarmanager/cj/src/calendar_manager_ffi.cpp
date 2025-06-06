@@ -155,5 +155,4 @@ extern "C" {
     {
         return OHOS::CalendarApi::CJEventFilter::FilterByTitle(title, errcode);
     }
-
 }

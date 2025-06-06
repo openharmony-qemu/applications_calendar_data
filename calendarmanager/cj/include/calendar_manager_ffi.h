@@ -95,9 +95,11 @@ struct CCalendarConfig {
 
 // calendar manager
 FFI_EXPORT void FfiOHOSGetCalendarManager(int64_t contextId, int32_t* errcode);
-FFI_EXPORT int64_t FfiOHOSCalendarManagerCreateCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
+FFI_EXPORT int64_t FfiOHOSCalendarManagerCreateCalendar(
+    CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
 FFI_EXPORT void FfiOHOSCalendarManagerdeleteCalendar(int64_t calendarId, int32_t* errcode);
-FFI_EXPORT int64_t FfiOHOSCalendarManagerGetCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
+FFI_EXPORT int64_t FfiOHOSCalendarManagerGetCalendar(
+    CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
 FFI_EXPORT CArrI64 FfiOHOSCalendarManagerGetAllCalendars(int32_t* errcode);
 FFI_EXPORT int64_t FfiOHOSCalendarManagerEditerEvent(char* eventstr, int32_t* errcode);
 // calendar
@@ -106,7 +108,8 @@ FFI_EXPORT void FfiOHOSCalendarAddEvents(int64_t id, CArrEvents event, int32_t* 
 FFI_EXPORT void FfiOHOSCalendarDeleteEvent(int64_t id, int64_t eventId, int32_t* errcode);
 FFI_EXPORT void FfiOHOSCalendarDeleteEvents(int64_t id, CArrI64 eventIds, int32_t* errcode);
 FFI_EXPORT void FfiOHOSCalendarUpdateEvent(int64_t id, CEvent event, int32_t* errcode);
-FFI_EXPORT CArrEvents FfiOHOSCalendarGetEvents(int64_t id, int64_t eventFilterId, CArrString eventKey, int32_t* errcode);
+FFI_EXPORT CArrEvents FfiOHOSCalendarGetEvents(
+    int64_t id, int64_t eventFilterId, CArrString eventKey, int32_t* errcode);
 FFI_EXPORT CCalendarConfig FfiOHOSCalendarGetConfig(int64_t id, int32_t* errcode);
 FFI_EXPORT void FfiOHOSCalendarSetConfig(int64_t id, CCalendarConfig cCalendarConfig, int32_t* errcode);
 FFI_EXPORT CCalendarAccount FfiOHOSCalendarGetAccount(int64_t id, int32_t* errcode);

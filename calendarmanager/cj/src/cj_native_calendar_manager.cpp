@@ -119,7 +119,8 @@ std::vector<std::shared_ptr<CJNativeCalendar>> CJNativeCalendarManager::GetAllCa
     DataShare::DataSharePredicates predicates;
     std::vector<std::string> columns = {"_id", "account_name", "account_type", "calendar_displayName"};
     DataShare::DatashareBusinessError error;
-    auto queryResult = CJDataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
+    auto queryResult = 
+        CJDataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
     if (!queryResult) {
         LOG_ERROR("query failed %{public}d, %{public}s", error.GetCode(), error.GetMessage().c_str());
         return results;
@@ -127,10 +128,10 @@ std::vector<std::shared_ptr<CJNativeCalendar>> CJNativeCalendarManager::GetAllCa
     return ResultSetToCalendars(queryResult);
 }
 
-bool CJNativeCalendarManager::DeleteCalendar(const CJNativeCalendar &CJNativeCalendar)
+bool CJNativeCalendarManager::DeleteCalendar(const CJNativeCalendar &calendar)
 {
     DataShare::DataSharePredicates predicates;
-    predicates.EqualTo("_id", CJNativeCalendar.GetId());
+    predicates.EqualTo("_id", calendar.GetId());
     int errNum = 0;
     int result = 0;
     do {

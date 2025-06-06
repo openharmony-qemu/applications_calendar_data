@@ -40,12 +40,12 @@ namespace CalendarApi {
         return vec;
     }
 
-    CArrI64 VectorToCArrI64(const std::vector<int64_t> &vec)
+    CArrI64 VectorToArrayI64(const std::vector<int64_t> &vec)
     {
         CArrI64 arr;
         arr.size = vec.size();
         arr.head = (int64_t *)malloc(sizeof(int64_t) * vec.size());
-        for (int64_t i = 0; i < arr.size(); i++) {
+        for (int64_t i = 0; i < vec.size(); i++) {
             arr.head[i] = vec[i];
         }
         return arr;
@@ -62,6 +62,98 @@ namespace CalendarApi {
             return nullptr;
         }
         return std::char_traits<char>::copy(res, origin.c_str(), length);
+    }
+
+    RecurrenceRule CJCalendar::BuildNativeRecurrenceRule(CRecurrenceRule recurrenceRule)
+    {
+        RecurrenceRule nativeRecurrenceRule;
+        nativeRecurrenceRule.recurrenceFrequency = RecurrenceType(recurrenceRule.recurrenceFrequency);
+        nativeRecurrenceRule.expire = std::make_optional<int64_t>(recurrenceRule.expire);
+        nativeRecurrenceRule.count = std::make_optional<int64_t>(recurrenceRule.count);
+        nativeRecurrenceRule.interval = std::make_optional<int64_t>(recurrenceRule.interval);
+        nativeRecurrenceRule.excludedDates =
+            std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(recurrenceRule.excludedDates));
+        nativeRecurrenceRule.daysOfWeek =
+            std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(recurrenceRule.daysOfWeek));
+        nativeRecurrenceRule.daysOfMonth =
+            std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(recurrenceRule.daysOfMonth));
+        nativeRecurrenceRule.daysOfYear =
+            std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(recurrenceRule.daysOfYear));
+        nativeRecurrenceRule.weeksOfMonth =
+            std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(recurrenceRule.weeksOfMonth));
+        nativeRecurrenceRule.weeksOfYear =
+            std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(recurrenceRule.weeksOfYear));
+        nativeRecurrenceRule.monthsOfYear =
+            std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(recurrenceRule.monthsOfYear));
+        return nativeRecurrenceRule;
+    }
+
+    CRecurrenceRule CJCalendar::BuildCRecurrenceRule(RecurrenceRule nativeRecurrenceRule)
+    {
+        CRecurrenceRule cRecurrenceRule;
+        cRecurrenceRule.recurrenceRule.recurrenceFrequency = nativeRecurrenceRule.recurrenceFrequency;
+        if (nativeRecurrenceRule.expire.has_value()) {
+            cRecurrenceRule.recurrenceRule.expire = IMallocCString(nativeRecurrenceRule.expire.value());
+        }
+        if (nativeRecurrenceRule.count.has_value()) {
+            cRecurrenceRule.recurrenceRule.count = nativeRecurrenceRule.count.value();
+        }
+        if (nativeRecurrenceRule.interval.has_value()) {
+            cRecurrenceRule.recurrenceRule.interval = nativeRecurrenceRule.interval.value();
+        }
+        
+        if (nativeRecurrenceRule.excludedDates.has_value()) {
+            cRecurrenceRule.recurrenceRule.excludedDates = VectorToArrayI64(nativeRecurrenceRule.excludedDates.value());
+        }
+        if (nativeRecurrenceRule.daysOfWeek.has_value()) {
+            cRecurrenceRule.recurrenceRule.daysOfWeek = VectorToArrayI64(nativeRecurrenceRule.daysOfWeek.value());
+        }
+        if (nativeRecurrenceRule.daysOfMonth.has_value()) {
+            cRecurrenceRule.recurrenceRule.daysOfMonth = VectorToArrayI64(nativeRecurrenceRule.daysOfMonth.value());
+        }
+        if (nativeRecurrenceRule.daysOfYear.has_value()) {
+            cRecurrenceRule.recurrenceRule.daysOfYear = VectorToArrayI64(nativeRecurrenceRule.daysOfYear.value());
+        }
+        if (nativeRecurrenceRule.weeksOfMonth.has_value()) {
+            cRecurrenceRule.recurrenceRule.weeksOfMonth = VectorToArrayI64(nativeRecurrenceRule.weeksOfMonth.value());
+        }
+        if (nativeRecurrenceRule.weeksOfYear.has_value()) {
+            cRecurrenceRule.recurrenceRule.weeksOfYear = VectorToArrayI64(nativeRecurrenceRule.weeksOfYear.value());
+        }
+        if (nativeRecurrenceRule.monthsOfYear.has_value()) {
+            cRecurrenceRule.recurrenceRule.monthsOfYear = VectorToArrayI64(nativeRecurrenceRule.monthsOfYear.value());
+        }
+        return cRecurrenceRule;
+    }
+
+    CLocation CJCalendar::BuildCLocation(Location location)
+    {
+        CLocation clocation;
+        if (location.location.has_value()) {
+            clocation.location = IMallocCString(location.location.value());
+        }
+        if (location.longitude.has_value()) {
+            clocation.longitude = location.longitude.value();
+        }
+        if (location.latitude.has_value()) {
+            clocation.latitude = location.latitude.value();
+        }
+        return clocation;
+    }
+
+    CArrAttendee CJCalendar::BuildCArrAttendee(vector<Attendee> attendees)
+    {
+        CArrAttendee arr;
+        arr.size = attendees.size();
+        arr.head = (CAttendee *)malloc(sizeof(CAttendee) * attendees.size());
+        for (int64_t j = 0; j < attendees.size(); j++) {
+            arr.head[j].name = IMallocCString(attendees[j].name);
+            arr.head[j].email = IMallocCString(attendees[j].email);
+            if (attendees[j].role.has_value()) {
+                arr.head[j].role = attendees[j].role.value();
+            }
+        }
+        return arr;
     }
 
     Event CJCalendar::CEventToEvent(CEvent event)
@@ -91,18 +183,7 @@ namespace CalendarApi {
             vec.push_back(static_cast<int>(event.reminderTime.head[i]));
         }
         nativeEvent.reminderTime = vec;
-        
-        nativeEvent.recurrenceRule->recurrenceFrequency = RecurrenceType(event.recurrenceRule.recurrenceFrequency);
-        nativeEvent.recurrenceRule->expire = std::make_optional<int64_t>(event.recurrenceRule.expire);
-        nativeEvent.recurrenceRule->count = std::make_optional<int64_t>(event.recurrenceRule.count);
-        nativeEvent.recurrenceRule->interval = std::make_optional<int64_t>(event.recurrenceRule.interval);
-        nativeEvent.recurrenceRule->excludedDates = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.excludedDates));
-        nativeEvent.recurrenceRule->daysOfWeek = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.daysOfWeek));
-        nativeEvent.recurrenceRule->daysOfMonth = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.daysOfMonth));
-        nativeEvent.recurrenceRule->daysOfYear = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.daysOfYear));
-        nativeEvent.recurrenceRule->weeksOfMonth = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.weeksOfMonth));
-        nativeEvent.recurrenceRule->weeksOfYear = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.weeksOfYear));
-        nativeEvent.recurrenceRule->monthsOfYear = std::make_optional<std::vector<int64_t>>(ArrayI64ToVector(event.recurrenceRule.monthsOfYear));
+        nativeEvent.recurrenceRule = std::make_optional<RecurrenceRule>(BuildNativeRecurrenceRule(event.recurrenceRule));
 
         if (event.description != nullptr && strlen(event.description) > 0) {
             nativeEvent.description = std::make_optional<std::string>(event.description);
@@ -117,6 +198,58 @@ namespace CalendarApi {
         }
         nativeEvent.isLunar = std::make_optional<bool>(event.isLunar);
         return nativeEvent;
+    }
+
+    CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> events)
+    {
+        CArrEvents arr;
+        arr.size = events.size();
+        arr.head = (CEvent *)malloc(sizeof(CEvent) * events.size());
+        for (int64_t i = 0; i < events.size(); i++) {
+            arr.head[i].id = static_cast<int64_t>(events[i].id.value());
+            arr.head[i].type = events[i].type;
+            arr.head[i].startTime = events[i].startTime;
+            arr.head[i].endTime = events[i].endTime;
+            arr.head[i].title = IMallocCString(events[i].title.value());
+            if (events[i].location.has_value()) {
+                arr.head[i].location = BuildCLocation(events[i].location.value());
+            }
+            if (events[i].isAllDay.has_value()) {
+                arr.head[i].isAllDay = events[i].isAllDay.value();
+            }
+            arr.head[i].attendee = BuildCArrAttendee(events[i].attendees);
+            if (events[i].timeZone.has_value()) {
+                arr.head[i].timeZone = IMallocCString(events[i].timeZone.value());
+            }
+            if (events[i].reminderTime.has_value() && events[i].reminderTime.value().size() > 0) {
+                vector<int> reminderTime = events[i].reminderTime.value();
+                arr.head[i].reminderTime.size = reminderTime.size();
+                arr.head[i].reminderTime.head = (int64_t *)malloc(sizeof(int64_t) * reminderTime.size());
+                for (int64_t j = 0; j < reminderTime.size(); j++) {
+                    arr.head[i].reminderTime.head[j] = static_cast<int64_t>(reminderTime[j]);
+                }
+            }
+            if (events[i].recurrenceRule.has_value()) {
+                arr.head[i].recurrenceRule = BuildCRecurrenceRule(events[i].recurrenceRule.value());
+            }
+            if (events[i].description.has_value()) {
+                arr.head[i].description = IMallocCString(events[i].description.value());
+            }
+            if (events[i].service.has_value()) {
+                arr.head[i].service.type = IMallocCString(events[i].service.value().type);
+                arr.head[i].service.uri = IMallocCString(events[i].service.value().uri);
+                if (events[i].service.value().description.has_value()) {
+                    arr.head[i].service.description = IMallocCString(events[i].service.value().description.value());
+                }
+            }
+            if (events[i].identifier.has_value()) {
+                arr.head[i].identifier = IMallocCString(events[i].identifier.value());
+            }
+            if (events[i].isLunar.has_value()) {
+                arr.head[i].isLunar = events[i].isLunar.value();
+            }
+        }
+        return arr;
     }
 
     CJCalendar::CJCalendar(std::shared_ptr<Native::CJNativeCalendar> calendar)
@@ -220,102 +353,7 @@ namespace CalendarApi {
             *errcode = -1;
         }
         std::vector<Event> events = calendar_->GetEvents(eventFilter, keys);
-        CArrEvents arr;
-        arr.size = events.size();
-        arr.head = (CEvent *)malloc(sizeof(CEvent) * events.size());
-        for (int64_t i = 0; i < events.size(); i++) {
-            arr.head[i].id = static_cast<int64_t>(events[i].id.value());
-            arr.head[i].type = events[i].type;
-            arr.head[i].startTime = events[i].startTime;
-            arr.head[i].endTime = events[i].endTime;
-            arr.head[i].title = IMallocCString(events[i].title.value());
-            if (events[i].location.has_value()) {
-                Location location = events[i].location.value();
-                if (location.location.has_value()) {
-                    arr.head[i].location.location = IMallocCString(location.location.value());
-                }
-                if (location.longitude.has_value()) {
-                    arr.head[i].location.longitude = location.longitude.value();
-                }
-                if (location.latitude.has_value()) {
-                    arr.head[i].location.latitude = location.latitude.value();
-                }
-            }
-            
-            if (events[i].isAllDay.has_value()) {
-                arr.head[i].isAllDay = events[i].isAllDay.value();
-            }
-            arr.head[i].attendee.size = events[i].attendees.size();
-            arr.head[i].attendee.head = (CAttendee *)malloc(sizeof(CAttendee) * events[i].attendees.size());
-            for (int64_t j = 0; j < events[i].attendees.size(); j++) {
-                arr.head[i].attendee.head[j].name = IMallocCString(events[i].attendees[j].name);
-                arr.head[i].attendee.head[j].email = IMallocCString(events[i].attendees[j].email);
-                if (events[i].attendees[j].role.has_value()) {
-                    arr.head[i].attendee.head[j].role = events[i].attendees[j].role.value();
-                }
-            }
-            if (events[i].timeZone.has_value()) {
-                arr.head[i].timeZone = IMallocCString(events[i].timeZone.value());
-            }
-            if (events[i].reminderTime.has_value() && events[i].reminderTime.value().size() > 0) {
-                vector<int> reminderTime = events[i].reminderTime.value();
-                arr.head[i].reminderTime.size = reminderTime.size();
-                arr.head[i].reminderTime.head = (int64_t *)malloc(sizeof(int64_t) * reminderTime.size());
-                for (int64_t j = 0; j < reminderTime.size(); j++) {
-                    arr.head[i].reminderTime.head[j] = static_cast<int64_t>(reminderTime[j]);
-                }
-            }
-            
-            arr.head[i].recurrenceRule.recurrenceFrequency = events[i].recurrenceRule->recurrenceFrequency;
-            if (events[i].recurrenceRule->expire.has_value()) {
-                arr.head[i].recurrenceRule.expire = IMallocCString(events[i].recurrenceRule->expire.value());
-            }
-            if (events[i].recurrenceRule->count.has_value()) {
-                arr.head[i].recurrenceRule.count = events[i].recurrenceRule->count.value();
-            }
-            if (events[i].recurrenceRule->interval.has_value()) {
-                arr.head[i].recurrenceRule.interval = events[i].recurrenceRule->interval.value();
-            }
-            
-            if (events[i].recurrenceRule->excludedDates.has_value()) {
-                arr.head[i].recurrenceRule.excludedDates = VectorToArrayI64(events[i].recurrenceRule->excludedDates.value())
-            }
-            if (events[i].recurrenceRule->daysOfWeek.has_value()) {
-                arr.head[i].recurrenceRule.daysOfWeek = VectorToArrayI64(events[i].recurrenceRule->daysOfWeek.value())
-            }
-            if (events[i].recurrenceRule->daysOfMonth.has_value()) {
-                arr.head[i].recurrenceRule.daysOfMonth = VectorToArrayI64(events[i].recurrenceRule->daysOfMonth.value())
-            }
-            if (events[i].recurrenceRule->daysOfYear.has_value()) {
-                arr.head[i].recurrenceRule.daysOfYear = VectorToArrayI64(events[i].recurrenceRule->daysOfYear.value())
-            }
-            if (events[i].recurrenceRule->weeksOfMonth.has_value()) {
-                arr.head[i].recurrenceRule.weeksOfMonth = VectorToArrayI64(events[i].recurrenceRule->weeksOfMonth.value())
-            }
-            if (events[i].recurrenceRule->weeksOfYear.has_value()) {
-                arr.head[i].recurrenceRule.weeksOfYear = VectorToArrayI64(events[i].recurrenceRule->weeksOfYear.value())
-            }
-            if (events[i].recurrenceRule->monthsOfYear.has_value()) {
-                arr.head[i].recurrenceRule.monthsOfYear = VectorToArrayI64(events[i].recurrenceRule->monthsOfYear.value())
-            }
-            
-            if (events[i].description.has_value()) {
-                arr.head[i].description = IMallocCString(events[i].description.value());
-            }
-            if (events[i].service.has_value()) {
-                arr.head[i].service.type = IMallocCString(events[i].service.value().type);
-                arr.head[i].service.uri = IMallocCString(events[i].service.value().uri);
-                if (events[i].service.value().description.has_value()) {
-                    arr.head[i].service.description = IMallocCString(events[i].service.value().description.value());
-                }
-            }
-            if (events[i].identifier.has_value()) {
-                arr.head[i].identifier = IMallocCString(events[i].identifier.value());
-            }
-            if (events[i].isLunar.has_value()) {
-                arr.head[i].isLunar = events[i].isLunar.value();
-            }
-        }
+        CArrEvents arr = VectorToCArrEvents(events);
         return arr;
     }
 

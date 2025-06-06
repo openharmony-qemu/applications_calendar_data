@@ -21,7 +21,7 @@
 #include "ffi_remote_data.h"
 #include "calendar_manager_ffi.h"
 #include "cj_native_util.h"
-#include "native_calendar.h"
+#include "cj_native_calendar.h"
 
 namespace OHOS {
 namespace CalendarApi {

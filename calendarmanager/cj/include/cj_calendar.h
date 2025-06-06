@@ -25,6 +25,7 @@
 namespace OHOS {
 namespace CalendarApi {
 std::vector<int64_t> ArrayI64ToVector(CArrI64 arr);
+CArrI64 VectorToArrayI64(const std::vector<int64_t> &vec);
 char *IMallocCString(const std::string &origin);
 class CJCalendar : public OHOS::FFI::FFIData {
     DECL_TYPE(CJCalendar, OHOS::FFI::FFIData)
@@ -33,6 +34,10 @@ public:
     ~CJCalendar() override = default;
     std::shared_ptr<Native::CJNativeCalendar>& GetNative();
     Event CEventToEvent(CEvent event);
+    CArrEvents VectorToCArrEvents(std::vector<Event> events);
+    RecurrenceRule BuildNativeRecurrenceRule(CRecurrenceRule recurrenceRule);
+    CRecurrenceRule BuildCRecurrenceRule(RecurrenceRule nativeRecurrenceRule);
+    CLocation BuildCLocation(Location location);
     int64_t AddEvent(CEvent event, int32_t* errcode);
     void AddEvents(CArrEvents event, int32_t* errcode);
     void DeleteEvent(int64_t eventId, int32_t* errcode);

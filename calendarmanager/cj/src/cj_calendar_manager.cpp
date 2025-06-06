@@ -112,6 +112,11 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
         return ret;
     }
     auto size = nativeCalendars.size();
+    if (size == 0 || size > (SIZE_MAX sizeof(int64_t))) {
+        LOG_ERROR("Invalid size for memory allocation");
+        *errcode = -1;
+        return ret;
+    }
     auto arr = static_cast<int64_t*>(malloc(size * sizeof(int64_t)*size));
     if (arr == nullptr) {
         LOG_ERROR("arr is nullptr");
@@ -160,20 +165,16 @@ int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
 
     callbacks = {
         .onRelease = [_uiContent, _sessionId](int32_t code) {
-            LOG_INFO("editEvent onRelease callback.");
             _uiContent->CloseModalUIExtension(_sessionId);
-            LOG_INFO("editEvent onRelease done.");
         },
         .onResult = [_uiContent, _sessionId, &id](int32_t code, const AAFwk::Want &wantRes) {
             auto eventId = wantRes.GetIntParam("eventId", INVALID_EVENT_ID);
-            LOG_INFO("editEvent onResult. eventId=%{public}d", eventId);
             id = static_cast<int64_t>(eventId);
         },
         .onReceive = [_uiContent, _sessionId](const AAFwk::WantParams &wantParams) {
             LOG_INFO("editEvent onReceive.");
         },
         .onError = [_uiContent, _sessionId](int32_t code, const std::string &event, const std::string &msg) {
-            LOG_ERROR("editEvent onError.%{public}s", msg.c_str());
             _uiContent->CloseModalUIExtension(_sessionId);
         },
         .onRemoteReady = [_uiContent, _sessionId](const std::shared_ptr<Ace::ModalUIExtensionProxy> &proxy) {
@@ -183,8 +184,7 @@ int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
             LOG_INFO("editEvent onDestroy.");
         },
     };
-    Ace::ModalUIExtensionConfig config;
-    config = {
+    Ace::ModalUIExtensionConfig config = {
         .isProhibitBack = false,
     };
     _sessionId = _uiContent->CreateModalUIExtension(want, callbacks, config);
