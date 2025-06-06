@@ -180,7 +180,7 @@ int CJDataShareHelperManager::Delete(const Uri &uri, const DataSharePredicates &
     return res;
 }
 
-std::shared_ptr<DataShareResultSet> CJDataShareHelperManager::Query(const Uri &uri, 
+std::shared_ptr<DataShareResultSet> CJDataShareHelperManager::Query(const Uri &uri,
     const DataSharePredicates &predicates, std::vector<std::string> &columns, DatashareBusinessError *businessError)
 {
     auto dataShareHelper = CreateDataShareHelper();

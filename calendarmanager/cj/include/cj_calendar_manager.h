@@ -35,7 +35,7 @@ public:
     static int64_t GetCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode);
     static CArrI64 GetAllCalendars(int32_t* errcode);
     static int64_t EditerEvent(char* eventstr, int32_t* errcode);
-    std::shared_ptr<AbilityRuntime::AbilityContext> GetAbilityContext(int32_t* errcode);
+    static std::shared_ptr<AbilityRuntime::AbilityContext> GetAbilityContext(int32_t* errcode);
 };
 
 }
