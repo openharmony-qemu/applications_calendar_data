@@ -91,37 +91,37 @@ namespace CalendarApi {
     CRecurrenceRule CJCalendar::BuildCRecurrenceRule(RecurrenceRule nativeRecurrenceRule)
     {
         CRecurrenceRule cRecurrenceRule;
-        cRecurrenceRule.recurrenceRule.recurrenceFrequency = nativeRecurrenceRule.recurrenceFrequency;
+        cRecurrenceRule.recurrenceFrequency = nativeRecurrenceRule.recurrenceFrequency;
         if (nativeRecurrenceRule.expire.has_value()) {
-            cRecurrenceRule.recurrenceRule.expire = IMallocCString(nativeRecurrenceRule.expire.value());
+            cRecurrenceRule.expire = nativeRecurrenceRule.expire.value();
         }
         if (nativeRecurrenceRule.count.has_value()) {
-            cRecurrenceRule.recurrenceRule.count = nativeRecurrenceRule.count.value();
+            cRecurrenceRule.count = nativeRecurrenceRule.count.value();
         }
         if (nativeRecurrenceRule.interval.has_value()) {
-            cRecurrenceRule.recurrenceRule.interval = nativeRecurrenceRule.interval.value();
+            cRecurrenceRule.interval = nativeRecurrenceRule.interval.value();
         }
         
         if (nativeRecurrenceRule.excludedDates.has_value()) {
-            cRecurrenceRule.recurrenceRule.excludedDates = VectorToArrayI64(nativeRecurrenceRule.excludedDates.value());
+            cRecurrenceRule.excludedDates = VectorToArrayI64(nativeRecurrenceRule.excludedDates.value());
         }
         if (nativeRecurrenceRule.daysOfWeek.has_value()) {
-            cRecurrenceRule.recurrenceRule.daysOfWeek = VectorToArrayI64(nativeRecurrenceRule.daysOfWeek.value());
+            cRecurrenceRule.daysOfWeek = VectorToArrayI64(nativeRecurrenceRule.daysOfWeek.value());
         }
         if (nativeRecurrenceRule.daysOfMonth.has_value()) {
-            cRecurrenceRule.recurrenceRule.daysOfMonth = VectorToArrayI64(nativeRecurrenceRule.daysOfMonth.value());
+            cRecurrenceRule.daysOfMonth = VectorToArrayI64(nativeRecurrenceRule.daysOfMonth.value());
         }
         if (nativeRecurrenceRule.daysOfYear.has_value()) {
-            cRecurrenceRule.recurrenceRule.daysOfYear = VectorToArrayI64(nativeRecurrenceRule.daysOfYear.value());
+            cRecurrenceRule.daysOfYear = VectorToArrayI64(nativeRecurrenceRule.daysOfYear.value());
         }
         if (nativeRecurrenceRule.weeksOfMonth.has_value()) {
-            cRecurrenceRule.recurrenceRule.weeksOfMonth = VectorToArrayI64(nativeRecurrenceRule.weeksOfMonth.value());
+            cRecurrenceRule.weeksOfMonth = VectorToArrayI64(nativeRecurrenceRule.weeksOfMonth.value());
         }
         if (nativeRecurrenceRule.weeksOfYear.has_value()) {
-            cRecurrenceRule.recurrenceRule.weeksOfYear = VectorToArrayI64(nativeRecurrenceRule.weeksOfYear.value());
+            cRecurrenceRule.weeksOfYear = VectorToArrayI64(nativeRecurrenceRule.weeksOfYear.value());
         }
         if (nativeRecurrenceRule.monthsOfYear.has_value()) {
-            cRecurrenceRule.recurrenceRule.monthsOfYear = VectorToArrayI64(nativeRecurrenceRule.monthsOfYear.value());
+            cRecurrenceRule.monthsOfYear = VectorToArrayI64(nativeRecurrenceRule.monthsOfYear.value());
         }
         return cRecurrenceRule;
     }

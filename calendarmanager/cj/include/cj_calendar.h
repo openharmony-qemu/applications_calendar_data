@@ -38,6 +38,7 @@ public:
     RecurrenceRule BuildNativeRecurrenceRule(CRecurrenceRule recurrenceRule);
     CRecurrenceRule BuildCRecurrenceRule(RecurrenceRule nativeRecurrenceRule);
     CLocation BuildCLocation(Location location);
+    CArrAttendee BuildCArrAttendee(vector<Attendee> attendees);
     int64_t AddEvent(CEvent event, int32_t* errcode);
     void AddEvents(CArrEvents event, int32_t* errcode);
     void DeleteEvent(int64_t eventId, int32_t* errcode);
