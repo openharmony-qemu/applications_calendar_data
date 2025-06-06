@@ -26,7 +26,8 @@ extern "C" {
         return OHOS::CalendarApi::CJCalendarManager::GetCalendarManager(contextId, errcode);
     }
 
-    int64_t FfiOHOSCalendarManagerCreateCalendar(CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode)
+    int64_t FfiOHOSCalendarManagerCreateCalendar(
+        CCalendarAccount calendarAccount, int64_t* calendarId, int32_t* errcode)
     {
         return OHOS::CalendarApi::CJCalendarManager::CreateCalendar(calendarAccount, calendarId, errcode);
     }

@@ -119,7 +119,7 @@ std::vector<std::shared_ptr<CJNativeCalendar>> CJNativeCalendarManager::GetAllCa
     DataShare::DataSharePredicates predicates;
     std::vector<std::string> columns = {"_id", "account_name", "account_type", "calendar_displayName"};
     DataShare::DatashareBusinessError error;
-    auto queryResult = 
+    auto queryResult =
         CJDataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
     if (!queryResult) {
         LOG_ERROR("query failed %{public}d, %{public}s", error.GetCode(), error.GetMessage().c_str());

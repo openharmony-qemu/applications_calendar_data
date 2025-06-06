@@ -112,7 +112,7 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
         return ret;
     }
     auto size = nativeCalendars.size();
-    if (size == 0 || size > (SIZE_MAX sizeof(int64_t))) {
+    if (size == 0 || size > (SIZE_MAX * sizeof(int64_t))) {
         LOG_ERROR("Invalid size for memory allocation");
         *errcode = -1;
         return ret;
@@ -150,7 +150,6 @@ int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
     int32_t _sessionId = 0;
     std::string event = eventstr;
     int64_t id = 0;
-
     auto _uiContent = abilityContext->GetUIContent();
     if (_uiContent == nullptr) {
         LOG_ERROR("uiContent is nullptr");
@@ -162,7 +161,6 @@ int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
     want.SetParam("ability.want.params.uiExtensionType", uiExtType);
     want.SetParam("event", event);
     Ace::ModalUIExtensionCallbacks callbacks;
-
     callbacks = {
         .onRelease = [_uiContent, _sessionId](int32_t code) {
             _uiContent->CloseModalUIExtension(_sessionId);
@@ -188,7 +186,6 @@ int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
         .isProhibitBack = false,
     };
     _sessionId = _uiContent->CreateModalUIExtension(want, callbacks, config);
-
     return id;
 }
 

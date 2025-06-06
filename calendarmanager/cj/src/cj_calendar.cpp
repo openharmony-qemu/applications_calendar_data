@@ -183,7 +183,8 @@ namespace CalendarApi {
             vec.push_back(static_cast<int>(event.reminderTime.head[i]));
         }
         nativeEvent.reminderTime = vec;
-        nativeEvent.recurrenceRule = std::make_optional<RecurrenceRule>(BuildNativeRecurrenceRule(event.recurrenceRule));
+        nativeEvent.recurrenceRule =
+            std::make_optional<RecurrenceRule>(BuildNativeRecurrenceRule(event.recurrenceRule));
 
         if (event.description != nullptr && strlen(event.description) > 0) {
             nativeEvent.description = std::make_optional<std::string>(event.description);
