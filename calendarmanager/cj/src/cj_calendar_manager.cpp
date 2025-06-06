@@ -135,7 +135,7 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
     return ret;
 }
 
-int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
+shared_ptr<AbilityRuntime::AbilityContext> CJCalendarManager::GetAbilityContext(int32_t* errcode)
 {
     auto aContext = CJCalendarEnv::GetInstance().getContext();
     if (aContext == nullptr) {
@@ -147,10 +147,15 @@ int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
         LOG_ERROR("abilityContext is nullptr");
         *errcode = -1;
     }
+    return abilityContext;
+}
+
+int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
+{
     int32_t _sessionId = 0;
     std::string event = eventstr;
     int64_t id = 0;
-    auto _uiContent = abilityContext->GetUIContent();
+    auto _uiContent = CJCalendarManager::GetAbilityContext(errcode)->GetUIContent();
     if (_uiContent == nullptr) {
         LOG_ERROR("uiContent is nullptr");
         *errcode = -1;
