@@ -201,12 +201,57 @@ namespace CalendarApi {
         return nativeEvent;
     }
 
+    CEvent CJCalendar::CEventInit()
+    {
+        CEvent event;
+        event.type = 0;
+        event.startTime = 0;
+        event.endTime = 0;
+        event.id = 0;
+        event.title = nullptr;
+        event.location.location = nullptr;
+        event.location.latitude = 0.0;
+        event.location.longitude = 0.0;
+        event.isAllDay = false;
+        event.attendee.size = 0;
+        event.attendee.head = nullptr;
+        event.timeZone = nullptr;
+        event.reminderTime.size = 0;
+        event.reminderTime.head = nullptr;
+        event.recurrenceRule.recurrenceFrequency = 0;
+        event.recurrenceRule.expire = 0;
+        event.recurrenceRule.count = 0;
+        event.recurrenceRule.interval = 0;
+        event.recurrenceRule.excludedDates.size = 0;
+        event.recurrenceRule.excludedDates.head = nullptr;
+        event.recurrenceRule.daysOfWeek.size = 0;
+        event.recurrenceRule.daysOfWeek.head = nullptr;
+        event.recurrenceRule.daysOfMonth.size = 0;
+        event.recurrenceRule.daysOfMonth.head = nullptr;
+        event.recurrenceRule.daysOfYear.size = 0;
+        event.recurrenceRule.daysOfYear.head = nullptr;
+        event.recurrenceRule.weeksOfMonth.size = 0;
+        event.recurrenceRule.weeksOfMonth.head = nullptr;
+        event.recurrenceRule.weeksOfYear.size = 0;
+        event.recurrenceRule.weeksOfYear.head = nullptr;
+        event.recurrenceRule.monthsOfYear.size = 0;
+        event.recurrenceRule.monthsOfYear.head = nullptr;
+        event.description = nullptr;
+        event.service.type = nullptr;
+        event.service.uri = nullptr;
+        event.service.description = nullptr;
+        event.identifier = nullptr;
+        event.isLunar = false;
+        return event;
+    }
+
     CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> events)
     {
         CArrEvents arr;
         arr.size = events.size();
         arr.head = (CEvent *)malloc(sizeof(CEvent) * events.size());
         for (int64_t i = 0; i < events.size(); i++) {
+            arr.head[i] = CEventInit();
             arr.head[i].id = static_cast<int64_t>(events[i].id.value());
             arr.head[i].type = events[i].type;
             arr.head[i].startTime = events[i].startTime;

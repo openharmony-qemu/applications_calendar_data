@@ -34,6 +34,7 @@ public:
     ~CJCalendar() override = default;
     std::shared_ptr<Native::CJNativeCalendar>& GetNative();
     Event CEventToEvent(CEvent event);
+    CEvent CEventInit();
     CArrEvents VectorToCArrEvents(std::vector<Event> events);
     RecurrenceRule BuildNativeRecurrenceRule(CRecurrenceRule recurrenceRule);
     CRecurrenceRule BuildCRecurrenceRule(RecurrenceRule nativeRecurrenceRule);
