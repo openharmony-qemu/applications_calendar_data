@@ -291,9 +291,7 @@ namespace CalendarApi {
             if (events[i].identifier.has_value()) {
                 arr.head[i].identifier = IMallocCString(events[i].identifier.value());
             }
-            if (events[i].isLunar.has_value()) {
-                arr.head[i].isLunar = events[i].isLunar.value();
-            }
+            arr.head[i].isLunar = events[i].isLunar.value_or(false);
         }
         return arr;
     }
