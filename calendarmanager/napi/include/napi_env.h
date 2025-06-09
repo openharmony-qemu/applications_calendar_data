@@ -30,7 +30,6 @@ public:
 private:
     napi_status GetContext(napi_env env, napi_value value);
     std::shared_ptr<OHOS::AbilityRuntime::Context> m_context;
-    bool hasInited = false;
 };
 } // namespace Calendar::CalendarApi
 #endif

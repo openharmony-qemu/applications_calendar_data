@@ -48,9 +48,6 @@ napi_status CalendarEnvNapi::GetContext(napi_env env, napi_value value)
 
 void CalendarEnvNapi::Init(napi_env env, napi_value value)
 {
-    if (hasInited) {
-        return;
-    }
     LOG_INFO("CalendarEnvNapi Init.");
     auto status = GetContext(env, value);
     if (status != napi_ok) {
@@ -60,7 +57,6 @@ void CalendarEnvNapi::Init(napi_env env, napi_value value)
     std::string bundleName = m_context->GetBundleName();
     uint64_t tokenId = IPCSkeleton::GetSelfTokenID();
     CalendarEnv::GetInstance().Init(bundleName, tokenId);
-    hasInited = true;
 }
 
 std::shared_ptr<OHOS::AbilityRuntime::Context> CalendarEnvNapi::getContext()
