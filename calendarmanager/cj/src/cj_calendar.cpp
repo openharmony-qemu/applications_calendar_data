@@ -219,11 +219,7 @@ namespace CalendarApi {
             LOG_ERROR("CEvent malloc failed");
         }
         for (int64_t i = 0; i < events.size(); i++) {
-            auto res = memset_s(&arr.head[i], sizeof(arr.head[i]), 0, sizeof(arr.head[i]));
-            if (res!= EOK) {
-                *errcode = -1;
-                LOG_ERROR("memset_s failed");
-            }
+            memset_s(&arr.head[i], sizeof(arr.head[i]), 0, sizeof(arr.head[i]));
             arr.head[i].id = static_cast<int64_t>(events[i].id.value());
             arr.head[i].type = events[i].type;
             arr.head[i].startTime = events[i].startTime;
