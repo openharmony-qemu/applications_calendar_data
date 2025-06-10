@@ -40,11 +40,15 @@ namespace CalendarApi {
         return vec;
     }
 
-    CArrI64 VectorToArrayI64(const std::vector<int64_t> &vec)
+    CArrI64 VectorToArrayI64(const std::vector<int64_t> &vec, int32_t* errcode)
     {
         CArrI64 arr;
         arr.size = vec.size();
         arr.head = (int64_t *)malloc(sizeof(int64_t) * vec.size());
+        if (arr.head == nullptr) {
+            *errcode = -1;
+            LOG_ERROR("CArrI64 malloc failed");
+        }
         for (int64_t i = 0; i < vec.size(); i++) {
             arr.head[i] = vec[i];
         }
@@ -88,7 +92,7 @@ namespace CalendarApi {
         return nativeRecurrenceRule;
     }
 
-    CRecurrenceRule CJCalendar::BuildCRecurrenceRule(RecurrenceRule nativeRecurrenceRule)
+    CRecurrenceRule CJCalendar::BuildCRecurrenceRule(RecurrenceRule nativeRecurrenceRule, int32_t* errcode)
     {
         CRecurrenceRule cRecurrenceRule;
         cRecurrenceRule.recurrenceFrequency = nativeRecurrenceRule.recurrenceFrequency;
@@ -103,25 +107,25 @@ namespace CalendarApi {
         }
         
         if (nativeRecurrenceRule.excludedDates.has_value()) {
-            cRecurrenceRule.excludedDates = VectorToArrayI64(nativeRecurrenceRule.excludedDates.value());
+            cRecurrenceRule.excludedDates = VectorToArrayI64(nativeRecurrenceRule.excludedDates.value(), errcode);
         }
         if (nativeRecurrenceRule.daysOfWeek.has_value()) {
-            cRecurrenceRule.daysOfWeek = VectorToArrayI64(nativeRecurrenceRule.daysOfWeek.value());
+            cRecurrenceRule.daysOfWeek = VectorToArrayI64(nativeRecurrenceRule.daysOfWeek.value(), errcode);
         }
         if (nativeRecurrenceRule.daysOfMonth.has_value()) {
-            cRecurrenceRule.daysOfMonth = VectorToArrayI64(nativeRecurrenceRule.daysOfMonth.value());
+            cRecurrenceRule.daysOfMonth = VectorToArrayI64(nativeRecurrenceRule.daysOfMonth.value(), errcode);
         }
         if (nativeRecurrenceRule.daysOfYear.has_value()) {
-            cRecurrenceRule.daysOfYear = VectorToArrayI64(nativeRecurrenceRule.daysOfYear.value());
+            cRecurrenceRule.daysOfYear = VectorToArrayI64(nativeRecurrenceRule.daysOfYear.value(), errcode);
         }
         if (nativeRecurrenceRule.weeksOfMonth.has_value()) {
-            cRecurrenceRule.weeksOfMonth = VectorToArrayI64(nativeRecurrenceRule.weeksOfMonth.value());
+            cRecurrenceRule.weeksOfMonth = VectorToArrayI64(nativeRecurrenceRule.weeksOfMonth.value(), errcode);
         }
         if (nativeRecurrenceRule.weeksOfYear.has_value()) {
-            cRecurrenceRule.weeksOfYear = VectorToArrayI64(nativeRecurrenceRule.weeksOfYear.value());
+            cRecurrenceRule.weeksOfYear = VectorToArrayI64(nativeRecurrenceRule.weeksOfYear.value(), errcode);
         }
         if (nativeRecurrenceRule.monthsOfYear.has_value()) {
-            cRecurrenceRule.monthsOfYear = VectorToArrayI64(nativeRecurrenceRule.monthsOfYear.value());
+            cRecurrenceRule.monthsOfYear = VectorToArrayI64(nativeRecurrenceRule.monthsOfYear.value(), errcode);
         }
         return cRecurrenceRule;
     }
@@ -141,11 +145,15 @@ namespace CalendarApi {
         return clocation;
     }
 
-    CArrAttendee CJCalendar::BuildCArrAttendee(vector<Attendee> attendees)
+    CArrAttendee CJCalendar::BuildCArrAttendee(vector<Attendee> attendees, int32_t* errcode)
     {
         CArrAttendee arr;
         arr.size = attendees.size();
         arr.head = (CAttendee *)malloc(sizeof(CAttendee) * attendees.size());
+        if (arr.head == nullptr) {
+            *errcode = -1;
+            LOG_ERROR("CAttendee malloc failed");
+        }
         for (int64_t j = 0; j < attendees.size(); j++) {
             arr.head[j].name = IMallocCString(attendees[j].name);
             arr.head[j].email = IMallocCString(attendees[j].email);
@@ -245,52 +253,50 @@ namespace CalendarApi {
         return event;
     }
 
-    CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> events)
+    CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> events, int32_t* errcode)
     {
         CArrEvents arr;
         arr.size = events.size();
         arr.head = (CEvent *)malloc(sizeof(CEvent) * events.size());
+        if (arr.head == nullptr) {
+            *errcode = -1;
+            LOG_ERROR("CEvent malloc failed");
+        }
         for (int64_t i = 0; i < events.size(); i++) {
             arr.head[i] = CEventInit();
             arr.head[i].id = static_cast<int64_t>(events[i].id.value());
             arr.head[i].type = events[i].type;
             arr.head[i].startTime = events[i].startTime;
             arr.head[i].endTime = events[i].endTime;
-            arr.head[i].title = IMallocCString(events[i].title.value());
+            arr.head[i].title = IMallocCString(events[i].title.value_or(""));
             if (events[i].location.has_value()) {
                 arr.head[i].location = BuildCLocation(events[i].location.value());
             }
-            if (events[i].isAllDay.has_value()) {
-                arr.head[i].isAllDay = events[i].isAllDay.value();
-            }
-            arr.head[i].attendee = BuildCArrAttendee(events[i].attendees);
-            if (events[i].timeZone.has_value()) {
-                arr.head[i].timeZone = IMallocCString(events[i].timeZone.value());
-            }
+            arr.head[i].isAllDay = events[i].isAllDay.value_or(false);
+            arr.head[i].attendee = BuildCArrAttendee(events[i].attendees, errcode);
+            arr.head[i].timeZone = IMallocCString(events[i].timeZone.value_or(""));
             if (events[i].reminderTime.has_value() && events[i].reminderTime.value().size() > 0) {
                 vector<int> reminderTime = events[i].reminderTime.value();
                 arr.head[i].reminderTime.size = reminderTime.size();
                 arr.head[i].reminderTime.head = (int64_t *)malloc(sizeof(int64_t) * reminderTime.size());
+                if (arr.head[i].reminderTime.head == nullptr) {
+                    *errcode = -1;
+                    LOG_ERROR("create reminderTime malloc failed");
+                }
                 for (int64_t j = 0; j < reminderTime.size(); j++) {
                     arr.head[i].reminderTime.head[j] = static_cast<int64_t>(reminderTime[j]);
                 }
             }
             if (events[i].recurrenceRule.has_value()) {
-                arr.head[i].recurrenceRule = BuildCRecurrenceRule(events[i].recurrenceRule.value());
+                arr.head[i].recurrenceRule = BuildCRecurrenceRule(events[i].recurrenceRule.value(), errcode);
             }
-            if (events[i].description.has_value()) {
-                arr.head[i].description = IMallocCString(events[i].description.value());
-            }
+            arr.head[i].description = IMallocCString(events[i].description.value_or(""));
             if (events[i].service.has_value()) {
                 arr.head[i].service.type = IMallocCString(events[i].service.value().type);
                 arr.head[i].service.uri = IMallocCString(events[i].service.value().uri);
-                if (events[i].service.value().description.has_value()) {
-                    arr.head[i].service.description = IMallocCString(events[i].service.value().description.value());
-                }
+                arr.head[i].service.description = IMallocCString(events[i].service.value().description.value_or(""));
             }
-            if (events[i].identifier.has_value()) {
-                arr.head[i].identifier = IMallocCString(events[i].identifier.value());
-            }
+            arr.head[i].identifier = IMallocCString(events[i].identifier.value_or(""));
             arr.head[i].isLunar = events[i].isLunar.value_or(false);
         }
         return arr;
@@ -397,7 +403,7 @@ namespace CalendarApi {
             *errcode = -1;
         }
         std::vector<Event> events = calendar_->GetEvents(eventFilter, keys);
-        CArrEvents arr = VectorToCArrEvents(events);
+        CArrEvents arr = VectorToCArrEvents(events, errcode);
         return arr;
     }
 
