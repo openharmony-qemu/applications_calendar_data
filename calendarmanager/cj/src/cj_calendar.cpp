@@ -318,9 +318,9 @@ namespace CalendarApi {
                 arr.head[i].reminderTime.head = (int64_t *)malloc(sizeof(int64_t) * reminderTime.size());
                 if (arr.head[i].reminderTime.head == nullptr) {
                     *errcode = CJ_ERR_OUT_OF_MEMORY;
-                    LOG_ERROR("create reminderTime malloc failed");
+                    arr.head[i].reminderTime.size = 0;
                 }
-                for (int64_t j = 0; j < reminderTime.size(); j++) {
+                for (int64_t j = 0; j < arr.head[i].reminderTime.size; j++) {
                     arr.head[i].reminderTime.head[j] = static_cast<int64_t>(reminderTime[j]);
                 }
             }
