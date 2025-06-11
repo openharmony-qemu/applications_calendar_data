@@ -42,7 +42,8 @@ void CJCalendarManager::GetCalendarManager(int64_t contextId, int32_t* errcode)
     sptr<CJAbilityContext> context = OHOS::FFI::FFIData::GetData<CJAbilityContext>(contextId);
     if (context == nullptr) {
         LOG_ERROR("Context is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_NULL_PTR;
+        return;
     }
 
     OHOS::CalendarApi::CJCalendarEnv::GetInstance().Init(context->GetAbilityContext());
@@ -58,7 +59,8 @@ int64_t CJCalendarManager::CreateCalendar(CCalendarAccount calendarAccount, int6
     auto calendar_ = Native::CJNativeCalendarManager::GetInstance().CreateCalendar(account);
     if (calendar_ == nullptr) {
         LOG_ERROR("calendar_ is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_NULL_PTR;
+        return -1;
     }
     *calendarId = calendar_->GetId();
     auto instance = OHOS::FFI::FFIData::Create<CJCalendar>(calendar_);
@@ -70,18 +72,21 @@ void CJCalendarManager::DeleteCalendar(int64_t calendarId, int32_t* errcode)
     auto instance = FFIData::GetData<CJCalendar>(calendarId);
     if (instance == nullptr) {
         LOG_ERROR("CJCalendar is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+        return;
     }
     auto nativeCalendar = instance->GetNative();
     if (nativeCalendar == nullptr) {
         LOG_ERROR("nativeCalendar is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_NULL_PTR;
+        return;
     }
     
     bool result = Native::CJNativeCalendarManager::GetInstance().DeleteCalendar(*(nativeCalendar.get()));
     if (!result) {
         LOG_ERROR("deleteCalendar failed");
-        *errcode = -1;
+        *errcode = CJ_ERR_NULL_PTR;
+        return;
     }
 }
 
@@ -94,7 +99,8 @@ int64_t CJCalendarManager::GetCalendar(CCalendarAccount calendarAccount, int64_t
     auto calendar_ = Native::CJNativeCalendarManager::GetInstance().GetCalendar(account);
     if (calendar_ == nullptr) {
         LOG_ERROR("calendar_ is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_NULL_PTR;
+        return -1;
     }
     *calendarId = calendar_->GetId();
     auto instance = OHOS::FFI::FFIData::Create<CJCalendar>(calendar_);
@@ -108,19 +114,19 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
     CArrI64 ret = {.head = nullptr, .size = 0};
     if (nativeCalendars.empty()) {
         LOG_ERROR("nativeCalendars is empty");
-        *errcode = -1;
+        *errcode = CJ_ERR_OUT_OF_MEMORY;
         return ret;
     }
     auto size = nativeCalendars.size();
     if (size == 0 || size > (SIZE_MAX * sizeof(int64_t))) {
         LOG_ERROR("Invalid size for memory allocation");
-        *errcode = -1;
+        *errcode = CJ_ERR_OUT_OF_MEMORY;
         return ret;
     }
     auto arr = static_cast<int64_t*>(malloc(size * sizeof(int64_t)*size));
     if (arr == nullptr) {
         LOG_ERROR("arr is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_OUT_OF_MEMORY;
         return ret;
     }
     
@@ -140,12 +146,12 @@ std::shared_ptr<AbilityRuntime::AbilityContext> CJCalendarManager::GetAbilityCon
     auto aContext = CJCalendarEnv::GetInstance().getContext();
     if (aContext == nullptr) {
         LOG_ERROR("aContext is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_NULL_PTR;
     }
     auto abilityContext = OHOS::AbilityRuntime::Context::ConvertTo<AbilityRuntime::AbilityContext>(aContext);
     if (abilityContext == nullptr) {
         LOG_ERROR("abilityContext is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_NULL_PTR;
     }
     return abilityContext;
 }
@@ -158,7 +164,8 @@ int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
     auto _uiContent = CJCalendarManager::GetAbilityContext(errcode)->GetUIContent();
     if (_uiContent == nullptr) {
         LOG_ERROR("uiContent is nullptr");
-        *errcode = -1;
+        *errcode = CJ_ERR_NULL_PTR;
+        return INVALID_EVENT_ID;
     }
     AAFwk::Want want;
     want.SetElementName("com.ohos.calendardata", "EditorUIExtensionAbility");

@@ -93,6 +93,10 @@ struct CCalendarConfig {
     int64_t color;
 };
 
+const int32_t CJ_ERR_ILLEGAL_INSTANCE = -1;
+const int32_t CJ_ERR_OUT_OF_MEMORY = -2;
+const int32_t CJ_ERR_NULL_PTR = -3;
+
 // calendar manager
 FFI_EXPORT void FfiOHOSGetCalendarManager(int64_t contextId, int32_t* errcode);
 FFI_EXPORT int64_t FfiOHOSCalendarManagerCreateCalendar(

@@ -132,7 +132,7 @@ int CJDataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket
     auto dataShareHelper = CreateDataShareHelper();
     if (!dataShareHelper) {
         LOG_ERROR("Insert dataShareHelper is nullptr");
-        return -1;
+        return CJ_ERR_NULL_PTR;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->Insert(const_cast<Uri &>(uri), value);
@@ -145,7 +145,7 @@ int CJDataShareHelperManager::BatchInsert(const Uri &uri, const std::vector<Data
     auto dataShareHelper = CreateDataShareHelper();
     if (!dataShareHelper) {
         LOG_ERROR("BatchInsert dataShareHelper is nullptr");
-        return -1;
+        return CJ_ERR_NULL_PTR;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->BatchInsert(const_cast<Uri &>(uri), values);
@@ -159,7 +159,7 @@ int CJDataShareHelperManager::Update(
     auto dataShareHelper = CreateDataShareHelper();
     if (!dataShareHelper) {
         LOG_ERROR("Update dataShareHelper is nullptr");
-        return -1;
+        return CJ_ERR_NULL_PTR;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->Update(const_cast<Uri &>(uri), predicates, value);
@@ -172,7 +172,7 @@ int CJDataShareHelperManager::Delete(const Uri &uri, const DataSharePredicates &
     auto dataShareHelper = CreateDataShareHelper();
     if (!dataShareHelper) {
         LOG_ERROR("Delete dataShareHelper is nullptr");
-        return -1;
+        return CJ_ERR_NULL_PTR;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->Delete(const_cast<Uri &>(uri), predicates);
