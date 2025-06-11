@@ -40,12 +40,14 @@ int64_t CJEventFilter::FilterById(CArrI64 idsCArr, int32_t* errcode)
     if (cjEventFilter == nullptr) {
         LOG_ERROR("cjEventFilter is nullptr");
         *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+        return -1;
     }
 
     cjEventFilter->eventFilter_ = OHOS::CalendarApi::Native::FilterById(ids);
     if (cjEventFilter->eventFilter_ == nullptr) {
         LOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
         *errcode = CJ_ERR_NULL_PTR;
+        return -1;
     }
     return cjEventFilter->GetID();
 }
@@ -56,11 +58,13 @@ int64_t CJEventFilter::FilterByTime(int64_t startTime, int64_t end, int32_t* err
     if (cjEventFilter == nullptr) {
         LOG_ERROR("cjEventFilter is nullptr");
         *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+        return -1;
     }
     cjEventFilter->eventFilter_ = OHOS::CalendarApi::Native::FilterByTime(startTime, end);
     if (cjEventFilter->eventFilter_ == nullptr) {
         LOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
         *errcode = CJ_ERR_NULL_PTR;
+        return -1;
     }
     return cjEventFilter->GetID();
 }
@@ -71,12 +75,14 @@ int64_t CJEventFilter::FilterByTitle(char* title, int32_t* errcode)
     if (cjEventFilter == nullptr) {
         LOG_ERROR("cjEventFilter is nullptr");
         *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+        return -1;
     }
     std::string eventName = title;
     cjEventFilter->eventFilter_ = OHOS::CalendarApi::Native::FilterByTitle(eventName);
     if (cjEventFilter->eventFilter_ == nullptr) {
         LOG_ERROR("cjEventFilter->eventFilter_ is nullptr");
         *errcode = CJ_ERR_NULL_PTR;
+        return -1;
     }
     return cjEventFilter->GetID();
 }

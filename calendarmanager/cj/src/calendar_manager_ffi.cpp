@@ -58,6 +58,7 @@ extern "C" {
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return -1;
         }
         return instance->AddEvent(event, errcode);
     }
@@ -68,6 +69,7 @@ extern "C" {
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return;
         }
         instance->AddEvents(event, errcode);
     }
@@ -78,6 +80,7 @@ extern "C" {
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return;
         }
         instance->DeleteEvent(eventId, errcode);
     }
@@ -88,6 +91,7 @@ extern "C" {
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return;
         }
         instance->DeleteEvents(eventIds, errcode);
     }
@@ -98,26 +102,31 @@ extern "C" {
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return;
         }
         instance->UpdateEvent(event, errcode);
     }
 
     CArrEvents FfiOHOSCalendarGetEvents(int64_t id, int64_t eventFilterId, CArrString eventKey, int32_t* errcode)
     {
+        CArrEvents arr;
         auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return arr;
         }
         return instance->GetEvents(eventFilterId, eventKey, errcode);
     }
 
     CCalendarConfig FfiOHOSCalendarGetConfig(int64_t id, int32_t* errcode)
     {
+        CCalendarConfig config;
         auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return config;
         }
         return instance->GetConfig(errcode);
     }
@@ -128,16 +137,19 @@ extern "C" {
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return;
         }
         instance->SetConfig(cCalendarConfig, errcode);
     }
 
     CCalendarAccount FfiOHOSCalendarGetAccount(int64_t id, int32_t* errcode)
     {
+        CCalendarAccount account;
         auto instance = OHOS::FFI::FFIData::GetData<OHOS::CalendarApi::CJCalendar>(id);
         if (instance == nullptr) {
             LOG_ERROR("CJCalendar instance is nullptr");
             *errcode = CJ_ERR_ILLEGAL_INSTANCE;
+            return account;
         }
         return instance->GetAccount(errcode);
     }
