@@ -627,8 +627,7 @@ napi_status SetValue(napi_env env, const Event& in, napi_value& out)
     napi_status status = napi_create_object(env, &out);
     CHECK_RETURN((status == napi_ok), "invalid entry object", status);
 
-    status = SetNamedProperty(env, "id", in.id.value(), out);
-    CHECK_RETURN((status == napi_ok), "invalid entry id", status);
+    SetNamedPropertyOptional(env, "id", in.id, out);
 
     status = SetNamedProperty(env, "type", static_cast<int>(in.type), out);
     CHECK_RETURN((status == napi_ok), "invalid entry type", status);
