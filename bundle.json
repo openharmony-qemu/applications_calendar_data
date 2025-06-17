@@ -23,28 +23,38 @@
         "ram": "",
         "deps": {
             "components": [
-			  "ability_base",
-			  "ability_runtime",
-			  "access_token",
-			  "c_utils",
-			  "data_share",
-			  "hilog",
-			  "ipc",
-			  "napi",
-			  "safwk",
-        "samgr",
-        "ace_engine"
-			],
+                "ability_base",
+                "ability_runtime",
+                "access_token",
+                "c_utils",
+                "data_share",
+                "hilog",
+                "ipc",
+                "napi",
+                "safwk",
+                "samgr",
+                "ace_engine"
+            ],
             "third_party": []
         },
         "build": {
             "group_type": {
                 "service_group": [
-                    "//applications/standard/calendardata/calendarmanager:calendarmanager"
+                    "//applications/standard/calendardata/calendarmanager:calendarmanager",
+                    "//applications/standard/calendardata/calendarmanager/cj:cj_calendar_manager_ffi"
                 ]
             },
             "test": [
                 "//applications/standard/calendardata/calendarmanager/test:unittest"
+            ],
+            "inner_api": [
+                {
+                    "header": {
+                        "header_base": "//applications/standard/calendardata/calendarmanager/cj/include",
+                        "header_files": []
+                    },
+                    "name": "//applications/standard/calendardata/calendarmanager/cj:cj_calendar_manager_ffi"
+                }
             ]
         }
     }
