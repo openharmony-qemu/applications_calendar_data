@@ -42,15 +42,18 @@ namespace CalendarApi {
 
     CArrI64 VectorToArrayI64(const std::vector<int64_t> &vec, int32_t* errcode)
     {
-        CArrI64 arr;
+        CArrI64 arr = {};
         arr.size = vec.size();
-        arr.head = (int64_t *)malloc(sizeof(int64_t) * vec.size());
+        if (arr.size == 0) {
+            return arr;
+        }
+        arr.head = static_cast<int64_t *>malloc(sizeof(int64_t) * vec.size());
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             LOG_ERROR("CArrI64 malloc failed");
             return arr;
         }
-        for (int64_t i = 0; i < vec.size(); i++) {
+        for (size_t i = 0; i < vec.size(); i++) {
             arr.head[i] = vec[i];
         }
         return arr;
@@ -148,15 +151,20 @@ namespace CalendarApi {
 
     CArrAttendee CJCalendar::BuildCArrAttendee(vector<Attendee> attendees, int32_t* errcode)
     {
-        CArrAttendee arr;
+        CArrAttendee arr = {};
         arr.size = attendees.size();
-        arr.head = (CAttendee *)malloc(sizeof(CAttendee) * attendees.size());
+        if (arr.size == 0) {
+            LOG_ERROR("Invalid size for memory allocation");
+            *errcode = CJ_ERR_OUT_OF_MEMORY;
+            return arr;
+        }
+        arr.head = static_cast<CAttendee *>malloc(sizeof(CAttendee) * attendees.size());
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             LOG_ERROR("CAttendee malloc failed");
             return arr;
         }
-        for (int64_t j = 0; j < attendees.size(); j++) {
+        for (size_t j = 0; j < attendees.size(); j++) {
             arr.head[j].name = IMallocCString(attendees[j].name);
             arr.head[j].email = IMallocCString(attendees[j].email);
             if (attendees[j].role.has_value()) {
@@ -168,7 +176,7 @@ namespace CalendarApi {
 
     Event CJCalendar::CEventToEvent(CEvent event)
     {
-        Event nativeEvent;
+        Event nativeEvent = {};
         nativeEvent.id = event.id;
         nativeEvent.type = event.type == 0 ? Normal : Important;
         nativeEvent.startTime = event.startTime;
@@ -213,25 +221,25 @@ namespace CalendarApi {
 
     void CJCalendar::CRecurrenceRuleFree(CRecurrenceRule cRecurrenceRule)
     {
-        if (cRecurrenceRule.excludedDates.head!= nullptr) {
+        if (cRecurrenceRule.excludedDates.head != nullptr) {
             free(cRecurrenceRule.excludedDates.head);
         }
-        if (cRecurrenceRule.daysOfWeek.head!= nullptr) {
+        if (cRecurrenceRule.daysOfWeek.head != nullptr) {
             free(cRecurrenceRule.daysOfWeek.head);
         }
-        if (cRecurrenceRule.daysOfMonth.head!= nullptr) {
+        if (cRecurrenceRule.daysOfMonth.head != nullptr) {
             free(cRecurrenceRule.daysOfMonth.head);
         }
-        if (cRecurrenceRule.daysOfYear.head!= nullptr) {
+        if (cRecurrenceRule.daysOfYear.head != nullptr) {
             free(cRecurrenceRule.daysOfYear.head);
         }
-        if (cRecurrenceRule.weeksOfMonth.head!= nullptr) {
+        if (cRecurrenceRule.weeksOfMonth.head != nullptr) {
             free(cRecurrenceRule.weeksOfMonth.head);
         }
-        if (cRecurrenceRule.weeksOfYear.head!= nullptr) {
+        if (cRecurrenceRule.weeksOfYear.head != nullptr) {
             free(cRecurrenceRule.weeksOfYear.head);
         }
-        if (cRecurrenceRule.monthsOfYear.head!= nullptr) {
+        if (cRecurrenceRule.monthsOfYear.head != nullptr) {
             free(cRecurrenceRule.monthsOfYear.head);
         }
     }
@@ -254,35 +262,35 @@ namespace CalendarApi {
             return;
         }
         for (int64_t i = 0; i < arr.size; i++) {
-            if (arr.head[i].title!= nullptr) {
+            if (arr.head[i].title != nullptr) {
                 free(arr.head[i].title);
             }
-            if (arr.head[i].timeZone!= nullptr) {
+            if (arr.head[i].timeZone != nullptr) {
                 free(arr.head[i].timeZone);
             }
-            if (arr.head[i].description!= nullptr) {
+            if (arr.head[i].description != nullptr) {
                 free(arr.head[i].description);
             }
-            if (arr.head[i].service.description!= nullptr) {
+            if (arr.head[i].service.description != nullptr) {
                 free(arr.head[i].service.description);
             }
-            if (arr.head[i].service.type!= nullptr) {
+            if (arr.head[i].service.type != nullptr) {
                 free(arr.head[i].service.type);
             }
-            if (arr.head[i].service.uri!= nullptr) {
+            if (arr.head[i].service.uri != nullptr) {
                 free(arr.head[i].service.uri);
             }
-            if (arr.head[i].identifier!= nullptr) {
+            if (arr.head[i].identifier != nullptr) {
                 free(arr.head[i].identifier);
             }
-            if (arr.head[i].reminderTime.head!= nullptr) {
+            if (arr.head[i].reminderTime.head != nullptr) {
                 free(arr.head[i].reminderTime.head);
             }
-            if (arr.head[i].attendee.head!= nullptr) {
+            if (arr.head[i].attendee.head != nullptr) {
                 CArrAttendeeFree(arr.head[i].attendee);
                 free(arr.head[i].attendee.head);
             }
-            if (arr.head[i].location.location!= nullptr) {
+            if (arr.head[i].location.location != nullptr) {
                 free(arr.head[i].location.location);
             }
             CRecurrenceRuleFree(arr.head[i].recurrenceRule);
@@ -292,13 +300,13 @@ namespace CalendarApi {
 
     CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> events, int32_t* errcode)
     {
-        CArrEvents arr;
-        arr.head = (CEvent *)malloc(sizeof(CEvent) * events.size());
+        CArrEvents arr = {};
+        arr.head = static_cast<CEvent *>malloc(sizeof(CEvent) * events.size());
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             return arr;
         }
-        arr.size = events.size();
+        arr.size = static_cast<int64_t>(events.size());
         for (size_t i = 0; i < events.size(); i++) {
             memset_s(&arr.head[i], sizeof(arr.head[i]), 0, sizeof(arr.head[i]));
             arr.head[i].id = static_cast<int64_t>(events[i].id.value());
@@ -314,8 +322,8 @@ namespace CalendarApi {
             arr.head[i].timeZone = IMallocCString(events[i].timeZone.value_or(""));
             if (events[i].reminderTime.has_value() && events[i].reminderTime.value().size() > 0) {
                 vector<int> reminderTime = events[i].reminderTime.value();
-                arr.head[i].reminderTime.size = reminderTime.size();
-                arr.head[i].reminderTime.head = (int64_t *)malloc(sizeof(int64_t) * reminderTime.size());
+                arr.head[i].reminderTime.size = static_cast<int64_t>(reminderTime.size());
+                arr.head[i].reminderTime.head = static_cast<int64_t *>malloc(sizeof(int64_t) * reminderTime.size());
                 if (arr.head[i].reminderTime.head == nullptr) {
                     *errcode = CJ_ERR_OUT_OF_MEMORY;
                     return arr;
@@ -352,9 +360,9 @@ namespace CalendarApi {
     int64_t CJCalendar::AddEvent(CEvent event, int32_t* errcode)
     {
         Event nativeEvent = CEventToEvent(event);
-        auto cc = GetNative();
-        if (cc == nullptr) {
-            LOG_ERROR("calendar_ is nullptr");
+        auto cnative = GetNative();
+        if (cnative == nullptr) {
+            LOG_ERROR("cnative is nullptr");
             *errcode = CJ_ERR_NULL_PTR;
             return -1;
         }
@@ -443,7 +451,7 @@ namespace CalendarApi {
         if (instance!= nullptr && instance->eventFilter_!= nullptr) {
             eventFilter = instance->eventFilter_;
         }
-        CArrEvents arr;
+        CArrEvents arr = {};
         if (calendar_ == nullptr) {
             LOG_ERROR("calendar_ is nullptr");
             *errcode = CJ_ERR_NULL_PTR;
@@ -459,7 +467,7 @@ namespace CalendarApi {
 
     CCalendarConfig CJCalendar::GetConfig(int32_t* errcode)
     {
-        CCalendarConfig config;
+        CCalendarConfig config = {};
         if (calendar_ == nullptr) {
             LOG_ERROR("calendar_ is nullptr");
             *errcode = CJ_ERR_NULL_PTR;

@@ -32,8 +32,8 @@ CJNativeCalendar::CJNativeCalendar(int id)
     : m_id(id)
 {
     uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
-    auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
-    auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
+    auto bundleName = CalendarEnv::GetInstance().GetBundleName();
+    auto bundleName_tokeId = "?bundleName=" + bundleName + "&tokenId=" + std::to_string(tokenId);
     m_eventUri = std::make_unique<Uri>(eventUrl + bundleName_tokeId);
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
 }
@@ -41,10 +41,9 @@ CJNativeCalendar::CJNativeCalendar(int id)
 CJNativeCalendar::CJNativeCalendar(CalendarAccount account, int id)
     :m_account(std::move(account)), m_id(id)
 {
-    // todo getallcalendar的时候会重复，需要复用
     uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
-    auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
-    auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
+    auto bundleName = CalendarEnv::GetInstance().GetBundleName();
+    auto bundleName_tokeId = "?bundleName=" + bundleName + "&tokenId=" + std::to_string(tokenId);
     m_eventUri = std::make_unique<Uri>(eventUrl + bundleName_tokeId);
     m_attendeeUri = std::make_unique<Uri>(attendeeUrl + bundleName_tokeId);
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
@@ -68,8 +67,8 @@ int CJNativeCalendar::AddEventInfo(const Event& event, int channelId)
 {
     const auto valueEvent = BuildValueEvent(event, m_id, channelId, false);
     uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
-    auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
-    auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
+    auto bundleName = CalendarEnv::GetInstance().GetBundleName();
+    auto bundleName_tokeId = "?bundleName=" + bundleName + "&tokenId=" + std::to_string(tokenId);
     Uri eventUri(eventUrl + bundleName_tokeId);
     auto eventId = CJDataShareHelperManager::GetInstance().Insert(eventUri, valueEvent);
     LOG_INFO("Insert Event eventId %{private}d", eventId);
