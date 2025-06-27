@@ -161,9 +161,13 @@ int64_t CJCalendarManager::EditerEvent(char* eventstr, int32_t* errcode)
     int32_t _sessionId = 0;
     std::string event = eventstr;
     int64_t id = 0;
-    auto _uiContent = CJCalendarManager::GetAbilityContext(errcode)->GetUIContent();
+    auto ctx = CJCalendarManager::GetAbilityContext(errcode);
+    if (ctx == nullptr) {
+        *errcode = CJ_ERR_NULL_PTR;
+        return INVALID_EVENT_ID;
+    }
+    auto _uiContent = ctx->GetUIContent();
     if (_uiContent == nullptr) {
-        LOG_ERROR("uiContent is nullptr");
         *errcode = CJ_ERR_NULL_PTR;
         return INVALID_EVENT_ID;
     }
