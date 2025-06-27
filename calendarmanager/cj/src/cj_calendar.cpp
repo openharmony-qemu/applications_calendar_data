@@ -47,7 +47,7 @@ namespace CalendarApi {
         if (arr.size == 0) {
             return arr;
         }
-        arr.head = static_cast<int64_t *>malloc(sizeof(int64_t) * vec.size());
+        arr.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * vec.size()));
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             LOG_ERROR("CArrI64 malloc failed");
@@ -158,7 +158,7 @@ namespace CalendarApi {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             return arr;
         }
-        arr.head = static_cast<CAttendee *>malloc(sizeof(CAttendee) * attendees.size());
+        arr.head = static_cast<CAttendee *>(malloc(sizeof(CAttendee) * attendees.size()));
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             LOG_ERROR("CAttendee malloc failed");
@@ -301,7 +301,7 @@ namespace CalendarApi {
     CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> events, int32_t* errcode)
     {
         CArrEvents arr = {};
-        arr.head = static_cast<CEvent *>malloc(sizeof(CEvent) * events.size());
+        arr.head = static_cast<CEvent *>(malloc(sizeof(CEvent) * events.size()));
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             return arr;
@@ -323,7 +323,7 @@ namespace CalendarApi {
             if (events[i].reminderTime.has_value() && events[i].reminderTime.value().size() > 0) {
                 vector<int> reminderTime = events[i].reminderTime.value();
                 arr.head[i].reminderTime.size = static_cast<int64_t>(reminderTime.size());
-                arr.head[i].reminderTime.head = static_cast<int64_t *>malloc(sizeof(int64_t) * reminderTime.size());
+                arr.head[i].reminderTime.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * reminderTime.size()));
                 if (arr.head[i].reminderTime.head == nullptr) {
                     *errcode = CJ_ERR_OUT_OF_MEMORY;
                     return arr;
@@ -367,7 +367,7 @@ namespace CalendarApi {
             return -1;
         }
         Native::DumpEvent(nativeEvent);
-        int64_t eventId = cc->AddEvent(nativeEvent);
+        int64_t eventId = cnative->AddEvent(nativeEvent);
         return eventId;
     }
 
