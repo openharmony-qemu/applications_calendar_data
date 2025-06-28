@@ -28,8 +28,8 @@ const int MAX_ERR_NUM = 3;
 CJNativeCalendarManager::CJNativeCalendarManager()
 {
     uint64_t tokenId = CalendarEnv::GetInstance().GetTokenId();
-    auto bumdleName = CalendarEnv::GetInstance().GetBundleName();
-    auto bundleName_tokeId = "?bundleName=" + bumdleName + "&tokenId=" + std::to_string(tokenId);
+    auto bundleName = CalendarEnv::GetInstance().GetBundleName();
+    auto bundleName_tokeId = "?bundleName=" + bundleName + "&tokenId=" + std::to_string(tokenId);
     m_calendarUri = std::make_unique<Uri>(calendarUrl + bundleName_tokeId);
 }
 
