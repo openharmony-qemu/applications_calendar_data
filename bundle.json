@@ -33,7 +33,8 @@
                 "napi",
                 "safwk",
                 "samgr",
-                "ace_engine"
+                "ace_engine",
+                "os_account"
             ],
             "third_party": []
         },
