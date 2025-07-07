@@ -26,22 +26,12 @@ config("calendarmanager_public_config") {
 jspath = "js/editor.js"
 
 # compile .js to .abc.
-action("gen_editor_abc") {
-  visibility = [ ":*" ]
-  script = "../../../../arkcompiler/ets_frontend/es2panda/scripts/generate_js_bytecode.py"
-
-  args = [
-    "--src-js",
-    rebase_path(jspath),
-    "--dst-file",
-    rebase_path(target_out_dir + "/editor.abc"),
-    "--frontend-tool-path",
-    rebase_path("${es2abc_build_path}"),
-    "--module",
-  ]
-  deps = [ "../../../../arkcompiler/ets_frontend/es2panda:es2panda_build" ]
-  inputs = [ jspath ]
-  outputs = [ target_out_dir + "/editor.abc" ]
+es2abc_gen_abc("gen_editor_abc") {
+  src_js = rebase_path(jspath)
+  dst_file = rebase_path(target_out_dir + "/editor.abc")
+  in_puts = [jspath]
+  out_puts = [target_out_dir + "/editor.abc"]
+  extra_args = ["--module"]
 }
 
 base_output_path = get_label_info(":editor_js", "target_out_dir")
