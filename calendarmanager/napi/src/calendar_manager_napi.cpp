@@ -166,14 +166,21 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
         napi_callback_info info;
         std::vector<napi_ref> refs;
     };
+    CalendarNapi *calendarNapi = nullptr;
+    napi_ref ref = nullptr;
 
     auto ctxt = std::make_shared<GetAllCalendarContext>();
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 0, "invalid arguments!");
+    };
+    ctxt->GetCbInfo(env, info, input);
+
+    auto execute = [env, ctxt, &calendarNapi, &ref]() {
+        size_t argc = 0;
+        napi_value* argv = nullptr;
         auto nativteCalendars = Native::CalendarManager::GetInstance().GetAllCalendars();
         for (auto &calendar : nativteCalendars) {
-            CalendarNapi *calendarNapi = nullptr;
-            auto ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&calendarNapi),
+            ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&calendarNapi),
                 CalendarNapi::Constructor(env));
             CHECK_RETURN_VOID(calendarNapi != nullptr, "new CalendarNapi failed!");
             calendarNapi->SetNative(calendar);
@@ -184,10 +191,6 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
             CHECK_STATUS_RETURN_VOID(ctxt, "SetNamedProperty id failed");
             ctxt->refs.emplace_back(ref);
         }
-    };
-    ctxt->GetCbInfo(env, info, input);
-
-    auto execute = [env, ctxt]()->void {
     };
 
     auto output = [env, ctxt](napi_value& result) {
