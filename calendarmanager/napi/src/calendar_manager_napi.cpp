@@ -165,13 +165,25 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
     struct GetAllCalendarContext : public ContextBase {
         napi_callback_info info;
         std::vector<napi_ref> refs;
+        std::vector<std::shared_ptr<Native::Calendar>> nativteCalendars;
     };
 
     auto ctxt = std::make_shared<GetAllCalendarContext>();
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 0, "invalid arguments!");
-        auto nativteCalendars = Native::CalendarManager::GetInstance().GetAllCalendars();
-        for (auto &calendar : nativteCalendars) {
+    };
+    ctxt->GetCbInfo(env, info, input);
+
+    auto execute = [env, ctxt]() {
+        ctxt->nativteCalendars = Native::CalendarManager::GetInstance().GetAllCalendars();
+    };
+
+    auto output = [env, ctxt](napi_value& result) {
+        size_t argc = 0;
+        napi_value* argv = nullptr;
+        int index = 0;
+        ctxt->status = napi_create_array_with_length(env, ctxt->nativteCalendars.size(), &result);
+        for (auto &calendar : ctxt->nativteCalendars) {
             CalendarNapi *calendarNapi = nullptr;
             auto ref = NapiUtil::NewWithRef(env, argc, argv, reinterpret_cast<void**>(&calendarNapi),
                 CalendarNapi::Constructor(env));
@@ -182,22 +194,6 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
             CHECK_STATUS_RETURN_VOID(ctxt, "napi_get_reference_value failed");
             ctxt->status = NapiUtil::SetNamedProperty(env, "id", calendar->GetId(), value);
             CHECK_STATUS_RETURN_VOID(ctxt, "SetNamedProperty id failed");
-            ctxt->refs.emplace_back(ref);
-        }
-    };
-    ctxt->GetCbInfo(env, info, input);
-
-    auto execute = [env, ctxt]()->void {
-    };
-
-    auto output = [env, ctxt](napi_value& result) {
-        ctxt->status = napi_create_array_with_length(env, ctxt->refs.size(), &result);
-        CHECK_STATUS_RETURN_VOID(ctxt, "create array failed!");
-        int index = 0;
-        for (auto& ref : ctxt->refs) {
-            napi_value value;
-            ctxt->status = napi_get_reference_value(env, ref, &value);
-            CHECK_STATUS_RETURN_VOID(ctxt, "get ref value failed!");
             ctxt->status = napi_set_element(env, result, index++, value);
             CHECK_STATUS_RETURN_VOID(ctxt, "napi_set_element failed!");
             ctxt->status = napi_delete_reference(env, ref);
