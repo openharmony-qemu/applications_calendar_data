@@ -129,7 +129,7 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     const string title = "GetEvent_test_1";
     event.title = title;
     event.type = EventType::Important;
-    Location testLocation { "test", 123, 456 };
+    Location testLocation {"test", 123.12, 45.45};
     event.location = std::make_optional<Location>(testLocation);
     event.startTime = 1766620800000;
     event.endTime = 1766620800000;
@@ -179,11 +179,7 @@ HWTEST_F(CalendarTest, UpdateEvent_DeleteLocation_test, testing::ext::TestSize.L
 {
     Event event;
     event.title = "UpdateEvent_Location";
-    event.location = {
-        "test",
-        123,
-        456
-    };
+    event.location = {"test", 123.12, 45.45};
     auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
     auto events = calendar->GetEvents(FilterById({eventId}), {});
@@ -213,7 +209,7 @@ HWTEST_F(CalendarTest, UpdateEvent_AddLocation_test, testing::ext::TestSize.Leve
     EXPECT_EQ(newEvent.location.has_value(), true);
     EXPECT_EQ(newEvent.location.value().location.has_value(), true);
     EXPECT_EQ(newEvent.location.value().longitude.has_value(), false);
-    newEvent.location = {"test", 123, 456};
+    newEvent.location = {"test", 123.12, 45.45};
     auto ret = calendar->UpdateEvent(newEvent);
     
     EXPECT_EQ(ret, true);
