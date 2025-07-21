@@ -519,6 +519,8 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
 {
     Location out;
     string value;
+    double maxLon = 180;
+    double maxLat = 90;
     auto ret = GetValue(resultSet, "eventLocation", value);
     out.location = std::make_optional<string>(value);
     ret = GetValue(resultSet, "location_longitude", value);
@@ -526,7 +528,7 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
     std::stringstream str2digit;
     str2digit << value;
     str2digit >> longitudeValue;
-    if (longitudeValue != -1) {
+    if (fabs(longitudeValue) <= maxLon) {
         out.longitude = std::make_optional<double>(longitudeValue);
     }
     ret = GetValue(resultSet, "location_latitude", value);
@@ -534,7 +536,7 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
     str2digit.clear();
     str2digit << value;
     str2digit >> latitudeValue;
-    if (latitudeValue != -1) {
+    if (fabs(latitudeValue) <= maxLat) {
         out.latitude = std::make_optional<double>(latitudeValue);
     }
 
