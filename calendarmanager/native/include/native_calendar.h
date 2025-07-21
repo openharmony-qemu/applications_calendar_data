@@ -61,8 +61,8 @@ public:
         return m_id;
     }
 private:
-    CalendarAccount m_account;
-    CalendarConfig m_config;
+    CalendarAccount m_account = {"", "", std::nullopt};
+    CalendarConfig m_config = {true, 0};
     int m_id = 0;
     std::unique_ptr<Uri> m_eventUri;
     std::unique_ptr<Uri> m_attendeeUri;
