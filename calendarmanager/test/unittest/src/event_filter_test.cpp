@@ -249,7 +249,7 @@ HWTEST_F(EventFilterTest, FilterByTitle_and_eventKey_002, testing::ext::TestSize
     const string title = "FilterByTitle_and_eventKey_002";
     Event event;
     event.title = title;
-    Location testLocation { "test", 123, 456 };
+    Location testLocation {"test", 123.12, 45.45};
     event.location = std::make_optional<Location>(testLocation);
     event.isAllDay = true;
     event.attendees = {{"xiaoming", "xiaoming@abc.com", NONE, UNKNOWN, REQUIRED},
