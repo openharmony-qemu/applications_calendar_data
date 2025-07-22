@@ -114,4 +114,52 @@ HWTEST_F(EventLocationTest, AddEventWithMinLocation, testing::ext::TestSize.Leve
     EXPECT_EQ(result.longitude.value(), testLocation.longitude.value());
     EXPECT_EQ(result.latitude.value(), testLocation.latitude.value());
 }
+
+HWTEST_F(EventLocationTest, AddEventWithOutMinLocation, testing::ext::TestSize.Level1)
+{
+    Event event;
+    const string title = "AddEventWithOutMinLocation";
+    event.title = title;
+    Location testLocation {
+        "test",
+        -180.99,
+        -90.99
+    };
+    event.location = std::make_optional<Location>(testLocation);
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), {});
+    ASSERT_EQ(events.size(), 1);
+    auto resultEvent = events.at(0);
+    EXPECT_EQ(resultEvent.title.value(), title);
+    ASSERT_NE(resultEvent.location, std::nullopt);
+    auto result = resultEvent.location.value();
+    EXPECT_EQ(result.location.value(), "test");
+    EXPECT_EQ(result.longitude.has_value(), false);
+    EXPECT_EQ(result.latitude.has_value(), false);
+}
+
+HWTEST_F(EventLocationTest, AddEventWithOutMaxLocation, testing::ext::TestSize.Level1)
+{
+    Event event;
+    const string title = "AddEventWithOutMaxLocation";
+    event.title = title;
+    Location testLocation {
+        "test",
+        180.99,
+        90.99
+    };
+    event.location = std::make_optional<Location>(testLocation);
+    auto eventId = calendar->AddEvent(event);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), {});
+    ASSERT_EQ(events.size(), 1);
+    auto resultEvent = events.at(0);
+    EXPECT_EQ(resultEvent.title.value(), title);
+    ASSERT_NE(resultEvent.location, std::nullopt);
+    auto result = resultEvent.location.value();
+    EXPECT_EQ(result.location.value(), "test");
+    EXPECT_EQ(result.longitude.has_value(), false);
+    EXPECT_EQ(result.latitude.has_value(), false);
+}
 }
