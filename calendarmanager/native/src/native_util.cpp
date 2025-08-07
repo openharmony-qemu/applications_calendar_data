@@ -843,8 +843,8 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
     ResultSetToInstanceTime(event, resultSet, columns);
 }
 
-int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultSet,
-    const std::set<std::string>& columns)
+int ResultSetToEvents(std::vector<std::string> &eventIds, std::vector<Event> &events,
+    DataShareResultSetPtr &resultSet, const std::set<std::string>& columns)
 {
     int rowCount = 0;
     resultSet->GetRowCount(rowCount);
@@ -860,6 +860,10 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
     do {
         Event event;
         ResultSetToEvent(event, resultSet, columns);
+        if (!event.id.has_value()) {
+            continue;
+        }
+        eventIds.emplace_back(std::to_string(event.id.value()));
         events.emplace_back(event);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
@@ -960,10 +964,8 @@ int ResultSetToMultiAttendees(std::map<int, std::vector<Attendee>> &attendeesMap
         auto attendeeFindId = attendeesMap.find(eventId);
         if (attendeeFindId == attendeesMap.end()) {
             attendeesMap.insert(std::pair<int, std::vector<Attendee>>(eventId, {attendee}));
-            LOG_INFO("no key eventId = %{public}d", eventId);
         } else {
             attendeeFindId->second.emplace_back(attendee);
-            LOG_INFO("has key eventId = %{public}d", eventId);
         }
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
@@ -1024,12 +1026,8 @@ int ResultSetToMultiReminders(std::map<int, std::vector<int>> &eventReminders, D
         auto eventFindId = eventReminders.find(eventId);
         if (eventFindId == eventReminders.end()) {
             eventReminders.insert(std::pair<int, std::vector<int>>(eventId, {minutes}));
-            LOG_INFO("no key eventId = %{public}d", eventId);
-            LOG_INFO("no key minutes = %{public}d", minutes);
         } else {
             eventFindId->second.emplace_back(minutes);
-            LOG_INFO("has key eventId = %{public}d", eventId);
-            LOG_INFO("has key minutes = %{public}d", minutes);
         }
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
