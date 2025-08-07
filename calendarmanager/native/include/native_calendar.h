@@ -45,9 +45,7 @@ public:
     CalendarConfig GetConfig();
     bool SetConfig(const CalendarConfig& config);
     std::vector<Event> GetEvents(std::shared_ptr<EventFilter> filter, const std::vector<string>& eventKey);
-    std::vector<Attendee> GetAttendeesByEventId(int id);
     void GetAttendeesByEventIds(const std::vector<std::string> &ids, std::vector<Event> &events);
-    std::optional<std::vector<int>> GetRemindersByEventId(int id);
     void GetRemindersByEventIds(const std::vector<std::string> &ids, std::vector<Event> &events);
     void InsertReminders(int eventId, vector<int> reminders);
     int AddEventInfo(const Event& event, int channelId);

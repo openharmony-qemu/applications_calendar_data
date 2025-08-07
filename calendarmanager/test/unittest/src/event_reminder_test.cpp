@@ -83,8 +83,6 @@ HWTEST_F(EventReminderTest, DelEventWithReminder, testing::ext::TestSize.Level1)
     ASSERT_THAT(resultEvent.reminderTime.value(), ::testing::ElementsAreArray(reminderTime));
     auto ret = calendar->DeleteEvent(eventId);
     ASSERT_EQ(ret, 1);
-    auto reminders = calendar->GetRemindersByEventId(eventId);
-    ASSERT_EQ(reminders, std::nullopt);
 }
 
 HWTEST_F(EventReminderTest, UpdateEventWithReminder, testing::ext::TestSize.Level1)
