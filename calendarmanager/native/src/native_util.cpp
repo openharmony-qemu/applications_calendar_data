@@ -927,6 +927,48 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
     return 0;
 }
 
+int ResultSetToMultiAttendees(std::map<int, std::vector<Attendee>> &attendeesMap, DataShareResultSetPtr &resultSet)
+{
+    int rowCount = 0;
+    resultSet->GetRowCount(rowCount);
+    LOG_INFO("GetRowCount is %{public}d", rowCount);
+    if (rowCount <= 0) {
+        return -1;
+    }
+    auto err = resultSet->GoToFirstRow();
+    if (err != DataShare::E_OK) {
+        LOG_ERROR("Failed GoToFirstRow %{public}d", err);
+        return -1;
+    }
+    int roleValue = 0;
+    do {
+        Attendee attendee;
+        int eventId;
+        GetValue(resultSet, "event_id", eventId);
+        GetValue(resultSet, "attendeeName", attendee.name);
+        GetValue(resultSet, "attendeeEmail", attendee.email);
+        GetValue(resultSet, "attendeeRelationship",  roleValue);
+        if (roleValue == PARTICIPANT) {
+            attendee.role = std::make_optional<RoleType>(PARTICIPANT);
+        } else if (roleValue == ORGANIZER) {
+            attendee.role = std::make_optional<RoleType>(ORGANIZER);
+        }
+
+        ResultSetToAttendeeStatus(attendee, resultSet);
+        ResultSetToAttendeeType(attendee, resultSet);
+
+        auto attendeeFindId = attendeesMap.find(eventId);
+        if (attendeeFindId == attendeesMap.end()) {
+            attendeesMap.insert(std::pair<int, std::vector<Attendee>>(eventId, {attendee}));
+            LOG_INFO("no key eventId = %{public}d", eventId);
+        } else {
+            attendeeFindId->second.emplace_back(attendee);
+            LOG_INFO("has key eventId = %{public}d", eventId);
+        }
+    } while (resultSet->GoToNextRow() == DataShare::E_OK);
+    return 0;
+}
+
 std::string EventIdsToString(const std::vector<int> &ids) {
     if (ids.empty()) {
         return "";
@@ -957,6 +999,38 @@ int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &res
         int minutes = 0;
         GetValue(resultSet, "minutes", minutes);
         reminders.emplace_back(minutes);
+    } while (resultSet->GoToNextRow() == DataShare::E_OK);
+    return 0;
+}
+
+int ResultSetToMultiReminders(std::map<int, std::vector<int>> &eventReminders, DataShareResultSetPtr &resultSet)
+{
+    int rowCount = 0;
+    resultSet->GetRowCount(rowCount);
+    LOG_INFO("GetRowCount is %{public}d", rowCount);
+    if (rowCount <= 0) {
+        return -1;
+    }
+    auto err = resultSet->GoToFirstRow();
+    if (err != DataShare::E_OK) {
+        LOG_ERROR("Failed GoToFirstRow %{public}d", err);
+        return -1;
+    }
+    do {
+        int minutes = 0;
+        int eventId = 0;
+        GetValue(resultSet, "minutes", minutes);
+        GetValue(resultSet, "event_id", eventId);
+        auto eventFindId = eventReminders.find(eventId);
+        if (eventFindId == eventReminders.end()) {
+            eventReminders.insert(std::pair<int, std::vector<int>>(eventId, {minutes}));
+            LOG_INFO("no key eventId = %{public}d", eventId);
+            LOG_INFO("no key minutes = %{public}d", minutes);
+        } else {
+            eventFindId->second.emplace_back(minutes);
+            LOG_INFO("has key eventId = %{public}d", eventId);
+            LOG_INFO("has key minutes = %{public}d", minutes);
+        }
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
 }

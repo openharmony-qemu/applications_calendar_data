@@ -227,6 +227,33 @@ std::vector<Attendee> Calendar::GetAttendeesByEventId(int id)
     return attendees;
 }
 
+void Calendar::GetAttendeesByEventIds(std::vector<std::string> ids, std::vector<Event> &events)
+{
+    DataShare::DataSharePredicates predicates;
+    predicates.In("event_id", ids);
+    std::vector<std::string> columns = {"event_id", "attendeeName", "attendeeEmail",
+    "attendeeRelationship", "attendeeStatus", "attendeeType"};
+    DataShare::DatashareBusinessError error;
+    auto result = DataShareHelperManager::GetInstance().Query(*(m_attendeeUri.get()), predicates, columns, &error);
+    std::map<int, std::vector<Attendee>> attendeesMap;
+    if (result != nullptr) {
+        ResultSetToMultiAttendees(attendeesMap, result);
+    }
+    LOG_INFO("resultAttendees size = %{public}d", (int) attendeesMap.size());
+    for (auto &event : events) {
+        if (!event.id.has_value()) {
+            continue;
+        }
+        LOG_INFO("event id = %{public}d", event.id.value());
+        auto attendeeFindId = attendeesMap.find(event.id.value());
+        if (attendeeFindId != attendeesMap.end()) {
+            event.attendees = attendeeFindId->second;
+        }
+    }
+    LOG_INFO(" query attendee finished");
+}
+
+
 std::optional<std::vector<int>> Calendar::GetRemindersByEventId(int id)
 {
     DataShare::DataSharePredicates predicates;
@@ -244,6 +271,35 @@ std::optional<std::vector<int>> Calendar::GetRemindersByEventId(int id)
     }
     LOG_INFO("query reminder finished");
     return reminders;
+}
+
+void Calendar::GetRemindersByEventIds(std::vector<std::string> ids, std::vector<Event> &events)
+{
+    DataShare::DataSharePredicates predicates;
+    predicates.In("event_id", ids);
+    std::vector<std::string> columns = {"event_id", "minutes"};
+    DataShare::DatashareBusinessError error;
+    auto result = DataShareHelperManager::GetInstance().Query(*(m_reminderUrl.get()), predicates, columns, &error);
+    if (result == nullptr) {
+        return;
+    }
+    std::map<int, std::vector<int>> remindersMap;
+    auto ret = ResultSetToMultiReminders(remindersMap, result);
+    if (ret != DataShare::E_OK) {
+        return;
+    }
+    LOG_INFO("reminders size = %{public}d", (int)remindersMap.size());
+    for (auto &event : events) {
+        if (!event.id.has_value()) {
+            continue;
+        }
+        LOG_INFO("event id = %{public}d", event.id.value());
+        auto eventFindId = remindersMap.find(event.id.value());
+        if (eventFindId != remindersMap.end()) {
+            event.reminderTime = eventFindId->second;
+        }
+    }
+    LOG_INFO("query reminder finished");
 }
 
 std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, const std::vector<string>& eventKey)
@@ -277,18 +333,19 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
         return events;
     }
     ResultSetToEvents(events, result, resultSetField);
-    for (auto &event : events) {
+    std::vector<std::string> eventIds;
+    for (const auto &event : events) {
         if (!event.id.has_value()) {
             continue;
         }
-        const auto eventId = event.id.value();
-        if (resultSetField.count("attendee")) {
-            event.attendees = GetAttendeesByEventId(eventId);
-        }
-        if (resultSetField.count("reminderTime")) {
-            event.reminderTime = GetRemindersByEventId(eventId);
-        }
-        DumpEvent(event);
+        eventIds.emplace_back(std::to_string(event.id.value()));
+    }
+    LOG_INFO("eventIds size = %{public}d", (int)eventIds.size());
+    if (resultSetField.count("attendee")) {
+        GetAttendeesByEventIds(eventIds, events);
+    }
+    if (resultSetField.count("reminderTime")) {
+        GetRemindersByEventIds(eventIds, events);
     }
     LOG_INFO("query finished");
     return events;
