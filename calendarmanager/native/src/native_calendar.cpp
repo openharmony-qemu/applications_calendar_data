@@ -359,7 +359,7 @@ std::vector<Event> Calendar::QueryEventInstances(int64_t start, int64_t end, con
     }
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, result, resultSetField);
-    result->Close();   
+    result->Close();
     FillEventsInfo(eventIds, events, resultSetField);
     LOG_INFO("query instance finished");
     return events;
