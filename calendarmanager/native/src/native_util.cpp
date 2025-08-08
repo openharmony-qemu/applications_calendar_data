@@ -869,6 +869,23 @@ int ResultSetToEvents(std::vector<std::string> &eventIds, std::vector<Event> &ev
     return 0;
 }
 
+void ResultSetToAttendeeStatus(Attendee &attendee, DataShareResultSetPtr &resultSet)
+{
+    int statusValue = 0;
+    GetValue(resultSet, "attendeeStatus", statusValue);
+    if (statusValue == UNKNOWN) {
+        attendee.status = std::make_optional<AttendeeStatus>(UNKNOWN);
+    } else if (statusValue == TENTATIVE) {
+        attendee.status = std::make_optional<AttendeeStatus>(TENTATIVE);
+    } else if (statusValue == ACCEPTED) {
+        attendee.status = std::make_optional<AttendeeStatus>(ACCEPTED);
+    } else if (statusValue == DECLINED) {
+        attendee.status = std::make_optional<AttendeeStatus>(DECLINED);
+    } else {
+        attendee.status = std::make_optional<AttendeeStatus>(UNRESPONSIVE);
+    }
+}
+
 void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSet)
 {
     int typeValue = 0;
@@ -880,38 +897,6 @@ void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSe
     } else {
         attendee.type = std::make_optional<AttendeeType>(RESOURCE);
     }
-}
-
-int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet)
-{
-    int rowCount = 0;
-    resultSet->GetRowCount(rowCount);
-    LOG_INFO("GetRowCount is %{public}d", rowCount);
-    if (rowCount <= 0) {
-        return -1;
-    }
-    auto err = resultSet->GoToFirstRow();
-    if (err != DataShare::E_OK) {
-        LOG_ERROR("Failed GoToFirstRow %{public}d", err);
-        return -1;
-    }
-    int roleValue = 0;
-    do {
-        Attendee attendee;
-        GetValue(resultSet, "attendeeName", attendee.name);
-        GetValue(resultSet, "attendeeEmail", attendee.email);
-        GetValue(resultSet, "attendeeRelationship",  roleValue);
-        if (roleValue == PARTICIPANT) {
-            attendee.role = std::make_optional<RoleType>(PARTICIPANT);
-        } else if (roleValue == ORGANIZER) {
-            attendee.role = std::make_optional<RoleType>(ORGANIZER);
-        }
-
-        ResultSetToAttendeeStatus(attendee, resultSet);
-        ResultSetToAttendeeType(attendee, resultSet);
-        attendees.emplace_back(attendee);
-    } while (resultSet->GoToNextRow() == DataShare::E_OK);
-    return 0;
 }
 
 int ResultSetToMultiAttendees(std::vector<Event> &events, DataShareResultSetPtr &resultSet)
