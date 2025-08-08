@@ -219,24 +219,15 @@ void Calendar::GetAttendeesByEventIds(const std::vector<std::string> &ids, std::
     "attendeeRelationship", "attendeeStatus", "attendeeType"};
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_attendeeUri.get()), predicates, columns, &error);
-    std::map<int, std::vector<Attendee>> attendeesMap;
     if (result == nullptr) {
+        LOG_ERROR("result is null");
         return;
     }
-    auto ret = ResultSetToMultiAttendees(attendeesMap, result);
+    auto ret = ResultSetToMultiAttendees(events, result);
     result->Close();
-    if (ret != DataShare::E_OK || attendeesMap.size() == 0) {
+    if (ret != DataShare::E_OK) {
+        LOG_ERROR("result set to attendees failed");
         return;
-    }
-    for (auto &event : events) {
-        const auto id =  event.id;
-        if (!id) {
-            continue;
-        }
-        auto attendeeFindId = attendeesMap.find(id.value());
-        if (attendeeFindId != attendeesMap.end()) {
-            event.attendees = attendeeFindId->second;
-        }
     }
     LOG_INFO(" query attendee finished");
 }
@@ -249,23 +240,14 @@ void Calendar::GetRemindersByEventIds(const std::vector<std::string> &ids, std::
     DataShare::DatashareBusinessError error;
     auto result = DataShareHelperManager::GetInstance().Query(*(m_reminderUrl.get()), predicates, columns, &error);
     if (result == nullptr) {
+        LOG_ERROR("result is null");
         return;
     }
-    std::map<int, std::vector<int>> remindersMap;
-    auto ret = ResultSetToMultiReminders(remindersMap, result);
+    auto ret = ResultSetToMultiReminders(events, result);
     result->Close();
-    if (ret != DataShare::E_OK || remindersMap.size() == 0) {
+    if (ret != DataShare::E_OK) {
+        LOG_ERROR("result set to reminders failed");
         return;
-    }
-    for (auto &event : events) {
-        const auto id = event.id;
-        if (!id) {
-            continue;
-        }
-        auto eventFindId = remindersMap.find(id.value());
-        if (eventFindId != remindersMap.end()) {
-            event.reminderTime = eventFindId->second;
-        }
     }
     LOG_INFO("query reminder finished");
 }
