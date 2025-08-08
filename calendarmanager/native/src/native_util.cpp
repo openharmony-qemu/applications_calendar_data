@@ -869,23 +869,6 @@ int ResultSetToEvents(std::vector<std::string> &eventIds, std::vector<Event> &ev
     return 0;
 }
 
-void ResultSetToAttendeeStatus(Attendee &attendee, DataShareResultSetPtr &resultSet)
-{
-    int statusValue = 0;
-    GetValue(resultSet, "attendeeStatus", statusValue);
-    if (statusValue == UNKNOWN) {
-        attendee.status = std::make_optional<AttendeeStatus>(UNKNOWN);
-    } else if (statusValue == TENTATIVE) {
-        attendee.status = std::make_optional<AttendeeStatus>(TENTATIVE);
-    } else if (statusValue == ACCEPTED) {
-        attendee.status = std::make_optional<AttendeeStatus>(ACCEPTED);
-    } else if (statusValue == DECLINED) {
-        attendee.status = std::make_optional<AttendeeStatus>(DECLINED);
-    } else {
-        attendee.status = std::make_optional<AttendeeStatus>(UNRESPONSIVE);
-    }
-}
-
 void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSet)
 {
     int typeValue = 0;
@@ -1008,37 +991,12 @@ std::string EventIdsToString(const std::vector<int> &ids) {
     );
 }
 
-int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet)
-{
-    if (!resultSet) {
-        LOG_ERROR("resultSet is null");
-        return -1;
-    }
-    int rowCount = 0;
-    if (!resultSet) {
-        LOG_ERROR("resultSet is null");
-        return -1;
-    }
-    resultSet->GetRowCount(rowCount);
-    LOG_INFO("GetRowCount is %{public}d", rowCount);
-    if (rowCount <= 0) {
-        return -1;
-    }
-    auto err = resultSet->GoToFirstRow();
-    if (err != DataShare::E_OK) {
-        LOG_ERROR("Failed GoToFirstRow %{public}d", err);
-        return -1;
-    }
-    do {
-        int minutes = 0;
-        GetValue(resultSet, "minutes", minutes);
-        reminders.emplace_back(minutes);
-    } while (resultSet->GoToNextRow() == DataShare::E_OK);
-    return 0;
-}
-
 int ResultSetToMultiReminders(std::vector<Event> &events, DataShareResultSetPtr &resultSet)
 {
+    if (!resultSet) {
+        LOG_ERROR("resultSet is null");
+        return -1;
+    }
     int rowCount = 0;
     resultSet->GetRowCount(rowCount);
     LOG_INFO("GetRowCount is %{public}d", rowCount);

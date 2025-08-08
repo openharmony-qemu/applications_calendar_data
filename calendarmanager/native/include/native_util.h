@@ -49,8 +49,6 @@ namespace OHOS::CalendarApi::Native {
     std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPtr &resultSet);
     int ResultSetToEvents(std::vector<std::string> &eventIds, std::vector<Event> &events,
         DataShareResultSetPtr &resultSet, const std::set<std::string>& columns);
-    int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet);
-    int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet);
     int ResultSetToMultiReminders(std::vector<Event> &events, DataShareResultSetPtr &resultSet);
     int ResultSetToMultiAttendees(std::vector<Event> &events, DataShareResultSetPtr &resultSet);
     void ResultSetToAttendeeStatus(Attendee &attendee, DataShareResultSetPtr &resultSet);
