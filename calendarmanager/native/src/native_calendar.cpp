@@ -227,7 +227,7 @@ void Calendar::GetAttendeesByEventIds(const std::vector<std::string> &ids, std::
     if (ret != DataShare::E_OK) {
         return;
     }
-    LOG_INFO("resultAttendees size = %{public}lu", attendeesMap.size());
+    LOG_INFO("resultAttendees size = %{public}lu", static_cast<uint64_t>(attendeesMap.size()));
     for (auto &event : events) {
         const auto id =  event.id;
         if (!id) {
@@ -256,7 +256,7 @@ void Calendar::GetRemindersByEventIds(const std::vector<std::string> &ids, std::
     if (ret != DataShare::E_OK) {
         return;
     }
-    LOG_INFO("reminders size = %{public}lu", remindersMap.size());
+    LOG_INFO("reminders size = %{public}lu", static_cast<uint64_t>(remindersMap.size()));
     for (auto &event : events) {
         const auto id = event.id;
         if (!id) {
@@ -302,7 +302,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     }
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, result, resultSetField);
-    LOG_INFO("eventIds size = %{public}lu", eventIds.size());
+    LOG_INFO("eventIds size = %{public}lu", static_cast<uint64_t>(eventIds.size()));
     if (resultSetField.count("attendee")) {
         GetAttendeesByEventIds(eventIds, events);
     }
