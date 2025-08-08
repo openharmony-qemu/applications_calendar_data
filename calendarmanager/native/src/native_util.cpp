@@ -933,6 +933,10 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
 
 int ResultSetToMultiAttendees(std::vector<Event> &events, DataShareResultSetPtr &resultSet)
 {
+    if (!resultSet) {
+        LOG_ERROR("resultSet is null");
+        return -1;
+    }
     int rowCount = 0;
     resultSet->GetRowCount(rowCount);
     LOG_INFO("GetRowCount is %{public}d", rowCount);
@@ -1006,6 +1010,10 @@ std::string EventIdsToString(const std::vector<int> &ids) {
 
 int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet)
 {
+    if (!resultSet) {
+        LOG_ERROR("resultSet is null");
+        return -1;
+    }
     int rowCount = 0;
     if (!resultSet) {
         LOG_ERROR("resultSet is null");
