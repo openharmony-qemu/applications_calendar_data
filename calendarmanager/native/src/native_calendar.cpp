@@ -224,10 +224,10 @@ void Calendar::GetAttendeesByEventIds(const std::vector<std::string> &ids, std::
         return;
     }
     auto ret = ResultSetToMultiAttendees(attendeesMap, result);
-    if (ret != DataShare::E_OK) {
+    result->close();
+    if (ret != DataShare::E_OK || attendeesMap.size() === 0) {
         return;
     }
-    LOG_INFO("resultAttendees size = %{public}lu", static_cast<uint64_t>(attendeesMap.size()));
     for (auto &event : events) {
         const auto id =  event.id;
         if (!id) {
@@ -253,10 +253,10 @@ void Calendar::GetRemindersByEventIds(const std::vector<std::string> &ids, std::
     }
     std::map<int, std::vector<int>> remindersMap;
     auto ret = ResultSetToMultiReminders(remindersMap, result);
-    if (ret != DataShare::E_OK) {
+    result->close();
+    if (ret != DataShare::E_OK || remindersMap.size() === 0) {
         return;
     }
-    LOG_INFO("reminders size = %{public}lu", static_cast<uint64_t>(remindersMap.size()));
     for (auto &event : events) {
         const auto id = event.id;
         if (!id) {
@@ -302,7 +302,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     }
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, result, resultSetField);
-    LOG_INFO("eventIds size = %{public}lu", static_cast<uint64_t>(eventIds.size()));
+    result->close();
     if (resultSetField.count("attendee")) {
         GetAttendeesByEventIds(eventIds, events);
     }
@@ -359,6 +359,7 @@ std::vector<Event> Calendar::QueryEventInstances(int64_t start, int64_t end, con
     }
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, result, resultSetField);
+    result->close();    
     FillEventsInfo(eventIds, events, resultSetField);
     LOG_INFO("query instance finished");
     return events;
