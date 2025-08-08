@@ -224,7 +224,7 @@ void Calendar::GetAttendeesByEventIds(const std::vector<std::string> &ids, std::
         return;
     }
     auto ret = ResultSetToMultiAttendees(attendeesMap, result);
-    result->close();
+    result->Close();
     if (ret != DataShare::E_OK || attendeesMap.size() === 0) {
         return;
     }
@@ -253,7 +253,7 @@ void Calendar::GetRemindersByEventIds(const std::vector<std::string> &ids, std::
     }
     std::map<int, std::vector<int>> remindersMap;
     auto ret = ResultSetToMultiReminders(remindersMap, result);
-    result->close();
+    result->Close();
     if (ret != DataShare::E_OK || remindersMap.size() === 0) {
         return;
     }
@@ -302,7 +302,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     }
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, result, resultSetField);
-    result->close();
+    result->Close();
     if (resultSetField.count("attendee")) {
         GetAttendeesByEventIds(eventIds, events);
     }
@@ -359,7 +359,7 @@ std::vector<Event> Calendar::QueryEventInstances(int64_t start, int64_t end, con
     }
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, result, resultSetField);
-    result->close();    
+    result->Close();    
     FillEventsInfo(eventIds, events, resultSetField);
     LOG_INFO("query instance finished");
     return events;
