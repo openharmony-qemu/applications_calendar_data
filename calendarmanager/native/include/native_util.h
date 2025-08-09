@@ -47,15 +47,16 @@ namespace OHOS::CalendarApi::Native {
     std::string GetEventRRule(const Event &event);
 
     std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPtr &resultSet);
-    int ResultSetToEvents(std::vector<Event> &events,
+    int ResultSetToEvents(std::vector<std::string> &eventIds, std::vector<Event> &events,
         DataShareResultSetPtr &resultSet, const std::set<std::string>& columns);
-    int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet);
-    int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet);
+    int ResultSetToMultiReminders(std::vector<Event> &events, DataShareResultSetPtr &resultSet);
+    int ResultSetToMultiAttendees(std::vector<Event> &events, DataShareResultSetPtr &resultSet);
     void ResultSetToAttendeeStatus(Attendee &attendee, DataShareResultSetPtr &resultSet);
     void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSet);
     void ResultSetToConfig(CalendarConfig &config, DataShareResultSetPtr &resultSet);
     void SetField(const std::vector<string>& eventKey,
         std::vector<string>& queryField, std::set<string>& resultSetField);
+    void GetEventAttendeesValue(std::vector<Event> &events, const std::map<int, std::vector<Attendee>> &attendeesMap);
 
     bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue);
 

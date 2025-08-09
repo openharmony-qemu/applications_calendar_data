@@ -843,8 +843,8 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
     ResultSetToInstanceTime(event, resultSet, columns);
 }
 
-int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultSet,
-    const std::set<std::string>& columns)
+int ResultSetToEvents(std::vector<std::string> &eventIds, std::vector<Event> &events,
+    DataShareResultSetPtr &resultSet, const std::set<std::string>& columns)
 {
     int rowCount = 0;
     resultSet->GetRowCount(rowCount);
@@ -860,6 +860,10 @@ int ResultSetToEvents(std::vector<Event> &events, DataShareResultSetPtr &resultS
     do {
         Event event;
         ResultSetToEvent(event, resultSet, columns);
+        if (!event.id.has_value()) {
+            continue;
+        }
+        eventIds.emplace_back(std::to_string(event.id.value()));
         events.emplace_back(event);
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
     return 0;
@@ -895,8 +899,12 @@ void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSe
     }
 }
 
-int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr &resultSet)
+int ResultSetToMultiAttendees(std::vector<Event> &events, DataShareResultSetPtr &resultSet)
 {
+    if (!resultSet) {
+        LOG_ERROR("resultSet is null");
+        return -1;
+    }
     int rowCount = 0;
     resultSet->GetRowCount(rowCount);
     LOG_INFO("GetRowCount is %{public}d", rowCount);
@@ -908,9 +916,12 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
         LOG_ERROR("Failed GoToFirstRow %{public}d", err);
         return -1;
     }
+    std::map<int, std::vector<Attendee>> attendeesMap;
     int roleValue = 0;
     do {
         Attendee attendee;
+        int eventId;
+        GetValue(resultSet, "event_id", eventId);
         GetValue(resultSet, "attendeeName", attendee.name);
         GetValue(resultSet, "attendeeEmail", attendee.email);
         GetValue(resultSet, "attendeeRelationship",  roleValue);
@@ -922,9 +933,34 @@ int ResultSetToAttendees(std::vector<Attendee> &attendees, DataShareResultSetPtr
 
         ResultSetToAttendeeStatus(attendee, resultSet);
         ResultSetToAttendeeType(attendee, resultSet);
-        attendees.emplace_back(attendee);
+
+        auto attendeeFindId = attendeesMap.find(eventId);
+        if (attendeeFindId == attendeesMap.end()) {
+            attendeesMap.insert(std::pair<int, std::vector<Attendee>>(eventId, {attendee}));
+        } else {
+            attendeeFindId->second.emplace_back(attendee);
+        }
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
+    GetEventAttendeesValue(events, attendeesMap);
     return 0;
+}
+
+void GetEventAttendeesValue(std::vector<Event> &events, const std::map<int, std::vector<Attendee>> &attendeesMap) {
+    if (attendeesMap.size() == 0) {
+        LOG_ERROR("attendees has no value");
+        return;
+    }
+    for (auto &event : events) {
+        const auto id =  event.id;
+        if (!id) {
+            LOG_ERROR("event id is null");
+            continue;
+        }
+        auto attendeeFindId = attendeesMap.find(id.value());
+        if (attendeeFindId != attendeesMap.end()) {
+            event.attendees = attendeeFindId->second;
+        }
+    }
 }
 
 std::string EventIdsToString(const std::vector<int> &ids) {
@@ -940,8 +976,12 @@ std::string EventIdsToString(const std::vector<int> &ids) {
     );
 }
 
-int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &resultSet)
+int ResultSetToMultiReminders(std::vector<Event> &events, DataShareResultSetPtr &resultSet)
 {
+    if (!resultSet) {
+        LOG_ERROR("resultSet is null");
+        return -1;
+    }
     int rowCount = 0;
     resultSet->GetRowCount(rowCount);
     LOG_INFO("GetRowCount is %{public}d", rowCount);
@@ -953,11 +993,34 @@ int ResultSetToReminders(std::vector<int> &reminders, DataShareResultSetPtr &res
         LOG_ERROR("Failed GoToFirstRow %{public}d", err);
         return -1;
     }
+    std::map<int, std::vector<int>> remindersMap;
     do {
         int minutes = 0;
+        int eventId = 0;
         GetValue(resultSet, "minutes", minutes);
-        reminders.emplace_back(minutes);
+        GetValue(resultSet, "event_id", eventId);
+        auto eventFindId = remindersMap.find(eventId);
+        if (eventFindId == remindersMap.end()) {
+            remindersMap.insert(std::pair<int, std::vector<int>>(eventId, {minutes}));
+        } else {
+            eventFindId->second.emplace_back(minutes);
+        }
     } while (resultSet->GoToNextRow() == DataShare::E_OK);
+    if (remindersMap.size() == 0) {
+        LOG_ERROR("reminders has no value");
+        return -1;
+    }
+    for (auto &event : events) {
+        const auto id = event.id;
+        if (!id) {
+            LOG_ERROR("event id is null");
+            continue;
+        }
+        auto eventFindId = remindersMap.find(id.value());
+        if (eventFindId != remindersMap.end()) {
+            event.reminderTime = eventFindId->second;
+        }
+    }
     return 0;
 }
 
