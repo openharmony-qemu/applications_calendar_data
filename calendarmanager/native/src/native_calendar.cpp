@@ -276,7 +276,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
         "timeZone", "location", "service", "attendee", "reminderTime", "identifier"};
     }
     DataShare::DatashareBusinessError error;
-    auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()), //event
+    auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),
         *(predicates.get()), queryField, &error);
     if (!result) {
         LOG_ERROR("query failed");
