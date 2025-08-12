@@ -285,11 +285,20 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, result, resultSetField);
     result->Close();
-    if (resultSetField.count("attendee")) {
-        GetAttendeesByEventIds(eventIds, events);
-    }
-    if (resultSetField.count("reminderTime")) {
-        GetRemindersByEventIds(eventIds, events);
+    int segmentSize = 10000;
+    for (size_t i = 0; i < eventIds.size(); i += segmentSize) {
+        size_t start = i;
+        size_t end = std::min(i + segmentSize, eventIds.size());
+        std::vector<std::string> queryIdsVec;
+        for (size_t j = start; j < end; ++j) {
+            queryIdsVec.emplace_back(eventIds[j]);
+        }
+        if (resultSetField.count("attendee")) {
+            GetAttendeesByEventIds(queryIdsVec, events);
+        }
+        if (resultSetField.count("reminderTime")) {
+            GetRemindersByEventIds(queryIdsVec, events);
+        }
     }
     LOG_INFO("query finished");
     return events;
