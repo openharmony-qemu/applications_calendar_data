@@ -227,7 +227,7 @@ namespace OHOS::CalendarApi::NapiUtil {
 
         uint32_t length = 0;
         napi_status status = napi_get_array_length(env, in, &length);
-        if (status != napi_ok || length <= 0) {
+        if (status != napi_ok || length == 0) {
             return napi_invalid_arg;
         }
         for (uint32_t i = 0; i < length; i++) {
