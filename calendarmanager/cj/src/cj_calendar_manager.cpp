@@ -123,7 +123,7 @@ CArrI64 CJCalendarManager::GetAllCalendars(int32_t* errcode)
         *errcode = CJ_ERR_OUT_OF_MEMORY;
         return ret;
     }
-    auto arr = static_cast<int64_t*>(malloc(size * sizeof(int64_t)*size));
+    auto arr = static_cast<int64_t*>(malloc(size * sizeof(int64_t)));
     if (arr == nullptr) {
         LOG_ERROR("arr is nullptr");
         *errcode = CJ_ERR_OUT_OF_MEMORY;

@@ -43,11 +43,11 @@ namespace CalendarApi {
     CArrI64 VectorToArrayI64(const std::vector<int64_t> &vec, int32_t* errcode)
     {
         CArrI64 arr = {};
-        arr.size = vec.size();
-        if (arr.size == 0) {
+        arr.size = static_cast<int64_t>(vec.size());
+        if (arr.size == 0 || arr.size > (SIZE_MAX * sizeof(int64_t))) {
             return arr;
         }
-        arr.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * vec.size()));
+        arr.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * arr.size));
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             LOG_ERROR("CArrI64 malloc failed");
@@ -65,6 +65,9 @@ namespace CalendarApi {
             return nullptr;
         }
         auto length = origin.length() + 1;
+        if (length == 0 || length > (SIZE_MAX * sizeof(int64_t))) {
+            return nullptr;
+        }
         char *res = static_cast<char *>(malloc(sizeof(char) * length));
         if (res == nullptr) {
             return nullptr;
@@ -152,13 +155,13 @@ namespace CalendarApi {
     CArrAttendee CJCalendar::BuildCArrAttendee(vector<Attendee> attendees, int32_t* errcode)
     {
         CArrAttendee arr = {};
-        arr.size = attendees.size();
-        if (arr.size == 0) {
+        arr.size = static_cast<int64_t>(attendees.size());
+        if (arr.size == 0 || arr.size > (SIZE_MAX * sizeof(int64_t))) {
             LOG_ERROR("Invalid size for memory allocation");
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             return arr;
         }
-        arr.head = static_cast<CAttendee *>(malloc(sizeof(CAttendee) * attendees.size()));
+        arr.head = static_cast<CAttendee *>(malloc(sizeof(CAttendee) * arr.size));
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             LOG_ERROR("CAttendee malloc failed");
@@ -298,7 +301,7 @@ namespace CalendarApi {
         }
     }
 
-    CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> events, int32_t* errcode)
+    CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> &events, int32_t* errcode)
     {
         CArrEvents arr = {};
         arr.head = static_cast<CEvent *>(malloc(sizeof(CEvent) * events.size()));
@@ -458,7 +461,11 @@ namespace CalendarApi {
             return arr;
         }
         std::vector<Event> events = calendar_->GetEvents(eventFilter, keys);
-        arr = VectorToCArrEvents(events, errcode);
+        if (events.size() == 0 || events.size() > (SIZE_MAX * sizeof(int64_t))) {
+            LOG_ERROR("events.size() is error");
+            return arr;
+        }
+        arr = VectorToCArrEvents(&events, errcode);
         if (*errcode != 0) {
             CArrEventfree(arr);
         }
