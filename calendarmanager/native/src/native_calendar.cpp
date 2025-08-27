@@ -285,7 +285,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter, cons
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, result, resultSetField);
     result->Close();
-    int segmentSize = 10000;
+    size_t segmentSize = 10000;
     for (size_t i = 0; i < eventIds.size(); i += segmentSize) {
         size_t start = i;
         size_t end = std::min(i + segmentSize, eventIds.size());
