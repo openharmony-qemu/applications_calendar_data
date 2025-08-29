@@ -322,7 +322,7 @@ namespace CalendarApi {
                 *errcode = CJ_ERR_OUT_OF_MEMORY;
                 return;
             }
-            for (int64_t j = 0; j < arr.head[i].reminderTime.size; j++) {
+            for (int64_t j = 0; j < cevent.reminderTime.size; j++) {
                 cevent.reminderTime.head[j] = static_cast<int64_t>(reminderTime[j]);
             }
         }
