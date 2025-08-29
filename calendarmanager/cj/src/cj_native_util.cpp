@@ -18,6 +18,7 @@
 #include "cj_native_util.h"
 #include <ctime>
 #include <numeric>
+#include <cmath>
 
 namespace OHOS::CalendarApi::Native {
 const int MIN_DAY_OF_WEEK = 1;
@@ -529,11 +530,11 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
         out.longitude = std::make_optional<double>(longitudeValue);
     }
     ret = GetValue(resultSet, "location_latitude", value);
-    double latitudeValue = -1;
+    double latitudeValue = -1.0;
     str2digit.clear();
     str2digit << value;
     str2digit >> latitudeValue;
-    if (isEqual(longitudeValue, -1.0)) {
+    if (isEqual(latitudeValue, -1.0)) {
         out.latitude = std::make_optional<double>(latitudeValue);
     }
 
