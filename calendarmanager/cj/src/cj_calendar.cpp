@@ -318,6 +318,11 @@ namespace CalendarApi {
         if (event.reminderTime.has_value() && event.reminderTime.value().size() > 0) {
             vector<int> reminderTime = event.reminderTime.value();
             cevent.reminderTime.size = static_cast<int64_t>(reminderTime.size());
+            if (reminderTime.size() == 0 || reminderTime.size() > (SIZE_MAX * sizeof(int64_t))) {
+                LOG_ERROR("reminderTime.size() is error");
+                errcode = CJ_ERR_OUT_OF_MEMORY;
+                return errcode;
+            }
             cevent.reminderTime.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * reminderTime.size()));
             if (cevent.reminderTime.head == nullptr) {
                 errcode = CJ_ERR_OUT_OF_MEMORY;
