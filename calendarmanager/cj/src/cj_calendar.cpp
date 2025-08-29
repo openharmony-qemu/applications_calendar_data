@@ -313,7 +313,7 @@ namespace CalendarApi {
             cevent.location = BuildCLocation(event.location.value());
         }
         cevent.isAllDay = event.isAllDay.value_or(false);
-        cevent.attendee = BuildCArrAttendee(event.attendees, errcode);
+        cevent.attendee = BuildCArrAttendee(event.attendees, &errcode);
         cevent.timeZone = IMallocCString(event.timeZone.value_or(""));
         if (event.reminderTime.has_value() && event.reminderTime.value().size() > 0) {
             vector<int> reminderTime = event.reminderTime.value();
@@ -333,7 +333,7 @@ namespace CalendarApi {
             }
         }
         if (event.recurrenceRule.has_value()) {
-            cevent.recurrenceRule = BuildCRecurrenceRule(event.recurrenceRule.value(), errcode);
+            cevent.recurrenceRule = BuildCRecurrenceRule(event.recurrenceRule.value(), &errcode);
         }
         cevent.description = IMallocCString(event.description.value_or(""));
         if (event.service.has_value()) {
