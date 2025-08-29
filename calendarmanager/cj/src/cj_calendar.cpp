@@ -354,7 +354,7 @@ namespace CalendarApi {
         arr.size = static_cast<int64_t>(events.size());
         for (size_t i = 0; i < events.size(); i++) {
             memset_s(&arr.head[i], sizeof(arr.head[i]), 0, sizeof(arr.head[i]));
-            *errcode = EventToCArrEvent(arr.head[i], events[i]);
+            *errcode = EventToCArrEvent(arr.head[i], events[i], errcode);
             if (*errcode != CJ_OK) {
                 LOG_ERROR("Event To CArrEvent failed.");
                 return arr;
