@@ -64,11 +64,11 @@ private:
     CalendarAccount m_account = {"", "", std::nullopt};
     CalendarConfig m_config = {true, 0};
     int m_id = 0;
-    std::unique_ptr<Uri> m_eventUri = nullptr;
-    std::unique_ptr<Uri> m_attendeeUri = nullptr;
-    std::unique_ptr<Uri> m_calendarUri = nullptr;
-    std::unique_ptr<Uri> m_reminderUrl = nullptr;
-    std::unique_ptr<Uri> m_instanceUrl = nullptr;
+    std::unique_ptr<Uri> m_eventUri;
+    std::unique_ptr<Uri> m_attendeeUri;
+    std::unique_ptr<Uri> m_calendarUri;
+    std::unique_ptr<Uri> m_reminderUrl;
+    std::unique_ptr<Uri> m_instanceUrl;
 };
 }  // namespace OHOS::Calendar
 #endif  //  NATIVE_CALENDAR_H
