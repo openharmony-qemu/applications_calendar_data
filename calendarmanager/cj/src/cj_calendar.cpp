@@ -301,8 +301,9 @@ namespace CalendarApi {
         }
     }
 
-    void CJCalendar::EventToCArrEvent(CEvent& cevent, Event& event, int32_t* errcode)
+    int32_t CJCalendar::EventToCArrEvent(CEvent& cevent, Event& event)
     {
+        int32_t errcode = CJ_OK;
         cevent.id = static_cast<int64_t>(event.id.value());
         cevent.type = event.type;
         cevent.startTime = event.startTime;
@@ -319,8 +320,8 @@ namespace CalendarApi {
             cevent.reminderTime.size = static_cast<int64_t>(reminderTime.size());
             cevent.reminderTime.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * reminderTime.size()));
             if (cevent.reminderTime.head == nullptr) {
-                *errcode = CJ_ERR_OUT_OF_MEMORY;
-                return;
+                errcode = CJ_ERR_OUT_OF_MEMORY;
+                return errcode;
             }
             for (int64_t j = 0; j < cevent.reminderTime.size; j++) {
                 cevent.reminderTime.head[j] = static_cast<int64_t>(reminderTime[j]);
@@ -337,6 +338,7 @@ namespace CalendarApi {
         }
         cevent.identifier = IMallocCString(event.identifier.value_or(""));
         cevent.isLunar = event.isLunar.value_or(false);
+        return errcode;
     }
 
     CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> &events, int32_t* errcode)
@@ -354,7 +356,7 @@ namespace CalendarApi {
         arr.size = static_cast<int64_t>(events.size());
         for (size_t i = 0; i < events.size(); i++) {
             memset_s(&arr.head[i], sizeof(arr.head[i]), 0, sizeof(arr.head[i]));
-            EventToCArrEvent(arr.head[i], events[i], errcode);
+            *errcode = EventToCArrEvent(arr.head[i], events[i]);
             if (*errcode != CJ_OK) {
                 LOG_ERROR("Event To CArrEvent failed.");
                 return arr;

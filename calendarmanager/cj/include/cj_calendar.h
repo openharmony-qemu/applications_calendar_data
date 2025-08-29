@@ -37,7 +37,7 @@ public:
     void CArrAttendeeFree(CArrAttendee cArrAttendee);
     void CRecurrenceRuleFree(CRecurrenceRule cRecurrenceRule);
     void CArrEventfree(CArrEvents arr);
-    void EventToCArrEvent(CEvent& cevent, Event& event, int32_t* errcode);
+    int32_t EventToCArrEvent(CEvent& cevent, Event& event);
     CArrEvents VectorToCArrEvents(std::vector<Event>& events, int32_t* errcode);
     RecurrenceRule BuildNativeRecurrenceRule(CRecurrenceRule recurrenceRule);
     CRecurrenceRule BuildCRecurrenceRule(RecurrenceRule nativeRecurrenceRule, int32_t* errcode);
