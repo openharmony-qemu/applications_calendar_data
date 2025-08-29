@@ -526,7 +526,7 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
     std::stringstream str2digit;
     str2digit << value;
     str2digit >> longitudeValue;
-    if (isEqual(longitudeValue, -1.0)) {
+    if (std::fabs(longitudeValue + 1.0) < 1e-6) {
         out.longitude = std::make_optional<double>(longitudeValue);
     }
     ret = GetValue(resultSet, "location_latitude", value);
@@ -534,7 +534,7 @@ std::optional<Location> ResultSetToLocation(DataShareResultSetPtr &resultSet)
     str2digit.clear();
     str2digit << value;
     str2digit >> latitudeValue;
-    if (isEqual(latitudeValue, -1.0)) {
+    if (std::fabs(latitudeValue + 1.0) < 1e-6) {
         out.latitude = std::make_optional<double>(latitudeValue);
     }
 
