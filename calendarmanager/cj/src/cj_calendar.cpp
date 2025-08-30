@@ -43,11 +43,11 @@ namespace CalendarApi {
     CArrI64 VectorToArrayI64(const std::vector<int64_t> &vec, int32_t* errcode)
     {
         CArrI64 arr = {};
-        arr.size = vec.size();
-        if (arr.size == 0) {
+        arr.size = static_cast<int64_t>(vec.size());
+        if (arr.size == 0 || arr.size > (SIZE_MAX * sizeof(int64_t))) {
             return arr;
         }
-        arr.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * vec.size()));
+        arr.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * arr.size));
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             LOG_ERROR("CArrI64 malloc failed");
@@ -65,6 +65,9 @@ namespace CalendarApi {
             return nullptr;
         }
         auto length = origin.length() + 1;
+        if (length > (SIZE_MAX * sizeof(char))) {
+            return nullptr;
+        }
         char *res = static_cast<char *>(malloc(sizeof(char) * length));
         if (res == nullptr) {
             return nullptr;
@@ -152,13 +155,13 @@ namespace CalendarApi {
     CArrAttendee CJCalendar::BuildCArrAttendee(vector<Attendee> attendees, int32_t* errcode)
     {
         CArrAttendee arr = {};
-        arr.size = attendees.size();
-        if (arr.size == 0) {
+        arr.size = static_cast<int64_t>(attendees.size());
+        if (arr.size == 0 || arr.size > (SIZE_MAX * sizeof(CAttendee))) {
             LOG_ERROR("Invalid size for memory allocation");
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             return arr;
         }
-        arr.head = static_cast<CAttendee *>(malloc(sizeof(CAttendee) * attendees.size()));
+        arr.head = static_cast<CAttendee *>(malloc(sizeof(CAttendee) * arr.size));
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
             LOG_ERROR("CAttendee malloc failed");
@@ -298,9 +301,56 @@ namespace CalendarApi {
         }
     }
 
-    CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> events, int32_t* errcode)
+    int32_t CJCalendar::EventToCArrEvent(CEvent& cevent, Event& event)
+    {
+        int32_t errcode = CJ_OK;
+        cevent.id = static_cast<int64_t>(event.id.value());
+        cevent.type = event.type;
+        cevent.startTime = event.startTime;
+        cevent.endTime = event.endTime;
+        cevent.title = IMallocCString(event.title.value_or(""));
+        if (event.location.has_value()) {
+            cevent.location = BuildCLocation(event.location.value());
+        }
+        cevent.isAllDay = event.isAllDay.value_or(false);
+        cevent.attendee = BuildCArrAttendee(event.attendees, &errcode);
+        cevent.timeZone = IMallocCString(event.timeZone.value_or(""));
+        if (event.reminderTime.has_value() && event.reminderTime.value().size() > 0) {
+            vector<int> reminderTime = event.reminderTime.value();
+            cevent.reminderTime.size = static_cast<int64_t>(reminderTime.size());
+            if (reminderTime.size() == 0 || reminderTime.size() > (SIZE_MAX * sizeof(int64_t))) {
+                LOG_ERROR("reminderTime.size() is error");
+                return CJ_ERR_OUT_OF_MEMORY;
+            }
+            cevent.reminderTime.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * reminderTime.size()));
+            if (cevent.reminderTime.head == nullptr) {
+                return CJ_ERR_OUT_OF_MEMORY;
+            }
+            for (int64_t j = 0; j < cevent.reminderTime.size; j++) {
+                cevent.reminderTime.head[j] = static_cast<int64_t>(reminderTime[j]);
+            }
+        }
+        if (event.recurrenceRule.has_value()) {
+            cevent.recurrenceRule = BuildCRecurrenceRule(event.recurrenceRule.value(), &errcode);
+        }
+        cevent.description = IMallocCString(event.description.value_or(""));
+        if (event.service.has_value()) {
+            cevent.service.type = IMallocCString(event.service.value().type);
+            cevent.service.uri = IMallocCString(event.service.value().uri);
+            cevent.service.description = IMallocCString(event.service.value().description.value_or(""));
+        }
+        cevent.identifier = IMallocCString(event.identifier.value_or(""));
+        cevent.isLunar = event.isLunar.value_or(false);
+        return errcode;
+    }
+
+    CArrEvents CJCalendar::VectorToCArrEvents(std::vector<Event> &events, int32_t* errcode)
     {
         CArrEvents arr = {};
+        if (events.size() == 0 || events.size() > (SIZE_MAX * sizeof(CEvent))) {
+            LOG_ERROR("events.size() is error");
+            return arr;
+        }
         arr.head = static_cast<CEvent *>(malloc(sizeof(CEvent) * events.size()));
         if (arr.head == nullptr) {
             *errcode = CJ_ERR_OUT_OF_MEMORY;
@@ -309,40 +359,11 @@ namespace CalendarApi {
         arr.size = static_cast<int64_t>(events.size());
         for (size_t i = 0; i < events.size(); i++) {
             memset_s(&arr.head[i], sizeof(arr.head[i]), 0, sizeof(arr.head[i]));
-            arr.head[i].id = static_cast<int64_t>(events[i].id.value());
-            arr.head[i].type = events[i].type;
-            arr.head[i].startTime = events[i].startTime;
-            arr.head[i].endTime = events[i].endTime;
-            arr.head[i].title = IMallocCString(events[i].title.value_or(""));
-            if (events[i].location.has_value()) {
-                arr.head[i].location = BuildCLocation(events[i].location.value());
+            *errcode = EventToCArrEvent(arr.head[i], events[i]);
+            if (*errcode != CJ_OK) {
+                LOG_ERROR("Event To CArrEvent failed.");
+                return arr;
             }
-            arr.head[i].isAllDay = events[i].isAllDay.value_or(false);
-            arr.head[i].attendee = BuildCArrAttendee(events[i].attendees, errcode);
-            arr.head[i].timeZone = IMallocCString(events[i].timeZone.value_or(""));
-            if (events[i].reminderTime.has_value() && events[i].reminderTime.value().size() > 0) {
-                vector<int> reminderTime = events[i].reminderTime.value();
-                arr.head[i].reminderTime.size = static_cast<int64_t>(reminderTime.size());
-                arr.head[i].reminderTime.head = static_cast<int64_t *>(malloc(sizeof(int64_t) * reminderTime.size()));
-                if (arr.head[i].reminderTime.head == nullptr) {
-                    *errcode = CJ_ERR_OUT_OF_MEMORY;
-                    return arr;
-                }
-                for (int64_t j = 0; j < arr.head[i].reminderTime.size; j++) {
-                    arr.head[i].reminderTime.head[j] = static_cast<int64_t>(reminderTime[j]);
-                }
-            }
-            if (events[i].recurrenceRule.has_value()) {
-                arr.head[i].recurrenceRule = BuildCRecurrenceRule(events[i].recurrenceRule.value(), errcode);
-            }
-            arr.head[i].description = IMallocCString(events[i].description.value_or(""));
-            if (events[i].service.has_value()) {
-                arr.head[i].service.type = IMallocCString(events[i].service.value().type);
-                arr.head[i].service.uri = IMallocCString(events[i].service.value().uri);
-                arr.head[i].service.description = IMallocCString(events[i].service.value().description.value_or(""));
-            }
-            arr.head[i].identifier = IMallocCString(events[i].identifier.value_or(""));
-            arr.head[i].isLunar = events[i].isLunar.value_or(false);
         }
         return arr;
     }
