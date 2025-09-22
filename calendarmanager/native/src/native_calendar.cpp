@@ -70,6 +70,7 @@ int Calendar::AddEventInfo(const Event& event, int channelId)
     auto eventId = DataShareHelperManager::GetInstance().Insert(*(m_eventUri.get()), valueEvent);
     LOG_INFO("Insert Event eventId %{private}d", eventId);
     if (eventId <= 0) {
+        LOG_ERROR("eventId error");
         return eventId;
     }
     // insert attendee

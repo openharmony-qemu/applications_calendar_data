@@ -485,16 +485,19 @@ std::vector<std::shared_ptr<Calendar>> ResultSetToCalendars(DataShareResultSetPt
     do {
         int idValue = -1;
         if (GetValue(resultSet, "_id", idValue) != DataShare::E_OK) {
+            LOG_ERROR("id getValue error");
             break;
         }
         LOG_DEBUG("id: %{private}d", idValue);
         std::string nameValue;
         if (GetValue(resultSet, "account_name", nameValue) != DataShare::E_OK) {
+            LOG_ERROR("account_name getValue error");
             break;
         }
         LOG_DEBUG("account_name: %{private}s", nameValue.c_str());
         std::string typeValue;
         if (GetValue(resultSet, "account_type", typeValue) != DataShare::E_OK) {
+            LOG_ERROR("account_type getValue error");
             break;
         }
         LOG_DEBUG("account_type: %{private}s", typeValue.c_str());
@@ -557,6 +560,7 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
     string value;
     auto ret = GetValue(resultSet, "service_type", value);
     if (ret != DataShare::E_OK) {
+        LOG_ERROR("service_type getValue error");
         return std::nullopt;
     }
     const std::set<std::string> serviceType = {"Meeting", "Watching", "Repayment", "Live", "Shopping",
@@ -564,15 +568,18 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
     if (serviceType.count(value)) {
         out.type = value;
     } else {
+        LOG_ERROR("service_type value error");
         return std::nullopt;
     }
     ret = GetValue(resultSet, "service_cp_bz_uri", value);
     if (ret != DataShare::E_OK) {
+        LOG_ERROR("service uri getValue error");
         return std::nullopt;
     }
     out.uri = value;
     ret = GetValue(resultSet, "service_description", value);
     if (ret == DataShare::E_OK) {
+        LOG_ERROR("service_description getValue error");
         out.description = std::make_optional<string>(value);
     }
     return std::make_optional<EventService>(out);
@@ -606,7 +613,7 @@ std::time_t TimeToUTC(const std::string &strTime)
 
     std::tm expireTime = {0};
     if (strTime.size() < timeStrLenMin) {
-        LOG_DEBUG("strTime length error");
+        LOG_ERROR("strTime length error");
         return 0;
     }
     expireTime.tm_year = StringToInt(strTime.substr(0, yearOffset)) - baseYear;
@@ -649,6 +656,7 @@ std::optional<vector<int64_t>> ResultSetToExcludedDates(DataShareResultSetPtr &r
     std::string value;
     auto ret = GetValue(resultSet, "exdate", value);
     if (ret != DataShare::E_OK) {
+        LOG_ERROR("exdate getValue error");
         return std::nullopt;
     }
     std::vector<string> strListExDate = SplitString(value, ",");
@@ -689,6 +697,7 @@ std::optional<RecurrenceRule> ResultSetToRecurrenceRule(DataShareResultSetPtr &r
     std::string value;
     auto ret = GetValue(resultSet, "rrule", value);
     if (ret != DataShare::E_OK) {
+        LOG_ERROR("rrule getValue error");
         return std::nullopt;
     }
     std::map<std::string, std::string> ruleMap;
@@ -804,11 +813,11 @@ void ResultSetToEvent(Event &event, DataShareResultSetPtr &resultSet, const std:
         GetValueOptional(resultSet, "title", event.title);
     }
     if (columns.count("startTime")) {
-        LOG_DEBUG("TLQ get startTime");
+        LOG_DEBUG("get startTime");
         GetValue(resultSet, "dtstart", event.startTime);
     }
     if (columns.count("endTime")) {
-        LOG_DEBUG("TLQ get endTime");
+        LOG_DEBUG("get endTime");
         GetValue(resultSet, "dtend", event.endTime);
     }
     if (columns.count("isAllDay")) {
@@ -861,6 +870,7 @@ int ResultSetToEvents(std::vector<std::string> &eventIds, std::vector<Event> &ev
         Event event;
         ResultSetToEvent(event, resultSet, columns);
         if (!event.id.has_value()) {
+            LOG_ERROR("event has no id");
             continue;
         }
         eventIds.emplace_back(std::to_string(event.id.value()));
