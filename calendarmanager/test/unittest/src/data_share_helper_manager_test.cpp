@@ -25,13 +25,13 @@ public:
     static void SetUpTestSuite(void)
     {
         // save helper
-        helper = DataShareHelperManager::GetInstance().GetDataShareHelper();
+        helper = DataShareHelperManager::GetInstance().GetDataShareHelper(false);
     }
 
     /* TearDownTestCase:The test suite cleanup action is executed after the last TestCase */
     static void TearDownTestSuite(void)
     {
-        DataShareHelperManager::GetInstance().SetDataShareHelper(helper);
+        DataShareHelperManager::GetInstance().SetDataShareHelper(helper, helper);
     }
     /* SetUp:Execute before each test case */
     void SetUp()
@@ -52,7 +52,7 @@ HWTEST_F(DataShareHelperManagerTest, Insert_test_001, testing::ext::TestSize.Lev
 {
     OHOS::Uri testUrl("");
     DataShare::DataShareValuesBucket value;
-    DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr);
+    DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
     auto ret = DataShareHelperManager::GetInstance().Insert(testUrl, value);
     ASSERT_TRUE(ret == -1);
 }
@@ -62,7 +62,7 @@ HWTEST_F(DataShareHelperManagerTest, Update_test_001, testing::ext::TestSize.Lev
     OHOS::Uri testUrl("");
     DataShare::DataSharePredicates predicates;
     DataShare::DataShareValuesBucket value;
-    DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr);
+    DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
     auto ret = DataShareHelperManager::GetInstance().Update(testUrl, predicates, value);
     ASSERT_TRUE(ret == -1);
 }
@@ -71,7 +71,7 @@ HWTEST_F(DataShareHelperManagerTest, Delete_test_001, testing::ext::TestSize.Lev
 {
     OHOS::Uri testUrl("");
     DataShare::DataSharePredicates predicates;
-    DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr);
+    DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
     auto ret = DataShareHelperManager::GetInstance().Delete(testUrl, predicates);
     ASSERT_TRUE(ret == -1);
 }
@@ -82,7 +82,7 @@ HWTEST_F(DataShareHelperManagerTest, Query_test_001, testing::ext::TestSize.Leve
     DataShare::DataSharePredicates predicates;
     std::vector<std::string> columns;
     DataShare::DatashareBusinessError error;
-    DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr);
+    DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
     auto ret = DataShareHelperManager::GetInstance().Query(testUrl, predicates, columns, &error);
     ASSERT_TRUE(ret == nullptr);
 }
