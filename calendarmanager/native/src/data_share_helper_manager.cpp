@@ -140,7 +140,7 @@ void DataShareHelperManager::SetDataShareHelperTimer(int milliseconds)
 {
     int64_t curtime = duration_cast<std::chrono::milliseconds>(system_clock::now().time_since_epoch()).count();
     expire.store(curtime + milliseconds, std::memory_order_seq_cst);
-    if (m_lowHelper && m_highHelper) {
+    if (m_lowHelper || m_highHelper) {
         return;
     }
     LOG_INFO("SetDataShareHelperTimer expireTime=%{public}lld", expire.load());
