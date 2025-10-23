@@ -94,15 +94,6 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(b
         if (dataShareHelper) {
             break;
         }
-
-        m_highHelper =  DataShareHelper::Creator(
-            CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_WHOLE_URI);
-        m_lowHelper = DataShareHelper::Creator(
-            CalendarEnvNapi::GetInstance().getContext()->GetToken(), CALENDAR_DATA_URI);
-        if (m_highHelper && m_lowHelper) {
-            break;
-        }
-
         LOG_WARN("CreateDataShareHelper failed %{public}d times retired", retryCount);
         retryCount = retryCount + 1;
     } while (retryCount < MAX_RETRY_ATTEMPTS);
