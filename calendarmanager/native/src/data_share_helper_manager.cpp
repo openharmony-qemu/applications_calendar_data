@@ -58,9 +58,27 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::JudgeDataShareHelper(bo
 
     if (ret == Security::AccessToken::PERMISSION_GRANTED) {
         LOG_INFO("DataShareHelper in high permission");
+        if (!m_highHelper) {
+            if (!CalendarEnvNapi::GetInstance().getContext()) {
+                LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
+                return nullptr;
+            }
+            m_highHelper =  DataShareHelper::Creator(CalendarEnvNapi::GetInstance()
+            .getContext()->GetToken(), CALENDAR_DATA_WHOLE_URI);
+            LOG_INFO("m_highHelper not null %{public}d", m_highHelper != nullptr);
+        }
         return m_highHelper;
     } else {
         LOG_INFO("DataShareHelper in low permission");
+        if (!m_lowHelper) {
+            if (!CalendarEnvNapi::GetInstance().getContext()) {
+                LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
+                return nullptr;
+            }
+            m_lowHelper =  DataShareHelper::Creator(CalendarEnvNapi::GetInstance()
+            .getContext()->GetToken(), CALENDAR_DATA_URI);
+            LOG_INFO("m_lowHelper not null %{public}d", m_lowHelper != nullptr);
+        }
         return m_lowHelper;
     }
 }
@@ -72,12 +90,8 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(b
     uint32_t retryCount = 0;
     std::shared_ptr<DataShare::DataShareHelper> dataShareHelper = nullptr;
     do {
-        if (m_highHelper && m_lowHelper) {
-            break;
-        }
-
-        if (!CalendarEnvNapi::GetInstance().getContext()) {
-            LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
+        dataShareHelper = JudgeDataShareHelper(isRead);
+        if (dataShareHelper) {
             break;
         }
 
@@ -93,7 +107,6 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(b
         retryCount = retryCount + 1;
     } while (retryCount < MAX_RETRY_ATTEMPTS);
 
-    dataShareHelper = JudgeDataShareHelper(isRead);
     if (!(dataShareHelper)) {
         LOG_ERROR("create dataShareHelper failed");
         return nullptr;
