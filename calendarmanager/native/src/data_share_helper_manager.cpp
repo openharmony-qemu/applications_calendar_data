@@ -84,12 +84,7 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(b
     } else {
         LOG_INFO("DataShareHelper in low permission");
         if (!m_lowHelper) {
-            if (!context) {
-                LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
-                return nullptr;
-            }
-            m_lowHelper =  DataShareHelper::Creator(context->GetToken(), CALENDAR_DATA_URI);
-            LOG_INFO("m_lowHelper not null %{public}d", m_lowHelper != nullptr);
+            m_lowHelper = CreateInnerDataShareHelper(CALENDAR_DATA_URI);
         }
         dataShareHelper = m_lowHelper;
     }
