@@ -99,7 +99,7 @@ public:
         DataShare::DatashareBusinessError *businessError = nullptr);
 private:
      /**
-     * @brief Create a dataShareHelper instance.
+     * @brief Create a dataShareHelper instance based on read or write operations.
      *
      * @param isRead Determine whether it is a read operation.
      *
@@ -124,13 +124,13 @@ private:
      */
     void SetDataShareHelperTimer(int milliseconds = 3000);
     /**
-     * @brief Create a dataShareHelper instance with high or low permissions based on read or write operations.
+     * @brief Create a dataShareHelper instance with high or low permissions.
      *
-     * @param isRead Determine whether it is a read operation.
+     * @param permissionUri High or low permission calendar URI.
      *
      * @return Returns DataShareHelper instance or nullptr when failed.
      */
-    std::shared_ptr<DataShare::DataShareHelper> CreateMultiDataShareHelper(bool isRead);
+    std::shared_ptr<DataShare::DataShareHelper> CreateInnerDataShareHelper(const std::string &permissionUri);
     
     std::atomic<long long> expire = 0;
     std::atomic<uint32_t> useCount = 0;

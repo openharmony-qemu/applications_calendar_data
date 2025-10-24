@@ -43,10 +43,32 @@ void DataShareHelperManager::SetDataShareHelper
     m_highHelper = highHelper;
 }
 
-std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateMultiDataShareHelper(bool isRead)
+std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateInnerDataShareHelper(const std::string &permissionUri)
 {
+    uint32_t retryCount = 0;
+    std::shared_ptr<DataShare::DataShareHelper> dataShareHelper = nullptr;
     auto context = CalendarEnvNapi::GetInstance().getContext();
+    if (!context) {
+        LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
+        return nullptr;
+    }
+    do {
+        dataShareHelper = DataShareHelper::Creator(context->GetToken(), permissionUri);
+        if (dataShareHelper) {
+            break;
+        }
+        LOG_WARN("CreateDataShareHelper failed %{public}d times retired", retryCount);
+        retryCount = retryCount + 1;
+    } while (retryCount < MAX_RETRY_ATTEMPTS);
+    return dataShareHelper;
+}
+
+std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(bool isRead)
+{
+    std::lock_guard<std::recursive_mutex> lock(dataShareLock);
+    DataShareHelperManager::SetDataShareHelperTimer(DESTROY_DATASHARE_DELAY);
     int32_t ret = -1;
+    std::shared_ptr<DataShare::DataShareHelper> dataShareHelper = nullptr;
     if (isRead) {
         ret = Security::AccessToken::AccessTokenKit::
         VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), READ_PERMISSION_NAME);
@@ -60,14 +82,9 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateMultiDataShareHel
     if (ret == Security::AccessToken::PERMISSION_GRANTED) {
         LOG_INFO("DataShareHelper in high permission");
         if (!m_highHelper) {
-            if (!context) {
-                LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
-                return nullptr;
-            }
-            m_highHelper =  DataShareHelper::Creator(context->GetToken(), CALENDAR_DATA_WHOLE_URI);
-            LOG_INFO("m_highHelper not null %{public}d", m_highHelper != nullptr);
+            m_highHelper = CreateInnerDataShareHelper(CALENDAR_DATA_WHOLE_URI);
         }
-        return m_highHelper;
+        dataShareHelper = m_highHelper;
     } else {
         LOG_INFO("DataShareHelper in low permission");
         if (!m_lowHelper) {
@@ -78,24 +95,8 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateMultiDataShareHel
             m_lowHelper =  DataShareHelper::Creator(context->GetToken(), CALENDAR_DATA_URI);
             LOG_INFO("m_lowHelper not null %{public}d", m_lowHelper != nullptr);
         }
-        return m_lowHelper;
+        dataShareHelper = m_lowHelper;
     }
-}
-
-std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(bool isRead)
-{
-    std::lock_guard<std::recursive_mutex> lock(dataShareLock);
-    DataShareHelperManager::SetDataShareHelperTimer(DESTROY_DATASHARE_DELAY);
-    uint32_t retryCount = 0;
-    std::shared_ptr<DataShare::DataShareHelper> dataShareHelper = nullptr;
-    do {
-        dataShareHelper = CreateMultiDataShareHelper(isRead);
-        if (dataShareHelper) {
-            break;
-        }
-        LOG_WARN("CreateDataShareHelper failed %{public}d times retired", retryCount);
-        retryCount = retryCount + 1;
-    } while (retryCount < MAX_RETRY_ATTEMPTS);
 
     return dataShareHelper;
 }
