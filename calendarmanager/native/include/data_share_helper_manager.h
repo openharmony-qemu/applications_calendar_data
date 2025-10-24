@@ -23,13 +23,25 @@
 namespace OHOS::CalendarApi {
 class DataShareHelperManager : public OHOS::Singleton<DataShareHelperManager> {
 public:
-    void SetDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> helper);
-     /**
-     * @brief Get the dataShareHelper instance.
+    /**
+     * @brief Set the dataShareHelper instance.
+     *
+     * @param lowHelper Low permissions dataShareHelper.
+     *
+     * @param highHelper High permissions dataShareHelper.
      *
      * @return Returns DataShareHelper instance or nullptr when failed.
      */
-    std::shared_ptr<DataShare::DataShareHelper> GetDataShareHelper();
+    void SetDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> lowHelper,
+     std::shared_ptr<DataShare::DataShareHelper> highHelper);
+     /**
+     * @brief Get the dataShareHelper instance.
+     *
+     * @param isRead Determine whether it is a read operation.
+     *
+     * @return Returns DataShareHelper instance or nullptr when failed.
+     */
+    std::shared_ptr<DataShare::DataShareHelper> GetDataShareHelper(bool isRead);
     /**
      * @brief Inserts a single data record into the database.
      *
@@ -87,11 +99,13 @@ public:
         DataShare::DatashareBusinessError *businessError = nullptr);
 private:
      /**
-     * @brief Create a dataShareHelper instance.
+     * @brief Create a dataShareHelper instance based on read or write operations.
+     *
+     * @param isRead Determine whether it is a read operation.
      *
      * @return Returns DataShareHelper instance or nullptr when failed.
      */
-    std::shared_ptr<DataShare::DataShareHelper> CreateDataShareHelper();
+    std::shared_ptr<DataShare::DataShareHelper> CreateDataShareHelper(bool isRead);
      /**
      * @brief Destroy the dataShareHelper instance when there is no dataShare operations for a period of time,
      * otherwise no destruction is performed.
@@ -109,10 +123,21 @@ private:
      * @return void.
      */
     void SetDataShareHelperTimer(int milliseconds = 3000);
-    std::shared_ptr<DataShare::DataShareHelper> m_dataShareHelper;
+    /**
+     * @brief Create a dataShareHelper instance with high or low permissions.
+     *
+     * @param permissionUri High or low permission calendar URI.
+     *
+     * @return Returns DataShareHelper instance or nullptr when failed.
+     */
+    std::shared_ptr<DataShare::DataShareHelper> CreateInnerDataShareHelper(const std::string &permissionUri);
+    
     std::atomic<long long> expire = 0;
     std::atomic<uint32_t> useCount = 0;
     std::recursive_mutex dataShareLock;
+
+    std::shared_ptr<DataShare::DataShareHelper> m_highHelper = nullptr;
+    std::shared_ptr<DataShare::DataShareHelper> m_lowHelper = nullptr;
 };
 } // namespace OHOS::CalendarApi
 

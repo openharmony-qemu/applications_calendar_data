@@ -61,7 +61,7 @@ void InitEnv(void)
     CalendarEnv::GetInstance().Init("ohos.calendar_manager_test.demo", tokenId);
     auto helper = CreateDataShareHelper(storageManagerId, DATA_SHARE_URI);
     ASSERT_TRUE(helper != nullptr);
-    DataShareHelperManager::GetInstance().SetDataShareHelper(helper);
+    DataShareHelperManager::GetInstance().SetDataShareHelper(helper, helper);
     LOG_INFO("SetUpTestCase end");
 }
 
