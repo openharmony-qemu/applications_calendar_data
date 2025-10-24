@@ -69,15 +69,11 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(b
     DataShareHelperManager::SetDataShareHelperTimer(DESTROY_DATASHARE_DELAY);
     int32_t ret = -1;
     std::shared_ptr<DataShare::DataShareHelper> dataShareHelper = nullptr;
-    if (isRead) {
-        ret = Security::AccessToken::AccessTokenKit::
-        VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), READ_PERMISSION_NAME);
-        LOG_INFO("CreateDataShareHelper read verify access result=%{public}d", ret);
-    } else {
-        ret = Security::AccessToken::AccessTokenKit::
-        VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), WRITE_PERMISSION_NAME);
-        LOG_INFO("CreateDataShareHelper write verify access result=%{public}d", ret);
-    }
+    std::string permissionName = isRead ? READ_PERMISSION_NAME : WRITE_PERMISSION_NAME;
+    LOG_INFO("Permission is %{public}s", isRead ? "read" : "write");
+    ret = Security::AccessToken::AccessTokenKit::
+        VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), permissionName);
+    LOG_INFO("CreateDataShareHelper verify access result=%{public}d", ret);
 
     if (ret == Security::AccessToken::PERMISSION_GRANTED) {
         LOG_INFO("DataShareHelper in high permission");
