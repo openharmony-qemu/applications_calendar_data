@@ -23,10 +23,21 @@
 namespace OHOS::CalendarApi {
 class DataShareHelperManager : public OHOS::Singleton<DataShareHelperManager> {
 public:
-    void SetDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> lowhelper,
+    /**
+     * @brief Set the dataShareHelper instance.
+     *
+     * @param lowHelper Low permissions dataShareHelper.
+     *
+     * @param highHelper High permissions dataShareHelper.
+     *
+     * @return Returns DataShareHelper instance or nullptr when failed.
+     */
+    void SetDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> lowHelper,
      std::shared_ptr<DataShare::DataShareHelper> highHelper);
      /**
      * @brief Get the dataShareHelper instance.
+     *
+     * @param isRead Determine whether it is a read operation.
      *
      * @return Returns DataShareHelper instance or nullptr when failed.
      */
@@ -90,6 +101,8 @@ private:
      /**
      * @brief Create a dataShareHelper instance.
      *
+     * @param isRead Determine whether it is a read operation.
+     *
      * @return Returns DataShareHelper instance or nullptr when failed.
      */
     std::shared_ptr<DataShare::DataShareHelper> CreateDataShareHelper(bool isRead);
@@ -109,8 +122,16 @@ private:
      *
      * @return void.
      */
-    std::shared_ptr<DataShare::DataShareHelper> JudgeDataShareHelper(bool isRead);
     void SetDataShareHelperTimer(int milliseconds = 3000);
+    /**
+     * @brief Create a dataShareHelper instance with high or low permissions based on read or write operations.
+     *
+     * @param isRead Determine whether it is a read operation.
+     *
+     * @return Returns DataShareHelper instance or nullptr when failed.
+     */
+    std::shared_ptr<DataShare::DataShareHelper> CreateMultiDataShareHelper(bool isRead);
+    
     std::atomic<long long> expire = 0;
     std::atomic<uint32_t> useCount = 0;
     std::recursive_mutex dataShareLock;

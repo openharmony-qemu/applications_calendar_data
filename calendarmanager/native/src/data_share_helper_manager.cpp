@@ -25,8 +25,8 @@
 namespace {
 const std::string CALENDAR_DATA_URI = "datashare:///calendardata";
 const std::string CALENDAR_DATA_WHOLE_URI = "datashare:///calendardata_whole";
-const std::string PERMISSION_READ_NAME = "ohos.permission.READ_WHOLE_CALENDAR";
-const std::string PERMISSION_WRITE_NAME = "ohos.permission.WRITE_WHOLE_CALENDAR";
+const std::string READ_PERMISSION_NAME  = "ohos.permission.READ_WHOLE_CALENDAR";
+const std::string WRITE_PERMISSION_NAME = "ohos.permission.WRITE_WHOLE_CALENDAR";
 const int DESTROY_DATASHARE_DELAY = 2 * 60 * 1000;
 const int CHECK_INTERVAL_DIVIDER = 4;
 const uint32_t MAX_RETRY_ATTEMPTS = 3;
@@ -43,40 +43,39 @@ void DataShareHelperManager::SetDataShareHelper
     m_highHelper = highHelper;
 }
 
-std::shared_ptr<DataShareHelper> DataShareHelperManager::JudgeDataShareHelper(bool isRead)
+std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateMultiDataShareHelper(bool isRead)
 {
+    auto context = CalendarEnvNapi::GetInstance().getContext();
     int32_t ret = -1;
     if (isRead) {
         ret = Security::AccessToken::AccessTokenKit::
-        VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), PERMISSION_READ_NAME);
+        VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), READ_PERMISSION_NAME);
         LOG_INFO("CreateDataShareHelper read verify access result=%{public}d", ret);
     } else {
         ret = Security::AccessToken::AccessTokenKit::
-        VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), PERMISSION_WRITE_NAME);
+        VerifyAccessToken(IPCSkeleton::GetCallingTokenID(), WRITE_PERMISSION_NAME);
         LOG_INFO("CreateDataShareHelper write verify access result=%{public}d", ret);
     }
 
     if (ret == Security::AccessToken::PERMISSION_GRANTED) {
         LOG_INFO("DataShareHelper in high permission");
         if (!m_highHelper) {
-            if (!CalendarEnvNapi::GetInstance().getContext()) {
+            if (!context) {
                 LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
                 return nullptr;
             }
-            m_highHelper =  DataShareHelper::Creator(CalendarEnvNapi::GetInstance()
-            .getContext()->GetToken(), CALENDAR_DATA_WHOLE_URI);
+            m_highHelper =  DataShareHelper::Creator(context->GetToken(), CALENDAR_DATA_WHOLE_URI);
             LOG_INFO("m_highHelper not null %{public}d", m_highHelper != nullptr);
         }
         return m_highHelper;
     } else {
         LOG_INFO("DataShareHelper in low permission");
         if (!m_lowHelper) {
-            if (!CalendarEnvNapi::GetInstance().getContext()) {
+            if (!context) {
                 LOG_INFO("CalendarEnvNapi::GetInstance().getContext() is null");
                 return nullptr;
             }
-            m_lowHelper =  DataShareHelper::Creator(CalendarEnvNapi::GetInstance()
-            .getContext()->GetToken(), CALENDAR_DATA_URI);
+            m_lowHelper =  DataShareHelper::Creator(context->GetToken(), CALENDAR_DATA_URI);
             LOG_INFO("m_lowHelper not null %{public}d", m_lowHelper != nullptr);
         }
         return m_lowHelper;
@@ -90,7 +89,7 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(b
     uint32_t retryCount = 0;
     std::shared_ptr<DataShare::DataShareHelper> dataShareHelper = nullptr;
     do {
-        dataShareHelper = JudgeDataShareHelper(isRead);
+        dataShareHelper = CreateMultiDataShareHelper(isRead);
         if (dataShareHelper) {
             break;
         }
@@ -98,10 +97,6 @@ std::shared_ptr<DataShareHelper> DataShareHelperManager::CreateDataShareHelper(b
         retryCount = retryCount + 1;
     } while (retryCount < MAX_RETRY_ATTEMPTS);
 
-    if (!(dataShareHelper)) {
-        LOG_ERROR("create dataShareHelper failed");
-        return nullptr;
-    }
     return dataShareHelper;
 }
 
