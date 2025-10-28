@@ -433,6 +433,29 @@ HWTEST_F(CalendarTest, UpdateEvent_test_3, testing::ext::TestSize.Level1)
     auto eventId = calendar->AddEvent(event);
     auto events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule", "identifier", "isLunar", "id"});
     ASSERT_NE(eventId, 0);
+    ASSERT_NE(events.size(), 0);
+    EXPECT_EQ(recurrenceRule.recurrenceFrequency, events[0].recurrenceRule.value().recurrenceFrequency);
+    EXPECT_EQ(event.identifier.value(), events[0].identifier.value());
+    EXPECT_EQ(event.isLunar.value(), events[0].isLunar.value());
+    Event updateEvent;
+    RecurrenceRule updateRule;
+    updateRule.recurrenceFrequency = YEARLY;
+    updateRule.daysOfWeek = {2, 4, 6};
+    updateRule.weeksOfMonth = {4, 5, 6};
+    updateRule.monthsOfYear = {1, 2, 3};
+    updateEvent.id = events[0].id;
+    updateEvent.recurrenceRule = std::make_optional<RecurrenceRule>(updateRule);
+    updateEvent.isLunar = std::make_optional<bool>(true);
+    updateEvent.title = std::make_optional<std::string>("After_UpdateEvent_test_3");
+    auto isUpdate = calendar->UpdateEvent(updateEvent);
+    EXPECT_EQ(isUpdate, true);
+    auto updateEvents = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule", "identifier", "isLunar", "id"});
+    ASSERT_NE(updateEvents.size(), 0);
+    EXPECT_EQ(updateEvent.id.value(), updateEvents[0].id.value());
+    EXPECT_EQ(updateEvent.isLunar.value(), updateEvents[0].isLunar.value());
+    EXPECT_EQ(updateEvent.title.value(), updateEvents[0].title.value());
+    EXPECT_EQ(updateRule.recurrenceFrequency, updateEvents[0].recurrenceRule.value().recurrenceFrequency);
+    EXPECT_EQ(updateRule.daysOfWeek.value(), updateEvents[0].recurrenceRule.value().daysOfWeek.value());
 }
 
 HWTEST_F(CalendarTest, AddEventInfoNoID, testing::ext::TestSize.Level1)
@@ -448,6 +471,13 @@ HWTEST_F(CalendarTest, AddEventInfoNoID, testing::ext::TestSize.Level1)
     int channelId = 0;
     int eventInfo = calendar->AddEventInfo(event, channelId);
     ASSERT_NE(eventInfo, 0);
+    auto events = calendar->GetEvents(FilterById({eventInfo}), {});
+    EXPECT_EQ(eventInfo, events[0].id);
+    auto newRecurrenceRule = events[0].recurrenceRule.value();
+    EXPECT_EQ(recurrenceRule.recurrenceFrequency, newRecurrenceRule.recurrenceFrequency);
+    EXPECT_EQ(recurrenceRule.daysOfWeek, newRecurrenceRule.daysOfWeek);
+    EXPECT_EQ(recurrenceRule.weeksOfMonth, newRecurrenceRule.weeksOfMonth);
+    EXPECT_EQ(recurrenceRule.excludedDates, newRecurrenceRule.excludedDates);
 }
 
 HWTEST_F(CalendarTest, UpdateEventNoID, testing::ext::TestSize.Level1)
