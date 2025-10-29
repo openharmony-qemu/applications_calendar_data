@@ -472,6 +472,7 @@ HWTEST_F(CalendarTest, AddEventInfoNoID, testing::ext::TestSize.Level1)
     int eventInfo = calendar->AddEventInfo(event, channelId);
     ASSERT_NE(eventInfo, 0);
     auto events = calendar->GetEvents(FilterById({eventInfo}), {"recurrenceRule"});
+    ASSERT_NE(events.size(), 0);
     EXPECT_EQ(eventInfo, events[0].id);
     auto newRecurrenceRule = events[0].recurrenceRule.value();
     EXPECT_EQ(recurrenceRule.recurrenceFrequency, newRecurrenceRule.recurrenceFrequency);
