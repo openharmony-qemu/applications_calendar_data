@@ -67,6 +67,7 @@ ohos_shared_library("calendarmanager") {
     "./native/src/native_calendar.cpp",
     "./native/src/native_calendar_manager.cpp",
     "./native/src/native_util.cpp",
+    "./native/src/dotting_manager.cpp",
   ]
 
   deps = [
@@ -92,7 +93,7 @@ ohos_shared_library("calendarmanager") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
- 
+    "hiappevent:hiappevent_innerapi",
   ]
 
   public_deps = []

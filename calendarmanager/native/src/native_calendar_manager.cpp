@@ -18,6 +18,7 @@
 #include "calendar_env.h"
 #include "calendar_log.h"
 #include "native_util.h"
+#include "dotting_manager.h"
 
 namespace OHOS::CalendarApi::Native {
 DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &account);
@@ -58,6 +59,7 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
 
 std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount &account)
 {
+    CalendarApi::DottingManager::getInstance().onApiCallStart("CreateCalendar");
     auto valueEvent = BuildValueCalendarAccount(account);
     int errNum = 0;
     int index = 0;
@@ -129,6 +131,7 @@ std::vector<std::shared_ptr<Calendar>> CalendarManager::GetAllCalendars()
 
 bool CalendarManager::DeleteCalendar(const Calendar &calendar)
 {
+    CalendarApi::DottingManager::getInstance().onApiCallStart("DeleteCalendar");
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("_id", calendar.GetId());
     int errNum = 0;
