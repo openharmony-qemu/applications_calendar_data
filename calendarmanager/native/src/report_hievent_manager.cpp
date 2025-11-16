@@ -46,13 +46,7 @@ int64_t ReportHiEventManager::onApiCallStart(const std::string& api_name)
         LOG_INFO("First API call detected, API: %{public}s ", api_name.c_str());
     }
 
-    if (!reporting_started_.load() && !reporting_.load()) {
-        std::lock_guard<std::mutex> lock(stats_mutex_);
-        if (!reporting_started_.load() && !reporting_.load()) {
-            LOG_INFO("Auto starting reporting on first API call ");
-            startReportingInternal();
-        }
-    }
+    ensureReportingRunning();
 
     auto& stat = getOrCreateStat(api_name);
     ++stat.total_calls;
@@ -63,11 +57,52 @@ int64_t ReportHiEventManager::onApiCallStart(const std::string& api_name)
     return stat.batch_start_time.load();
 }
 
-void ReportHiEventManager::updateLastCallTime() {
+void ReportHiEventManager::updateLastCallTime() 
+{
     last_api_call_time_.store(
         std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count()
     );
+}
+
+void ReportHiEventManager::ensureReportingRunning()
+{
+    if (reporting_.load(std::memory_order_acquire) &&
+        reporting_started_.load(std::memory_order_acquire)) {
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(stats_mutex_);
+
+    if (reporting_.load(std::memory_order_relaxed) &&
+        reporting_started_.load(std::memory_order_relaxed)) {
+        return;
+    }
+
+    //clear thread state
+    if (thread_joinable_.load(std::memory_order_relaxed)) {
+        if (report_thread_.joinable()) {
+            stop_reporting_.store(true, std::memory_order_release);
+            {
+                std::lock_guard<std::mutex> cv_lock(report_thread_cv_mutex_);
+                need_immediate_report_ = true;
+            }
+            report_thread_cv_.notify_one();
+
+            if (report_thread_.joinable()) {
+                report_thread_.join();
+            }
+            thread_joinable_.store(false, std::memory_order_release);
+        }
+    }
+
+    reporting_.store(true, std::memory_order_release);
+    stop_reporting_.store(false, std::memory_order_release);
+    reporting_started_.store(true, std::memory_order_release);
+    report_thread_ = std::thread([this]() {
+        this->reportingThreadFunc();
+    });
+    thread_joinable_.store(true, std::memory_order_release);
 }
 
 void ReportHiEventManager::startReporting(int interval_seconds, int threshold) 
@@ -208,7 +243,7 @@ ApiStat& ReportHiEventManager::getOrCreateStat(const std::string& api_name)
 
     if (stat.batch_start_time.load() == 0) {
         stat.batch_start_time.store(std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count()
+            std::chrono::system_clock::now().time_since_epoch()).count()
         );
     }
 

@@ -72,9 +72,11 @@ private:
     void reportingThreadFunc();
 
     void startReportingInternal();
+    void notifyReportingThread();
 
     void updateLastCallTime();
     bool shouldAutoStop() const;
+    void ensureReportingRunning();
 
     mutable std::mutex stats_mutex_;
     std::unordered_map<std::string, ApiStat> api_stats_;
@@ -83,6 +85,7 @@ private:
     mutable std::mutex report_thread_cv_mutex_;
     bool need_immediate_report_{false};
     std::atomic<bool> report_thread_waiting_{false};
+    std::atomic<bool> thread_joinable_{false};
 
     std::atomic<bool> reporting_{false};
     std::atomic<bool> stop_reporting_{false};
