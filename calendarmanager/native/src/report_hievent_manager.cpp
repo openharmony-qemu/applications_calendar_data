@@ -20,7 +20,7 @@
 
 namespace OHOS::CalendarApi {
 
-int64_t ReportHiEventManager::processorId = -1;
+std::atomic<int64_t> ReportHiEventManager::processorId{-1};
 const int IDLE_TIME_OUT = 180;
 
 ReportHiEventManager& ReportHiEventManager::getInstance() 
@@ -72,37 +72,27 @@ void ReportHiEventManager::ensureReportingRunning()
         return;
     }
 
-    std::lock_guard<std::mutex> lock(stats_mutex_);
+    std::lock_guard<std::mutex> startLock(start_mutex_);
 
-    if (reporting_.load(std::memory_order_relaxed) &&
-        reporting_started_.load(std::memory_order_relaxed)) {
+    if (reporting_.load(std::memory_order_acquire) &&
+        reporting_started_.load(std::memory_order_acquire)) {
         return;
     }
 
-    //clear thread state
-    if (thread_joinable_.load(std::memory_order_relaxed)) {
-        if (report_thread_.joinable()) {
-            stop_reporting_.store(true, std::memory_order_release);
-            {
-                std::lock_guard<std::mutex> cv_lock(report_thread_cv_mutex_);
-                need_immediate_report_ = true;
-            }
-            report_thread_cv_.notify_one();
-
-            if (report_thread_.joinable()) {
-                report_thread_.join();
-            }
-            thread_joinable_.store(false, std::memory_order_release);
+    if (report_thread_.joinable()) {
+        stop_reporting_.store(true, std::memory_order_release);
+        {
+            std::lock_guard<std::mutex> cv_lock(report_thread_cv_mutex_);
+            need_immediate_report_ = true;
         }
+        report_thread_cv_.notify_one();
+        report_thread_.join();
     }
 
     reporting_.store(true, std::memory_order_release);
     stop_reporting_.store(false, std::memory_order_release);
     reporting_started_.store(true, std::memory_order_release);
-    report_thread_ = std::thread([this]() {
-        this->reportingThreadFunc();
-    });
-    thread_joinable_.store(true, std::memory_order_release);
+    report_thread_ = std::thread([this]() { this->reportingThreadFunc(); });
 }
 
 void ReportHiEventManager::startReporting(int interval_seconds, int threshold) 
@@ -120,26 +110,31 @@ void ReportHiEventManager::startReporting(int interval_seconds, int threshold)
 
 void ReportHiEventManager::startReportingInternal() 
 {
-    if (reporting_.load()) {
+    std::lock_guard<std::mutex> startLock(start_mutex_);
+    if (reporting_.load(std::memory_order_acquire)) {
         return;
     }
-    reporting_ = true;
-    stop_reporting_ = false;
-    reporting_started_ = true;
-    
-    report_thread_ = std::thread([this]() {
-        this->reportingThreadFunc();
-    });
+
+    if (report_thread_.joinable()) {
+        report_thread_.join();
+    }
+
+    reporting_.store(true, std::memory_order_release);
+    stop_reporting_.store(false, std::memory_order_release);
+    reporting_started_.store(true, std::memory_order_release);
+
+    report_thread_ = std::thread([this]() { this->reportingThreadFunc(); });
 }
 
 void ReportHiEventManager::stopReporting() 
 {
-    if (!reporting_.load()) {
+    std::lock_guard<std::mutex> startLock(start_mutex_);
+    if (!reporting_.load(std::memory_order_acquire)) {
         return;
     }
 
-    reporting_ = false;
-    stop_reporting_ = true;
+    reporting_.store(false, std::memory_order_release);
+    stop_reporting_.store(true, std::memory_order_release);
 
     {
         std::lock_guard<std::mutex> lock(report_thread_cv_mutex_);
@@ -151,7 +146,7 @@ void ReportHiEventManager::stopReporting()
         report_thread_.join();
     }
 
-    reporting_started_ = false;
+    reporting_started_.store(false, std::memory_order_release);
     LOG_INFO("ReportHiEventManager reporting stopped");
 }
 
@@ -310,11 +305,15 @@ int64_t ReportHiEventManager::AddProcessor()
 
 void ReportHiEventManager::SchedulerUpload(const ReportData& data)
 {
-    if (ReportHiEventManager::processorId == -1) {
-        ReportHiEventManager::processorId = ReportHiEventManager::AddProcessor();
+    if (ReportHiEventManager::processorId.load(std::memory_order_acquire) == -1) {
+        int64_t id = ReportHiEventManager::AddProcessor();
+        int64_t expected = -1;
+        // try to set processorId to id; if another thread set it first, keep that value
+        ReportHiEventManager::processorId.compare_exchange_strong(expected, id);
     }
 
-    if (ReportHiEventManager::processorId == -200) {
+    int64_t pid = ReportHiEventManager::processorId.load();
+    if (pid == -200) {
         LOG_ERROR("Dotting Error, code -200.");
         return;
     }

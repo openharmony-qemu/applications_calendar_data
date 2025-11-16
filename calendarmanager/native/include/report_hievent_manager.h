@@ -85,7 +85,7 @@ private:
     mutable std::mutex report_thread_cv_mutex_;
     bool need_immediate_report_{false};
     std::atomic<bool> report_thread_waiting_{false};
-    std::atomic<bool> thread_joinable_{false};
+    mutable std::mutex start_mutex_;
 
     std::atomic<bool> reporting_{false};
     std::atomic<bool> stop_reporting_{false};
@@ -98,7 +98,7 @@ private:
 
     std::atomic<int> total_api_calls_{0};
     std::atomic<int64_t> last_api_call_time_{0};
-    static int64_t processorId;
+    static std::atomic<int64_t> processorId;
 };
 } // namespace OHOS::CalendarApi
 #endif //OHOS_CALENDAR_REPORT_HIEVENT_MANAGER_H
