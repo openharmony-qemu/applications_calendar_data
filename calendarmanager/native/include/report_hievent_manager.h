@@ -13,74 +13,48 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_CALENDAR_DOTTING_MANAGER_H
-#define OHOS_CALENDAR_DOTTING_MANAGER_H
+#ifndef OHOS_CALENDAR_REPORT_HIEVENT_MANAGER_H
+#define OHOS_CALENDAR_REPORT_HIEVENT_MANAGER_H
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include <atomic>
 #include <mutex>
 #include <thread>
+#include <condition_variable>
 
 namespace OHOS::CalendarApi {
 
 struct ApiStat {
     std::atomic<int> total_calls{0};
-    std::atomic<int> success_calls{0};
     std::atomic<int64_t> batch_start_time{0};
-    std::vector<std::string> error_code_types;
-    std::vector<int> error_code_num;
-    mutable std::mutex error_mutex;
 
     void reset() {
         total_calls = 0;
-        success_calls = 0;
-        {
-            std::lock_guard<std::mutex> lock(error_mutex);
-            error_code_types.clear();
-            error_code_num.clear();
-        }
-    }
-
-    void addErrorCode(const std::string& error_code) {
-        std::lock_guard<std::mutex> lock(error_mutex);
-
-        auto it = std::find(error_code_types.begin(), error_code_types.end(), error_code);
-        if (it != error_code_types.end()) {
-            size_t index = std::distance(error_code_types.begin(), it);
-            error_code_num[index]++;
-        } else {
-            error_code_types.push_back(error_code);
-            error_code_num.push_back(1);
-        }
+        batch_start_time = 0;
     }
 };
 
 struct ReportData {
     std::string api_name;
     int total_calls;
-    int success_calls;
     int64_t batch_start_time;
-    std::vector<std::string> error_code_types;
-    std::vector<int> error_code_num;
 };
 
-class DottingManager {
+class ReportHiEventManager {
 public:
-    static DottingManager& getInstance();
+    static ReportHiEventManager& getInstance();
 
-    DottingManager(const DottingManager&) = delete;
-    DottingManager& operator=(const DottingManager&) = delete;
+    ReportHiEventManager(const ReportHiEventManager&) = delete;
+    ReportHiEventManager& operator=(const ReportHiEventManager&) = delete;
 
-    ~DottingManager();
+    ~ReportHiEventManager();
 
     int64_t AddProcessor();
     void SchedulerUpload(const ReportData& data);
     void WriteCallStatusEvent(const ReportData& data);
 
     int64_t onApiCallStart(const std::string& api_name);
-    void onApiCallSuccess(const std::string& api_name);
-    void onApiCallError(const std::string& api_name, const std::string& error_code);
 
     void startReporting(int interval_seconds = 60, int call_threshold = 300);
     void stopReporting();
@@ -90,7 +64,7 @@ public:
     bool hasApiBeenCalled() const { return has_api_been_called_.load(); }
 
 private:
-    DottingManager();
+    ReportHiEventManager();
 
     ApiStat& getOrCreateStat(const std::string& api_name);
     void checkCallThreshold();
@@ -99,8 +73,16 @@ private:
 
     void startReportingInternal();
 
+    void updateLastCallTime();
+    bool shouldAutoStop() const;
+
     mutable std::mutex stats_mutex_;
     std::unordered_map<std::string, ApiStat> api_stats_;
+
+    std::condition_variable report_thread_cv_;
+    mutable std::mutex report_thread_cv_mutex_;
+    bool need_immediate_report_{false};
+    std::atomic<bool> report_thread_waiting_{false};
 
     std::atomic<bool> reporting_{false};
     std::atomic<bool> stop_reporting_{false};
@@ -112,7 +94,8 @@ private:
     int call_threshold_{300};
 
     std::atomic<int> total_api_calls_{0};
+    std::atomic<int64_t> last_api_call_time_{0};
     static int64_t processorId;
 };
 } // namespace OHOS::CalendarApi
-#endif //OHOS_CALENDAR_DOTTING_MANAGER_H
+#endif //OHOS_CALENDAR_REPORT_HIEVENT_MANAGER_H

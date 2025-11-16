@@ -19,7 +19,7 @@
 #include "calendar_env.h"
 #include "data_ability_helper.h"
 #include "native_util.h"
-#include "dotting_manager.h"
+#include "report_hievent_manager.h"
 
 namespace {
     const string eventUrl = "datashare:///calendardata/Events";
@@ -95,7 +95,7 @@ int Calendar::AddEventInfo(const Event& event, int channelId)
 
 int Calendar::AddEvent(const Event& event)
 {
-    CalendarApi::DottingManager::getInstance().onApiCallStart("AddEvent");
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("AddEvent");
     return Calendar::AddEventInfo(event, 0);
 }
 #define SUPPORT_BATCH_INSERT 0
@@ -103,7 +103,7 @@ int Calendar::AddEvent(const Event& event)
 #if SUPPORT_BATCH_INSERT
 int Calendar::AddEvents(const std::vector<Event>& events)
 {
-    CalendarApi::DottingManager::getInstance().onApiCallStart("AddEvents");
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("AddEvents");
     std::vector<DataShare::DataShareValuesBucket> valueEvents;
     for (const auto &event : events) {
         valueEvents.emplace_back(BuildValueEvent(event));
@@ -115,7 +115,7 @@ int Calendar::AddEvents(const std::vector<Event>& events)
 #else
 int Calendar::AddEvents(const std::vector<Event>& events)
 {
-    CalendarApi::DottingManager::getInstance().onApiCallStart("AddEvents");
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("AddEvents");
     int count = 0;
     int channelId = 0;
     for (const auto &event : events) {
@@ -133,7 +133,7 @@ int Calendar::AddEvents(const std::vector<Event>& events)
 
 bool Calendar::DeleteEvent(int id)
 {
-    CalendarApi::DottingManager::getInstance().onApiCallStart("DeleteEvent");
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("DeleteEvent");
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("_id", id);
     predicates.EqualTo("calendar_id", GetId());
@@ -152,7 +152,7 @@ void Calendar::DeleteAllEvents()
 
 int Calendar::DeleteEvents(const std::vector<int>& ids)
 {
-    CalendarApi::DottingManager::getInstance().onApiCallStart("DeleteEvents");
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("DeleteEvents");
     int count = 0;
     for (const auto &id : ids) {
         if (DeleteEvent(id)) {
@@ -165,7 +165,7 @@ int Calendar::DeleteEvents(const std::vector<int>& ids)
 
 bool Calendar::UpdateEvent(const Event& event)
 {
-    CalendarApi::DottingManager::getInstance().onApiCallStart("UpdateEvent");
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("UpdateEvent");
     if (!event.id) {
         LOG_ERROR("event id not exist");
         return false;

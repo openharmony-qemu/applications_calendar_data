@@ -14,31 +14,34 @@
  */
 #include "app_event.h"
 #include "app_event_processor_mgr.h"
-#include "dotting_manager.h"
+#include "report_hievent_manager.h"
 #include "calendar_log.h"
+#include <chrono>
 
 namespace OHOS::CalendarApi {
 
-int64_t DottingManager::processorId = -1;
+int64_t ReportHiEventManager::processorId = -1;
+const int IDLE_TIME_OUT = 180;
 
-DottingManager& DottingManager::getInstance() 
+ReportHiEventManager& ReportHiEventManager::getInstance() 
 {
-    static DottingManager instance;
+    static ReportHiEventManager instance;
     return instance;
 }
 
-DottingManager::DottingManager() 
+ReportHiEventManager::ReportHiEventManager() 
 {
 
 }
 
-DottingManager::~DottingManager() 
+ReportHiEventManager::~ReportHiEventManager() 
 {
     stopReporting();
 }
 
-int64_t DottingManager::onApiCallStart(const std::string& api_name) 
+int64_t ReportHiEventManager::onApiCallStart(const std::string& api_name) 
 {
+    updateLastCallTime();
     if (!has_api_been_called_.exchange(true)) {
         LOG_INFO("First API call detected, API: %{public}s ", api_name.c_str());
     }
@@ -60,19 +63,14 @@ int64_t DottingManager::onApiCallStart(const std::string& api_name)
     return stat.batch_start_time.load();
 }
 
-void DottingManager::onApiCallSuccess(const std::string& api_name) 
-{
-    auto& stat = getOrCreateStat(api_name);
-    ++stat.success_calls;
+void ReportHiEventManager::updateLastCallTime() {
+    last_api_call_time_.store(
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count()
+    );
 }
 
-void DottingManager::onApiCallError(const std::string& api_name, const std::string& error_code) 
-{
-    auto& stat = getOrCreateStat(api_name);
-    stat.addErrorCode(error_code);
-}
-
-void DottingManager::startReporting(int interval_seconds, int threshold) 
+void ReportHiEventManager::startReporting(int interval_seconds, int threshold) 
 {
     if (reporting_.load()) {
         LOG_INFO("Reporting is already started.");
@@ -85,7 +83,7 @@ void DottingManager::startReporting(int interval_seconds, int threshold)
     startReportingInternal();
 }
 
-void DottingManager::startReportingInternal() 
+void ReportHiEventManager::startReportingInternal() 
 {
     if (reporting_.load()) {
         return;
@@ -99,7 +97,7 @@ void DottingManager::startReportingInternal()
     });
 }
 
-void DottingManager::stopReporting() 
+void ReportHiEventManager::stopReporting() 
 {
     if (!reporting_.load()) {
         return;
@@ -107,25 +105,47 @@ void DottingManager::stopReporting()
 
     reporting_ = false;
     stop_reporting_ = true;
-    reporting_started_ = false;
+
+    {
+        std::lock_guard<std::mutex> lock(report_thread_cv_mutex_);
+        need_immediate_report_ = true;  
+    }
+    report_thread_cv_.notify_one();
 
     if (report_thread_.joinable()) {
         report_thread_.join();
     }
 
-    LOG_INFO("DottingManger reporting stopped");
+    reporting_started_ = false;
+    LOG_INFO("ReportHiEventManager reporting stopped");
 }
 
-void DottingManager::reportingThreadFunc() 
+void ReportHiEventManager::reportingThreadFunc() 
 {
     LOG_INFO("Reporting thread started");
 
     auto last_report_time = std::chrono::steady_clock::now();
 
     while (!stop_reporting_.load()) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::unique_lock<std::mutex> lock(report_thread_cv_mutex_);
 
-        if (stop_reporting_.load()) {
+        report_thread_waiting_.store(true);
+        auto sleep_duration = std::chrono::seconds(1);
+        bool immediate_report = report_thread_cv_.wait_for(lock, sleep_duration, 
+            [this]() { return need_immediate_report_ || stop_reporting_.load(); });
+
+        report_thread_waiting_.store(false);   
+        
+        bool should_report = false;
+        if (immediate_report) {
+            if (need_immediate_report_) {
+                should_report = true;
+                need_immediate_report_ = false;
+            }
+        }
+        lock.unlock();
+
+        if (stop_reporting_.load() || shouldAutoStop()) {
             break;
         }
 
@@ -133,17 +153,55 @@ void DottingManager::reportingThreadFunc()
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
             now - last_report_time).count();
 
-        if (elapsed >= report_interval_seconds_) {
+        if (elapsed >= report_interval_seconds_ || should_report) {
             if (has_api_been_called_.load()) {
                 performReporting();
             }
             last_report_time = now;
         }
     }
+
+    reporting_.store(false);
+    reporting_started_.store(false);
+    report_thread_waiting_.store(false);
     LOG_INFO("Reporting thread exiting");
 }
 
-ApiStat& DottingManager::getOrCreateStat(const std::string& api_name) 
+bool ReportHiEventManager::shouldAutoStop() const {
+    if (!has_api_been_called_.load()) {
+        return false; 
+    }
+    
+    auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now().time_since_epoch()).count();
+    auto last_call_time = last_api_call_time_.load();
+    
+    if (last_call_time > now) {
+        return false;
+    }
+    
+    auto idle_duration = (now - last_call_time) / 1000000; 
+    return idle_duration > IDLE_TIME_OUT;
+}
+
+void ReportHiEventManager::notifyReportingThread() 
+{
+    if (!reporting_.load() || stop_reporting_.load()) {
+        LOG_INFO("Reporting thread not active, notification ignored");
+        return;
+    }
+    
+    {
+        std::lock_guard<std::mutex> lock(report_thread_cv_mutex_);
+        need_immediate_report_ = true;
+    }
+    
+    if (report_thread_waiting_.load()) {
+        report_thread_cv_.notify_one();
+    }
+}
+
+ApiStat& ReportHiEventManager::getOrCreateStat(const std::string& api_name) 
 {
     std::lock_guard<std::mutex> lock(stats_mutex_);
     auto& stat = api_stats_[api_name];
@@ -157,15 +215,15 @@ ApiStat& DottingManager::getOrCreateStat(const std::string& api_name)
     return stat;
 }
 
-void DottingManager::checkCallThreshold() 
+void ReportHiEventManager::checkCallThreshold() 
 {
     int current_total_calls = total_api_calls_.load();
     if (current_total_calls >= call_threshold_) {
-        performReporting();
+        notifyReportingThread();
     }
 }
 
-void DottingManager::performReporting() {
+void ReportHiEventManager::performReporting() {
     std::lock_guard<std::mutex> lock(stats_mutex_);
 
     total_api_calls_.store(0);
@@ -175,32 +233,16 @@ void DottingManager::performReporting() {
         ReportData data;
         data.api_name = api_name;
         data.total_calls = stat.total_calls.exchange(0);
-        data.success_calls = stat.success_calls.exchange(0);
         data.batch_start_time = stat.batch_start_time.load();
-
-        {
-            std::lock_guard<std::mutex> error_lock(stat.error_mutex);
-            data.error_code_types = stat.error_code_types;
-            data.error_code_num = stat.error_code_num;
-            stat.error_code_types.clear();
-            stat.error_code_num.clear();
-        }
 
         SchedulerUpload(data);
 
         stat.reset();
-
-        auto now = std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        if (now - stat.batch_start_time.load() > 300000000) {
-            stat.batch_start_time.store(0);
-        }
     }
-
     
 }
 
-int64_t DottingManager::AddProcessor()
+int64_t ReportHiEventManager::AddProcessor()
 {
     HiviewDFX::HiAppEvent::ReportConfig config;
     config.name = "ha_app_event";
@@ -231,31 +273,28 @@ int64_t DottingManager::AddProcessor()
     return HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
 }
 
-void DottingManager::SchedulerUpload(const ReportData& data)
+void ReportHiEventManager::SchedulerUpload(const ReportData& data)
 {
-    if (DottingManager::processorId == -1) {
-        DottingManager::processorId = DottingManager::AddProcessor();
+    if (ReportHiEventManager::processorId == -1) {
+        ReportHiEventManager::processorId = ReportHiEventManager::AddProcessor();
     }
 
-    if (DottingManager::processorId == -200) {
+    if (ReportHiEventManager::processorId == -200) {
         LOG_ERROR("Dotting Error, code -200.");
         return;
     }
 
-    DottingManager::WriteCallStatusEvent(data);
+    ReportHiEventManager::WriteCallStatusEvent(data);
     LOG_INFO("SchedulerUpload end.");
 }
 
-void DottingManager::WriteCallStatusEvent(const ReportData& data)
+void ReportHiEventManager::WriteCallStatusEvent(const ReportData& data)
 {
     HiviewDFX::HiAppEvent::Event event("api_diagnostic", "api_called_stat", OHOS::HiviewDFX::HiAppEvent::BEHAVIOR);
     event.AddParam("api_name", std::string(data.api_name));
     event.AddParam("sdk_name", std::string("CalendarKit"));
     event.AddParam("begin_time", data.batch_start_time);
     event.AddParam("call_times", data.total_calls);
-    event.AddParam("sucess_times", data.success_calls);
-    event.AddParam("error_code_types", data.error_code_types);
-    event.AddParam("min_cost_time", data.error_code_num);
     HiviewDFX::HiAppEvent::Write(event);
 }
 }

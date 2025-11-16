@@ -67,7 +67,7 @@ ohos_shared_library("calendarmanager") {
     "./native/src/native_calendar.cpp",
     "./native/src/native_calendar_manager.cpp",
     "./native/src/native_util.cpp",
-    "./native/src/dotting_manager.cpp",
+    "./native/src/report_hievent_manager.cpp",
   ]
 
   deps = [
