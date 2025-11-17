@@ -117,6 +117,7 @@ ohos_static_library("calendarmanager_static") {
     "./native/src/native_calendar.cpp",
     "./native/src/native_calendar_manager.cpp",
     "./native/src/native_util.cpp",
+    "./native/src/report_hievent_manager.cpp",
   ]
 
   deps = []
@@ -138,6 +139,7 @@ ohos_static_library("calendarmanager_static") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
+    "hiappevent:hiappevent_innerapi",
   ]
 
   public_deps = []

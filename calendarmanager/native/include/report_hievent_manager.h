@@ -29,7 +29,8 @@ struct ApiStat {
     std::atomic<int> total_calls{0};
     std::atomic<int64_t> batch_start_time{0};
 
-    void reset() {
+    void reset()
+    {
         total_calls = 0;
         batch_start_time = 0;
     }
@@ -56,7 +57,6 @@ public:
 
     int64_t onApiCallStart(const std::string& api_name);
 
-    void startReporting(int interval_seconds = 60, int call_threshold = 300);
     void stopReporting();
     int getTotalApiCalls() const { return total_api_calls_.load(); }
 
@@ -71,7 +71,6 @@ private:
     void performReporting();
     void reportingThreadFunc();
 
-    void startReportingInternal();
     void notifyReportingThread();
 
     void updateLastCallTime();

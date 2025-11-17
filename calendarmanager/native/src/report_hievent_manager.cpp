@@ -22,24 +22,31 @@ namespace OHOS::CalendarApi {
 
 std::atomic<int64_t> ReportHiEventManager::processorId{-1};
 const int IDLE_TIME_OUT = 180;
+const int64_t REPORT_NOT_SUPPORT_CODE = -200;
+const std::string EVENT_CONFIG_NAME = "ha_app_event";
+const std::string EVENT_CONFIG_APPID = "com_huawei_hmos_sdk_ocg";
+const std::string EVENT_COFIG_ROUTE_INFO = "https://cloudbackdown.hwcloudtest.cn";
+const std::string EVENT_CONFIG_DOMAIN = "api_diagnostic";
+const std::string API_EXEC_END = "api_exec_end";
+const std::string API_CALLED_STAT = "api_called_stat";
+const std::string API_CALLED_STAT_CNT = "api_called_stat_cnt";
 
-ReportHiEventManager& ReportHiEventManager::getInstance() 
+ReportHiEventManager& ReportHiEventManager::getInstance()
 {
     static ReportHiEventManager instance;
     return instance;
 }
 
-ReportHiEventManager::ReportHiEventManager() 
+ReportHiEventManager::ReportHiEventManager()
 {
-
 }
 
-ReportHiEventManager::~ReportHiEventManager() 
+ReportHiEventManager::~ReportHiEventManager()
 {
     stopReporting();
 }
 
-int64_t ReportHiEventManager::onApiCallStart(const std::string& api_name) 
+int64_t ReportHiEventManager::onApiCallStart(const std::string& api_name)
 {
     updateLastCallTime();
     if (!has_api_been_called_.exchange(true)) {
@@ -57,7 +64,7 @@ int64_t ReportHiEventManager::onApiCallStart(const std::string& api_name)
     return stat.batch_start_time.load();
 }
 
-void ReportHiEventManager::updateLastCallTime() 
+void ReportHiEventManager::updateLastCallTime()
 {
     last_api_call_time_.store(
         std::chrono::duration_cast<std::chrono::microseconds>(
@@ -99,38 +106,7 @@ void ReportHiEventManager::ensureReportingRunning()
     report_thread_ = std::thread([this]() { this->reportingThreadFunc(); });
 }
 
-void ReportHiEventManager::startReporting(int interval_seconds, int threshold) 
-{
-    if (reporting_.load()) {
-        LOG_INFO("Reporting is already started.");
-        return;
-    }
-
-    report_interval_seconds_ = interval_seconds;
-    call_threshold_ = threshold;
-
-    startReportingInternal();
-}
-
-void ReportHiEventManager::startReportingInternal() 
-{
-    std::lock_guard<std::mutex> startLock(start_mutex_);
-    if (reporting_.load(std::memory_order_acquire)) {
-        return;
-    }
-
-    if (report_thread_.joinable()) {
-        report_thread_.join();
-    }
-
-    reporting_.store(true, std::memory_order_release);
-    stop_reporting_.store(false, std::memory_order_release);
-    reporting_started_.store(true, std::memory_order_release);
-
-    report_thread_ = std::thread([this]() { this->reportingThreadFunc(); });
-}
-
-void ReportHiEventManager::stopReporting() 
+void ReportHiEventManager::stopReporting()
 {
     std::lock_guard<std::mutex> startLock(start_mutex_);
     if (!reporting_.load(std::memory_order_acquire)) {
@@ -142,7 +118,7 @@ void ReportHiEventManager::stopReporting()
 
     {
         std::lock_guard<std::mutex> lock(report_thread_cv_mutex_);
-        need_immediate_report_ = true;  
+        need_immediate_report_ = true;
     }
     report_thread_cv_.notify_one();
 
@@ -154,7 +130,7 @@ void ReportHiEventManager::stopReporting()
     LOG_INFO("ReportHiEventManager reporting stopped");
 }
 
-void ReportHiEventManager::reportingThreadFunc() 
+void ReportHiEventManager::reportingThreadFunc()
 {
     LOG_INFO("Reporting thread started");
 
@@ -165,10 +141,10 @@ void ReportHiEventManager::reportingThreadFunc()
 
         report_thread_waiting_.store(true);
         auto sleep_duration = std::chrono::seconds(1);
-        bool immediate_report = report_thread_cv_.wait_for(lock, sleep_duration, 
+        bool immediate_report = report_thread_cv_.wait_for(lock, sleep_duration,
             [this]() { return need_immediate_report_ || stop_reporting_.load(); });
 
-        report_thread_waiting_.store(false);   
+        report_thread_waiting_.store(false);
         
         bool should_report = false;
         if (immediate_report) {
@@ -186,7 +162,6 @@ void ReportHiEventManager::reportingThreadFunc()
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
             now - last_report_time).count();
-
         if (elapsed >= report_interval_seconds_ || should_report) {
             if (has_api_been_called_.load()) {
                 performReporting();
@@ -201,24 +176,24 @@ void ReportHiEventManager::reportingThreadFunc()
     LOG_INFO("Reporting thread exiting");
 }
 
-bool ReportHiEventManager::shouldAutoStop() const {
+bool ReportHiEventManager::shouldAutoStop() const
+{
     if (!has_api_been_called_.load()) {
-        return false; 
+        return false;
     }
     
     auto now = std::chrono::duration_cast<std::chrono::microseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();
     auto last_call_time = last_api_call_time_.load();
-    
     if (last_call_time > now) {
         return false;
     }
     
-    auto idle_duration = (now - last_call_time) / 1000000; 
+    auto idle_duration = (now - last_call_time) / 1000000;
     return idle_duration > IDLE_TIME_OUT;
 }
 
-void ReportHiEventManager::notifyReportingThread() 
+void ReportHiEventManager::notifyReportingThread()
 {
     if (!reporting_.load() || stop_reporting_.load()) {
         LOG_INFO("Reporting thread not active, notification ignored");
@@ -235,7 +210,7 @@ void ReportHiEventManager::notifyReportingThread()
     }
 }
 
-ApiStat& ReportHiEventManager::getOrCreateStat(const std::string& api_name) 
+ApiStat& ReportHiEventManager::getOrCreateStat(const std::string& api_name)
 {
     std::lock_guard<std::mutex> lock(stats_mutex_);
     auto& stat = api_stats_[api_name];
@@ -249,7 +224,7 @@ ApiStat& ReportHiEventManager::getOrCreateStat(const std::string& api_name)
     return stat;
 }
 
-void ReportHiEventManager::checkCallThreshold() 
+void ReportHiEventManager::checkCallThreshold()
 {
     int current_total_calls = total_api_calls_.load();
     if (current_total_calls >= call_threshold_) {
@@ -257,50 +232,47 @@ void ReportHiEventManager::checkCallThreshold()
     }
 }
 
-void ReportHiEventManager::performReporting() {
+void ReportHiEventManager::performReporting()
+{
     std::lock_guard<std::mutex> lock(stats_mutex_);
 
     total_api_calls_.store(0);
     for (auto& [api_name, stat] : api_stats_) {
         if (stat.total_calls.load() == 0) continue;
-
         ReportData data;
         data.api_name = api_name;
         data.total_calls = stat.total_calls.exchange(0);
         data.batch_start_time = stat.batch_start_time.load();
-
         SchedulerUpload(data);
-
         stat.reset();
     }
-    
 }
 
 int64_t ReportHiEventManager::AddProcessor()
 {
     HiviewDFX::HiAppEvent::ReportConfig config;
-    config.name = "ha_app_event";
-    config.appId = "com_huawei_hmos_sdk_ocg";
-    config.routeInfo = "https://cloudbackdown.hwcloudtest.cn";
+    config.name = EVENT_CONFIG_NAME;
+    config.appId = EVENT_CONFIG_APPID;
+    config.routeInfo = EVENT_COFIG_ROUTE_INFO;
     config.eventConfigs.clear();
     {
         HiviewDFX::HiAppEvent::EventConfig event1;
-        event1.domain = "api_diagnostic";
-        event1.name = "api_exec_end";
+        event1.domain = EVENT_CONFIG_DOMAIN;
+        event1.name = API_EXEC_END;
         event1.isRealTime = false;
         config.eventConfigs.push_back(event1);
     }
     {
         HiviewDFX::HiAppEvent::EventConfig event2;
-        event2.domain = "api_diagnostic";
-        event2.name = "api_called_stat";
+        event2.domain = EVENT_CONFIG_DOMAIN;
+        event2.name = API_CALLED_STAT;
         event2.isRealTime = true;
         config.eventConfigs.push_back(event2);
     }
     {
         HiviewDFX::HiAppEvent::EventConfig event3;
-        event3.domain = "api_diagnostic";
-        event3.name = "api_called_stat_cnt";
+        event3.domain = EVENT_CONFIG_DOMAIN;
+        event3.name = API_CALLED_STAT_CNT;
         event3.isRealTime = true;
         config.eventConfigs.push_back(event3);
     }
@@ -317,8 +289,8 @@ void ReportHiEventManager::SchedulerUpload(const ReportData& data)
     }
 
     int64_t pid = ReportHiEventManager::processorId.load();
-    if (pid == -200) {
-        LOG_ERROR("Dotting Error, code -200.");
+    if (pid == REPORT_NOT_SUPPORT_CODE) {
+        LOG_ERROR("Reporting Error, code -200.");
         return;
     }
 
