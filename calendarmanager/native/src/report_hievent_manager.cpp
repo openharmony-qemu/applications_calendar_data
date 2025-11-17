@@ -92,6 +92,10 @@ void ReportHiEventManager::ensureReportingRunning()
     reporting_.store(true, std::memory_order_release);
     stop_reporting_.store(false, std::memory_order_release);
     reporting_started_.store(true, std::memory_order_release);
+    {
+        std::lock_guard<std::mutex> lock(report_thread_cv_mutex_);
+        need_immediate_report_ = false;
+    }
     report_thread_ = std::thread([this]() { this->reportingThreadFunc(); });
 }
 
@@ -237,7 +241,7 @@ ApiStat& ReportHiEventManager::getOrCreateStat(const std::string& api_name)
     auto& stat = api_stats_[api_name];
 
     if (stat.batch_start_time.load() == 0) {
-        stat.batch_start_time.store(std::chrono::duration_cast<std::chrono::microseconds>(
+        stat.batch_start_time.store(std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::system_clock::now().time_since_epoch()).count()
         );
     }
