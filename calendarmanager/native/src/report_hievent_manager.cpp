@@ -23,9 +23,10 @@ namespace OHOS::CalendarApi {
 std::atomic<int64_t> ReportHiEventManager::processorId{-1};
 const int IDLE_TIME_OUT = 180;
 const int64_t REPORT_NOT_SUPPORT_CODE = -200;
+const int64_t MICROSECONDS_TO_SECONDS = 1000000;
 const std::string EVENT_CONFIG_NAME = "ha_app_event";
 const std::string EVENT_CONFIG_APPID = "com_huawei_hmos_sdk_ocg";
-const std::string EVENT_COFIG_ROUTE_INFO = "https://cloudbackdown.hwcloudtest.cn";
+const std::string EVENT_COFIG_ROUTE_INFO = "AUTO";
 const std::string EVENT_CONFIG_DOMAIN = "api_diagnostic";
 const std::string API_EXEC_END = "api_exec_end";
 const std::string API_CALLED_STAT = "api_called_stat";
@@ -189,7 +190,7 @@ bool ReportHiEventManager::shouldAutoStop() const
         return false;
     }
     
-    auto idle_duration = (now - last_call_time) / 1000000;
+    auto idle_duration = (now - last_call_time) / MICROSECONDS_TO_SECONDS;
     return idle_duration > IDLE_TIME_OUT;
 }
 
