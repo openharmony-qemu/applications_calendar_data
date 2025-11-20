@@ -47,30 +47,27 @@ ReportHiEventManager::~ReportHiEventManager()
     stopReporting();
 }
 
-int64_t ReportHiEventManager::onApiCallStart(const std::string& api_name)
+int64_t ReportHiEventManager::onApiCallEnd(const std::string& api_name, bool success, int64_t beginTime)
 {
-    updateLastCallTime();
-    if (!has_api_been_called_.exchange(true)) {
-        LOG_INFO("First API call detected, API: %{public}s ", api_name.c_str());
-    }
-
+    auto endTime = getCurrentTime();
+    auto cost_ms = endTime - beginTime;
+    last_api_call_time_.store(endTime);
     ensureReportingRunning();
-
     auto& stat = getOrCreateStat(api_name);
     ++stat.total_calls;
-
+    if (success) {
+        ++stat.success_calls;
+    }
+    stat.total_cost_ms.fetch_add(cost_ms);
+    int64_t prevMax = stat.max_cost_ms.load();
+    while (cost_ms > prevMax && !stat.max_cost_ms.compare_exchange_weak(prevMax, cost_ms)) {
+    }
+    int64_t prevMin = stat.min_cost_ms.load();
+    while (cost_ms < prevMin && !stat.min_cost_ms.compare_exchange_weak(prevMin, cost_ms)) {
+    }
     ++total_api_calls_;
     checkCallThreshold();
-
     return stat.batch_start_time.load();
-}
-
-void ReportHiEventManager::updateLastCallTime()
-{
-    last_api_call_time_.store(
-        std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count()
-    );
 }
 
 void ReportHiEventManager::ensureReportingRunning()
@@ -164,9 +161,7 @@ void ReportHiEventManager::reportingThreadFunc()
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
             now - last_report_time).count();
         if (elapsed >= report_interval_seconds_ || should_report) {
-            if (has_api_been_called_.load()) {
-                performReporting();
-            }
+            performReporting();
             last_report_time = now;
         }
     }
@@ -179,10 +174,6 @@ void ReportHiEventManager::reportingThreadFunc()
 
 bool ReportHiEventManager::shouldAutoStop() const
 {
-    if (!has_api_been_called_.load()) {
-        return false;
-    }
-    
     auto now = std::chrono::duration_cast<std::chrono::microseconds>(
         std::chrono::steady_clock::now().time_since_epoch()).count();
     auto last_call_time = last_api_call_time_.load();
@@ -244,6 +235,16 @@ void ReportHiEventManager::performReporting()
         data.api_name = api_name;
         data.total_calls = stat.total_calls.exchange(0);
         data.batch_start_time = stat.batch_start_time.load();
+        data.success_times = stat.success_calls.exchange(0);
+        int64_t maxCost = stat.max_cost_ms.exchange(0);
+        int64_t minCost = stat.min_cost_ms.exchange(std::numeric_limits<int64_t>::max());
+        if (minCost == std::numeric_limits<int64_t>::max()) {
+            minCost = 0;
+        }
+        data.max_cost_time = maxCost;
+        data.min_cost_time = minCost;
+        data.total_cost_time = stat.total_cost_ms.exchange(0);
+
         SchedulerUpload(data);
         stat.reset();
     }
@@ -306,6 +307,16 @@ void ReportHiEventManager::WriteCallStatusEvent(const ReportData& data)
     event.AddParam("sdk_name", std::string("CalendarKit"));
     event.AddParam("begin_time", data.batch_start_time);
     event.AddParam("call_times", data.total_calls);
+    event.AddParam("success_times", data.success_times);
+    event.AddParam("max_cost_time", data.max_cost_time);
+    event.AddParam("min_cost_time", data.min_cost_time);
+    event.AddParam("total_cost_time", data.total_cost_time);
     HiviewDFX::HiAppEvent::Write(event);
+}
+
+int64_t ReportHiEventManager::getCurrentTime() {
+    auto currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    return currentTime;
 }
 }

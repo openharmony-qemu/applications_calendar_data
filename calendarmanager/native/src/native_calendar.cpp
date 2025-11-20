@@ -95,27 +95,30 @@ int Calendar::AddEventInfo(const Event& event, int channelId)
 
 int Calendar::AddEvent(const Event& event)
 {
-    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("AddEvent");
-    return Calendar::AddEventInfo(event, 0);
+    auto beginTime = CalendarApi::ReportHiEventManager::getInstance().getCurrentTime();
+    auto eventId = Calendar::AddEventInfo(event, 0);
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("AddEvent", eventId > 0, beginTime);
+    return eventId;
 }
 #define SUPPORT_BATCH_INSERT 0
 
 #if SUPPORT_BATCH_INSERT
 int Calendar::AddEvents(const std::vector<Event>& events)
 {
-    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("AddEvents");
+    auto beginTime = CalendarApi::ReportHiEventManager::getInstance().getCurrentTime();
     std::vector<DataShare::DataShareValuesBucket> valueEvents;
     for (const auto &event : events) {
         valueEvents.emplace_back(BuildValueEvent(event));
     }
     auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_eventUri.get()), valueEvents);
     LOG_INFO("BatchInsert count %{private}d", count);
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("AddEvents", count > 0, beginTime);
     return count;
 }
 #else
 int Calendar::AddEvents(const std::vector<Event>& events)
 {
-    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("AddEvents");
+    auto beginTime = CalendarApi::ReportHiEventManager::getInstance().getCurrentTime();
     int count = 0;
     int channelId = 0;
     for (const auto &event : events) {
@@ -126,6 +129,7 @@ int Calendar::AddEvents(const std::vector<Event>& events)
         channelId++;
     }
     LOG_INFO("AddEvents count %{private}d", count);
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("AddEvents", count > 0, beginTime);
     return count;
 }
 #endif
@@ -133,11 +137,12 @@ int Calendar::AddEvents(const std::vector<Event>& events)
 
 bool Calendar::DeleteEvent(int id)
 {
-    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("DeleteEvent");
+    auto beginTime = CalendarApi::ReportHiEventManager::getInstance().getCurrentTime();
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("_id", id);
     predicates.EqualTo("calendar_id", GetId());
     auto ret = DataShareHelperManager::GetInstance().Delete(*(m_eventUri.get()), predicates);
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("DeleteEvent", ret == 1, beginTime);
     return ret == 1;
 }
 
@@ -152,7 +157,7 @@ void Calendar::DeleteAllEvents()
 
 int Calendar::DeleteEvents(const std::vector<int>& ids)
 {
-    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("DeleteEvents");
+    auto beginTime = CalendarApi::ReportHiEventManager::getInstance().getCurrentTime();
     int count = 0;
     for (const auto &id : ids) {
         if (DeleteEvent(id)) {
@@ -160,12 +165,13 @@ int Calendar::DeleteEvents(const std::vector<int>& ids)
         }
     }
     LOG_INFO("DeleteEvents %{public}d", count);
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("DeleteEvents", count > 0, beginTime);
     return count;
 }
 
 bool Calendar::UpdateEvent(const Event& event)
 {
-    CalendarApi::ReportHiEventManager::getInstance().onApiCallStart("UpdateEvent");
+    auto beginTime = CalendarApi::ReportHiEventManager::getInstance().getCurrentTime();
     if (!event.id) {
         LOG_ERROR("event id not exist");
         return false;
@@ -203,7 +209,7 @@ bool Calendar::UpdateEvent(const Event& event)
     if (event.reminderTime.has_value()) {
         InsertReminders(eventId, event.reminderTime.value());
     }
-
+    CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("UpdateEvent", ret == 1, beginTime);
     return ret == 1;
 }
 

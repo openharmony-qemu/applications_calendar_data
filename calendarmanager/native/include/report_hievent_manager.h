@@ -19,20 +19,31 @@
 #include <unordered_map>
 #include <vector>
 #include <atomic>
+#include <cstdint>
 #include <mutex>
 #include <thread>
 #include <condition_variable>
+#include <limits>
 
 namespace OHOS::CalendarApi {
 
 struct ApiStat {
     std::atomic<int> total_calls{0};
     std::atomic<int64_t> batch_start_time{0};
+    // New metrics for reporting
+    std::atomic<int> success_calls{0};
+    std::atomic<int64_t> total_cost_ms{0};
+    std::atomic<int64_t> max_cost_ms{0};
+    std::atomic<int64_t> min_cost_ms{std::numeric_limits<int64_t>::max()};
 
     void reset()
     {
         total_calls = 0;
         batch_start_time = 0;
+        success_calls = 0;
+        total_cost_ms = 0;
+        max_cost_ms = 0;
+        min_cost_ms = std::numeric_limits<int64_t>::max();
     }
 };
 
@@ -40,6 +51,11 @@ struct ReportData {
     std::string api_name;
     int total_calls;
     int64_t batch_start_time;
+    // New reported fields
+    int64_t success_times;
+    int64_t max_cost_time;
+    int64_t min_cost_time;
+    int64_t total_cost_time;
 };
 
 class ReportHiEventManager {
@@ -55,13 +71,10 @@ public:
     void SchedulerUpload(const ReportData& data);
     void WriteCallStatusEvent(const ReportData& data);
 
-    int64_t onApiCallStart(const std::string& api_name);
+    int64_t onApiCallEnd(const std::string& api_name, bool success, int64_t cost_ms);
 
     void stopReporting();
-    int getTotalApiCalls() const { return total_api_calls_.load(); }
-
-    bool isReporting() const { return reporting_.load(); }
-    bool hasApiBeenCalled() const { return has_api_been_called_.load(); }
+    int64_t getCurrentTime();
 
 private:
     ReportHiEventManager();
@@ -73,7 +86,6 @@ private:
 
     void notifyReportingThread();
 
-    void updateLastCallTime();
     bool shouldAutoStop() const;
     void ensureReportingRunning();
 
@@ -88,7 +100,6 @@ private:
 
     std::atomic<bool> reporting_{false};
     std::atomic<bool> stop_reporting_{false};
-    std::atomic<bool> has_api_been_called_{false};
     std::atomic<bool> reporting_started_{false};
     std::thread report_thread_;
 
