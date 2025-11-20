@@ -17,307 +17,335 @@
 #include "report_hievent_manager.h"
 #include "calendar_log.h"
 #include <chrono>
+#include <queue>
+#include <unordered_map>
+#include <climits>
 
-namespace OHOS::CalendarApi {
+namespace {
+    constexpr int IDLE_TIME_OUT_MS = 180000;
+    constexpr int REPORT_INTERVAL_SECONDS = 60;
+    constexpr int CALL_THRESHOLD = 300;
+    constexpr int64_t REPORT_NOT_SUPPORT_CODE = -200;
+    constexpr size_t MAX_QUEUE_SIZE = 2000;
+}
 
-std::atomic<int64_t> ReportHiEventManager::processorId{-1};
-const int IDLE_TIME_OUT = 180;
-const int64_t REPORT_NOT_SUPPORT_CODE = -200;
-const int64_t MICROSECONDS_TO_SECONDS = 1000000;
-const std::string EVENT_CONFIG_NAME = "ha_app_event";
-const std::string EVENT_CONFIG_APPID = "com_huawei_hmos_sdk_ocg";
-const std::string EVENT_COFIG_ROUTE_INFO = "AUTO";
-const std::string EVENT_CONFIG_DOMAIN = "api_diagnostic";
-const std::string API_EXEC_END = "api_exec_end";
-const std::string API_CALLED_STAT = "api_called_stat";
-const std::string API_CALLED_STAT_CNT = "api_called_stat_cnt";
+namespace OHOS::CalendarApi::Native {
 
-ReportHiEventManager& ReportHiEventManager::getInstance()
+struct ApiCallRecord {
+    std::string apiName;
+    bool success;
+    int64_t costMs;
+    int64_t timestamp;
+};
+
+struct ApiAggregatedStat {
+    std::string apiName;
+    int totalCalls = 0;
+    int successCalls = 0;
+    int64_t totalCostMs = 0;
+    int64_t maxCostMs = 0;
+    int64_t minCostMs = INT64_MAX;
+    int64_t batchStartTime = 0;
+
+    void Aggregate(const ApiCallRecord& record)
+    {
+        totalCalls++;
+        if (record.success) {
+            successCalls++;
+        }
+        totalCostMs += record.costMs;
+        maxCostMs = std::max(maxCostMs, record.costMs);
+        minCostMs = std::min(minCostMs, record.costMs);
+
+        if (batchStartTime == 0) {
+            batchStartTime = record.timestamp;
+        }
+    }
+};
+
+class ReportHiEventManagerImpl {
+public:
+    static ReportHiEventManagerImpl& GetInstance()
+    {
+        static ReportHiEventManagerImpl instance;
+        return instance;
+    }
+
+    int64_t OnApiCallEnd(const std::string& apiName, bool success, int64_t beginTime)
+    {
+        auto endTime = GetCurrentTime();
+        auto costMs = endTime - beginTime;
+
+        {
+            std::lock_guard<std::mutex> lock(m_queueMutex);
+            if (m_callQueue.size() >= MAX_QUEUE_SIZE) {
+                return endTime;
+            }
+            m_callQueue.push({apiName, success, costMs, endTime});
+            m_lastApiCallTime.store(endTime, std::memory_order_release);
+        }
+
+        EnsureReportingRunning();
+        CheckReportConditions();
+        return endTime;
+    }
+
+    int64_t GetCurrentTime()
+    {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count();
+    }
+
+    void StopReporting()
+    {
+        {
+            std::lock_guard<std::mutex> lock(m_threadControlMutex);
+            if (!m_reporting) {
+                return;
+            }
+            m_stopReporting = true;
+        }
+
+        m_reportCv.notify_one();
+
+        if (m_reportThread.joinable()) {
+            m_reportThread.join();
+        }
+
+        m_reporting = false;
+        LOG_INFO("ReportHiEventManager reporting stopped");
+    }
+
+private:
+    ReportHiEventManagerImpl() = default;
+    ~ReportHiEventManagerImpl() { StopReporting(); }
+
+    void EnsureReportingRunning()
+    {
+        // Fast-path: if work thread already running, nothing to do
+        if (m_isWorkThreadRunning.load(std::memory_order_acquire)) {
+            return;
+        }
+
+        // Possibly there is an existing thread that needs stopping and joining.
+        // Move it out while holding lock, but join outside the lock to avoid deadlock.
+        std::thread threadToJoin;
+        {
+            std::lock_guard<std::mutex> lock(m_threadControlMutex);
+            if (m_isWorkThreadRunning.load(std::memory_order_acquire)) {
+                return;
+            }
+
+            if (m_reportThread.joinable()) {
+                // request the current thread to stop and take ownership to join outside lock
+                m_stopReporting.store(true, std::memory_order_release);
+                m_reportCv.notify_one();
+                threadToJoin = std::move(m_reportThread);
+            }
+        }
+
+        if (threadToJoin.joinable()) {
+            threadToJoin.join();
+        }
+
+        // Now start a fresh reporting thread under lock
+        {
+            std::lock_guard<std::mutex> lock(m_threadControlMutex);
+            if (m_isWorkThreadRunning.load(std::memory_order_acquire)) {
+                return;
+            }
+            m_stopReporting.store(false, std::memory_order_release);
+            m_reporting.store(true, std::memory_order_release);
+            m_isWorkThreadRunning.store(true, std::memory_order_release);
+            m_reportThread = std::thread([this]() { ReportingThreadFunc(); });
+        }
+    }
+
+    void CheckReportConditions()
+    {
+        std::lock_guard<std::mutex> lock(m_queueMutex);
+        if (static_cast<int>(m_callQueue.size()) >= CALL_THRESHOLD) {
+            m_reportCv.notify_one();
+        }
+    }
+
+    void ReportingThreadFunc()
+    {
+        LOG_INFO("Reporting thread started");
+        auto lastReportTime = std::chrono::steady_clock::now();
+
+        while (!m_stopReporting) {
+            {
+                std::unique_lock<std::mutex> lock(m_threadControlMutex);
+                auto sleepDuration = std::chrono::seconds(1);
+                m_reportCv.wait_for(lock, sleepDuration, [this]() {
+                    return m_stopReporting || ShouldReport();
+                });
+            }
+
+            if (ShouldAutoStop()) {
+                LOG_INFO("Reporting thread idle timeout, stopping");
+                break;
+            }
+
+            auto now = std::chrono::steady_clock::now();
+            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+                now - lastReportTime).count();
+            
+            if (elapsed >= REPORT_INTERVAL_SECONDS || m_stopReporting || ShouldReport()) {
+                PerformReporting();
+                lastReportTime = now;
+            }
+        }
+
+        // Final report before exit
+        if (!m_stopReporting.load()) {
+            PerformReporting();
+        }
+
+        m_reporting = false;
+        m_isWorkThreadRunning = false;
+        LOG_INFO("Reporting thread exiting");
+    }
+
+    bool ShouldReport() const
+    {
+        std::lock_guard<std::mutex> lock(m_queueMutex);
+        return static_cast<int>(m_callQueue.size()) >= CALL_THRESHOLD;
+    }
+
+    bool ShouldAutoStop() const
+    {
+        auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()).count();
+        auto idleMs = now - m_lastApiCallTime;
+        return idleMs > IDLE_TIME_OUT_MS;
+    }
+
+    void PerformReporting()
+    {
+        std::queue<ApiCallRecord> recordsSnapshot;
+        
+        {
+            std::lock_guard<std::mutex> lock(m_queueMutex);
+            if (m_callQueue.empty()) {
+                return;
+            }
+            recordsSnapshot = m_callQueue;
+            std::swap(recordsSnapshot, m_callQueue);
+        }
+
+        std::unordered_map<std::string, ApiAggregatedStat> aggregated;
+        
+        while (!recordsSnapshot.empty()) {
+            const auto& record = recordsSnapshot.front();
+            aggregated[record.apiName].Aggregate(record);
+            if (aggregated[record.apiName].apiName.empty()) {
+                aggregated[record.apiName].apiName = record.apiName;
+            }
+            recordsSnapshot.pop();
+        }
+
+        for (auto& [apiName, stat] : aggregated) {
+            WriteCallStatusEvent(stat);
+        }
+
+        LOG_INFO("PerformReporting completed, reported %{public}zu APIs", aggregated.size());
+    }
+
+    void WriteCallStatusEvent(const ApiAggregatedStat& stat)
+    {
+        if (m_processorId == -1) {
+            m_processorId = AddProcessor();
+        }
+
+        if (m_processorId == REPORT_NOT_SUPPORT_CODE) {
+            LOG_ERROR("Reporting Error, code -200.");
+            return;
+        }
+
+        HiviewDFX::HiAppEvent::Event event("api_diagnostic", "api_called_stat", 
+                                          OHOS::HiviewDFX::HiAppEvent::BEHAVIOR);
+        event.AddParam("api_name", stat.apiName);
+        event.AddParam("sdk_name", std::string("CalendarKit"));
+        event.AddParam("begin_time", stat.batchStartTime);
+        event.AddParam("call_times", stat.totalCalls);
+        event.AddParam("success_times", stat.successCalls);
+        event.AddParam("max_cost_time", stat.maxCostMs > 0 ? stat.maxCostMs : 0);
+        event.AddParam("min_cost_time", stat.minCostMs < INT64_MAX ? stat.minCostMs : 0);
+        event.AddParam("total_cost_time", stat.totalCostMs);
+        
+        HiviewDFX::HiAppEvent::Write(event);
+    }
+
+    int64_t AddProcessor()
+    {
+        HiviewDFX::HiAppEvent::ReportConfig config;
+        config.name = "ha_app_event";
+        config.appId = "com_huawei_hmos_sdk_ocg";
+        config.routeInfo = "AUTO";
+
+        HiviewDFX::HiAppEvent::EventConfig event1;
+        event1.domain = "api_diagnostic";
+        event1.name = "api_exec_end";
+        event1.isRealTime = false;
+        config.eventConfigs.push_back(event1);
+        
+        HiviewDFX::HiAppEvent::EventConfig event2;
+        event2.domain = "api_diagnostic";
+        event2.name = "api_called_stat";
+        event2.isRealTime = true;
+        config.eventConfigs.push_back(event2);
+
+        HiviewDFX::HiAppEvent::EventConfig event3;
+        event3.domain = "api_diagnostic";
+        event3.name = "api_called_stat_cnt";
+        event3.isRealTime = true;
+        config.eventConfigs.push_back(event3);
+
+        return HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
+    }
+
+    // Thread synchronization
+    mutable std::mutex m_queueMutex;
+    mutable std::mutex m_threadControlMutex;
+    std::condition_variable m_reportCv;
+    std::thread m_reportThread;
+
+    std::queue<ApiCallRecord> m_callQueue;
+
+    // State flags
+    std::atomic<bool> m_reporting{false};
+    std::atomic<bool> m_isWorkThreadRunning{false};
+    std::atomic<bool> m_stopReporting{false};
+    std::atomic<int64_t> m_lastApiCallTime{0};
+
+    int64_t m_processorId{-1};
+};
+
+ReportHiEventManager& ReportHiEventManager::GetInstance()
 {
     static ReportHiEventManager instance;
     return instance;
 }
 
-ReportHiEventManager::ReportHiEventManager()
+ReportHiEventManager::ReportHiEventManager() {}
+
+ReportHiEventManager::~ReportHiEventManager() = default;
+
+int64_t ReportHiEventManager::OnApiCallEnd(const std::string& apiName, bool success, int64_t beginTime)
 {
+    return ReportHiEventManagerImpl::GetInstance().OnApiCallEnd(apiName, success, beginTime);
 }
 
-ReportHiEventManager::~ReportHiEventManager()
+int64_t ReportHiEventManager::GetCurrentTime()
 {
-    stopReporting();
+    return ReportHiEventManagerImpl::GetInstance().GetCurrentTime();
 }
 
-int64_t ReportHiEventManager::onApiCallEnd(const std::string& api_name, bool success, int64_t beginTime)
+void ReportHiEventManager::StopReporting()
 {
-    auto endTime = getCurrentTime();
-    auto cost_ms = endTime - beginTime;
-    last_api_call_time_.store(endTime);
-    ensureReportingRunning();
-    auto& stat = getOrCreateStat(api_name);
-    ++stat.total_calls;
-    if (success) {
-        ++stat.success_calls;
-    }
-    stat.total_cost_ms.fetch_add(cost_ms);
-    int64_t prevMax = stat.max_cost_ms.load();
-    while (cost_ms > prevMax && !stat.max_cost_ms.compare_exchange_weak(prevMax, cost_ms)) {
-    }
-    int64_t prevMin = stat.min_cost_ms.load();
-    while (cost_ms < prevMin && !stat.min_cost_ms.compare_exchange_weak(prevMin, cost_ms)) {
-    }
-    ++total_api_calls_;
-    checkCallThreshold();
-    return stat.batch_start_time.load();
+    ReportHiEventManagerImpl::GetInstance().StopReporting();
 }
 
-void ReportHiEventManager::ensureReportingRunning()
-{
-    if (reporting_.load(std::memory_order_acquire) &&
-        reporting_started_.load(std::memory_order_acquire)) {
-        return;
-    }
-
-    std::lock_guard<std::mutex> startLock(start_mutex_);
-
-    if (reporting_.load(std::memory_order_acquire) &&
-        reporting_started_.load(std::memory_order_acquire)) {
-        return;
-    }
-
-    if (report_thread_.joinable()) {
-        stop_reporting_.store(true, std::memory_order_release);
-        {
-            std::lock_guard<std::mutex> cv_lock(report_thread_cv_mutex_);
-            need_immediate_report_ = true;
-        }
-        report_thread_cv_.notify_one();
-        report_thread_.join();
-    }
-
-    reporting_.store(true, std::memory_order_release);
-    stop_reporting_.store(false, std::memory_order_release);
-    reporting_started_.store(true, std::memory_order_release);
-    {
-        std::lock_guard<std::mutex> lock(report_thread_cv_mutex_);
-        need_immediate_report_ = false;
-    }
-    report_thread_ = std::thread([this]() { this->reportingThreadFunc(); });
-}
-
-void ReportHiEventManager::stopReporting()
-{
-    std::lock_guard<std::mutex> startLock(start_mutex_);
-    if (!reporting_.load(std::memory_order_acquire)) {
-        return;
-    }
-
-    reporting_.store(false, std::memory_order_release);
-    stop_reporting_.store(true, std::memory_order_release);
-
-    {
-        std::lock_guard<std::mutex> lock(report_thread_cv_mutex_);
-        need_immediate_report_ = true;
-    }
-    report_thread_cv_.notify_one();
-
-    if (report_thread_.joinable()) {
-        report_thread_.join();
-    }
-
-    reporting_started_.store(false, std::memory_order_release);
-    LOG_INFO("ReportHiEventManager reporting stopped");
-}
-
-void ReportHiEventManager::reportingThreadFunc()
-{
-    LOG_INFO("Reporting thread started");
-
-    auto last_report_time = std::chrono::steady_clock::now();
-
-    while (!stop_reporting_.load()) {
-        std::unique_lock<std::mutex> lock(report_thread_cv_mutex_);
-
-        report_thread_waiting_.store(true);
-        auto sleep_duration = std::chrono::seconds(1);
-        bool immediate_report = report_thread_cv_.wait_for(lock, sleep_duration,
-            [this]() { return need_immediate_report_ || stop_reporting_.load(); });
-
-        report_thread_waiting_.store(false);
-        
-        bool should_report = false;
-        if (immediate_report) {
-            if (need_immediate_report_) {
-                should_report = true;
-                need_immediate_report_ = false;
-            }
-        }
-        lock.unlock();
-
-        if (stop_reporting_.load() || shouldAutoStop()) {
-            break;
-        }
-
-        auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
-            now - last_report_time).count();
-        if (elapsed >= report_interval_seconds_ || should_report) {
-            performReporting();
-            last_report_time = now;
-        }
-    }
-
-    reporting_.store(false);
-    reporting_started_.store(false);
-    report_thread_waiting_.store(false);
-    LOG_INFO("Reporting thread exiting");
-}
-
-bool ReportHiEventManager::shouldAutoStop() const
-{
-    auto now = std::chrono::duration_cast<std::chrono::microseconds>(
-        std::chrono::steady_clock::now().time_since_epoch()).count();
-    auto last_call_time = last_api_call_time_.load();
-    if (last_call_time > now) {
-        return false;
-    }
-    
-    auto idle_duration = (now - last_call_time) / MICROSECONDS_TO_SECONDS;
-    return idle_duration > IDLE_TIME_OUT;
-}
-
-void ReportHiEventManager::notifyReportingThread()
-{
-    if (!reporting_.load() || stop_reporting_.load()) {
-        LOG_INFO("Reporting thread not active, notification ignored");
-        return;
-    }
-    
-    {
-        std::lock_guard<std::mutex> lock(report_thread_cv_mutex_);
-        need_immediate_report_ = true;
-    }
-    
-    if (report_thread_waiting_.load()) {
-        report_thread_cv_.notify_one();
-    }
-}
-
-ApiStat& ReportHiEventManager::getOrCreateStat(const std::string& api_name)
-{
-    std::lock_guard<std::mutex> lock(stats_mutex_);
-    auto& stat = api_stats_[api_name];
-
-    if (stat.batch_start_time.load() == 0) {
-        stat.batch_start_time.store(std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch()).count()
-        );
-    }
-
-    return stat;
-}
-
-void ReportHiEventManager::checkCallThreshold()
-{
-    int current_total_calls = total_api_calls_.load();
-    if (current_total_calls >= call_threshold_) {
-        notifyReportingThread();
-    }
-}
-
-void ReportHiEventManager::performReporting()
-{
-    std::lock_guard<std::mutex> lock(stats_mutex_);
-
-    total_api_calls_.store(0);
-    for (auto& [api_name, stat] : api_stats_) {
-        if (stat.total_calls.load() == 0) continue;
-        ReportData data;
-        data.api_name = api_name;
-        data.total_calls = stat.total_calls.exchange(0);
-        data.batch_start_time = stat.batch_start_time.load();
-        data.success_times = stat.success_calls.exchange(0);
-        int64_t maxCost = stat.max_cost_ms.exchange(0);
-        int64_t minCost = stat.min_cost_ms.exchange(std::numeric_limits<int64_t>::max());
-        if (minCost == std::numeric_limits<int64_t>::max()) {
-            minCost = 0;
-        }
-        data.max_cost_time = maxCost;
-        data.min_cost_time = minCost;
-        data.total_cost_time = stat.total_cost_ms.exchange(0);
-
-        SchedulerUpload(data);
-        stat.reset();
-    }
-}
-
-int64_t ReportHiEventManager::AddProcessor()
-{
-    HiviewDFX::HiAppEvent::ReportConfig config;
-    config.name = EVENT_CONFIG_NAME;
-    config.appId = EVENT_CONFIG_APPID;
-    config.routeInfo = EVENT_COFIG_ROUTE_INFO;
-    config.eventConfigs.clear();
-    {
-        HiviewDFX::HiAppEvent::EventConfig event1;
-        event1.domain = EVENT_CONFIG_DOMAIN;
-        event1.name = API_EXEC_END;
-        event1.isRealTime = false;
-        config.eventConfigs.push_back(event1);
-    }
-    {
-        HiviewDFX::HiAppEvent::EventConfig event2;
-        event2.domain = EVENT_CONFIG_DOMAIN;
-        event2.name = API_CALLED_STAT;
-        event2.isRealTime = true;
-        config.eventConfigs.push_back(event2);
-    }
-    {
-        HiviewDFX::HiAppEvent::EventConfig event3;
-        event3.domain = EVENT_CONFIG_DOMAIN;
-        event3.name = API_CALLED_STAT_CNT;
-        event3.isRealTime = true;
-        config.eventConfigs.push_back(event3);
-    }
-    return HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
-}
-
-void ReportHiEventManager::SchedulerUpload(const ReportData& data)
-{
-    if (ReportHiEventManager::processorId.load(std::memory_order_acquire) == -1) {
-        int64_t id = ReportHiEventManager::AddProcessor();
-        int64_t expected = -1;
-        // try to set processorId to id; if another thread set it first, keep that value
-        ReportHiEventManager::processorId.compare_exchange_strong(expected, id);
-    }
-
-    int64_t pid = ReportHiEventManager::processorId.load();
-    if (pid == REPORT_NOT_SUPPORT_CODE) {
-        LOG_ERROR("Reporting Error, code -200.");
-        return;
-    }
-
-    ReportHiEventManager::WriteCallStatusEvent(data);
-    LOG_INFO("SchedulerUpload end.");
-}
-
-void ReportHiEventManager::WriteCallStatusEvent(const ReportData& data)
-{
-    HiviewDFX::HiAppEvent::Event event("api_diagnostic", "api_called_stat", OHOS::HiviewDFX::HiAppEvent::BEHAVIOR);
-    event.AddParam("api_name", std::string(data.api_name));
-    event.AddParam("sdk_name", std::string("CalendarKit"));
-    event.AddParam("begin_time", data.batch_start_time);
-    event.AddParam("call_times", data.total_calls);
-    event.AddParam("success_times", data.success_times);
-    event.AddParam("max_cost_time", data.max_cost_time);
-    event.AddParam("min_cost_time", data.min_cost_time);
-    event.AddParam("total_cost_time", data.total_cost_time);
-    HiviewDFX::HiAppEvent::Write(event);
-}
-
-int64_t ReportHiEventManager::getCurrentTime()
-{
-    auto currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
-    return currentTime;
-}
-}
+} // namespace OHOS::CalendarApi
