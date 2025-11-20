@@ -314,7 +314,8 @@ void ReportHiEventManager::WriteCallStatusEvent(const ReportData& data)
     HiviewDFX::HiAppEvent::Write(event);
 }
 
-int64_t ReportHiEventManager::getCurrentTime() {
+int64_t ReportHiEventManager::getCurrentTime()
+{
     auto currentTime = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()).count();
     return currentTime;
