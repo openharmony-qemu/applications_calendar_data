@@ -53,7 +53,8 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
     auto execute = [ctxt]() {
         auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         auto nativteCalendar = Native::CalendarManager::GetInstance().CreateCalendar(ctxt->account);
-        Native::ReportHiEventManager::GetInstance().OnApiCallEnd("CreateCalendar", nativteCalendar != nullptr, beginTime);
+        Native::ReportHiEventManager::GetInstance()
+            .OnApiCallEnd("CreateCalendar", nativteCalendar != nullptr, beginTime);
         ctxt->status = (nativteCalendar != nullptr) ? napi_ok : napi_generic_failure;
         CHECK_STATUS_RETURN_VOID(ctxt, "CreateCalendar failed!");
         ctxt->calendar->SetNative(nativteCalendar);

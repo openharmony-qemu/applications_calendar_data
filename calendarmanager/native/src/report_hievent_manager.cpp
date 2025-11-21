@@ -145,7 +145,6 @@ private:
         m_stopReporting.store(false);
         m_isWorkThreadRunning.store(true);
         m_reportThread = std::thread([this]() { ReportingThreadFunc(); });
-
     }
 
     void CheckReportConditions()
@@ -179,7 +178,6 @@ private:
             auto now = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                 now - lastReportTime).count();
-            
             if (elapsed >= REPORT_INTERVAL_SECONDS || m_stopReporting || m_thresholdReached.exchange(false)) {
                 PerformReporting();
                 lastReportTime = now;
@@ -244,8 +242,7 @@ private:
             return;
         }
 
-        HiviewDFX::HiAppEvent::Event event("api_diagnostic", "api_called_stat", 
-                                          OHOS::HiviewDFX::HiAppEvent::BEHAVIOR);
+        HiviewDFX::HiAppEvent::Event event("api_diagnostic", "api_called_stat", OHOS::HiviewDFX::HiAppEvent::BEHAVIOR);
         event.AddParam("api_name", stat.apiName);
         event.AddParam("sdk_name", std::string("CalendarKit"));
         event.AddParam("begin_time", stat.batchStartTime);
