@@ -196,6 +196,7 @@ bool Calendar::UpdateEvent(const Event& event)
     if (event.reminderTime.has_value()) {
         InsertReminders(eventId, event.reminderTime.value());
     }
+    
     return ret == 1;
 }
 
