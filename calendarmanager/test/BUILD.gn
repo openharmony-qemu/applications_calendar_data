@@ -77,6 +77,7 @@ ohos_unittest("calendarmanager_test") {
     "ability_runtime:cj_extensionkit_native",
     "googletest:gmock",
     "googletest:gtest",
+    "hiappevent:hiappevent_innerapi",
   ]
 
   defines = []

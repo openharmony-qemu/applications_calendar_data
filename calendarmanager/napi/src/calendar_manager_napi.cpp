@@ -15,6 +15,7 @@
 
 #include "calendar_manager_napi.h"
 #include <optional>
+#include "report_hievent_manager.h"
 
 using namespace OHOS::AppExecFwk;
 using namespace OHOS::DataShare;
@@ -50,7 +51,10 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
     ctxt->GetCbInfo(env, info, input);
 
     auto execute = [ctxt]() {
+        auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         auto nativteCalendar = Native::CalendarManager::GetInstance().CreateCalendar(ctxt->account);
+        Native::ReportHiEventManager::GetInstance()
+            .OnApiCallEnd("CreateCalendar", nativteCalendar != nullptr, beginTime);
         ctxt->status = (nativteCalendar != nullptr) ? napi_ok : napi_generic_failure;
         CHECK_STATUS_RETURN_VOID(ctxt, "CreateCalendar failed!");
         ctxt->calendar->SetNative(nativteCalendar);
@@ -91,8 +95,10 @@ napi_value CalendarManagerNapi::DeleteCalendar(napi_env env, napi_callback_info 
         CHECK_RETURN_VOID(ctxt->calendar, "calendar is nullptr");
         auto nativeCalendar = ctxt->calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar, "calendar is nullptr");
+        auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         ctxt->delResult = Native::CalendarManager::GetInstance()
             .DeleteCalendar(*(nativeCalendar.get()));
+        Native::ReportHiEventManager::GetInstance().OnApiCallEnd("DeleteCalendar", ctxt->delResult, beginTime);
         CHECK_RETURN_VOID(ctxt->delResult, "DeleteCalendar failed!");
     };
     auto output = [env, ctxt](napi_value& result) {

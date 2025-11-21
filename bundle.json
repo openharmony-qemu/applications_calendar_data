@@ -34,7 +34,8 @@
                 "safwk",
                 "samgr",
                 "ace_engine",
-                "os_account"
+                "os_account",
+                "hiappevent"
             ],
             "third_party": []
         },
