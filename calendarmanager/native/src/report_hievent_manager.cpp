@@ -195,12 +195,6 @@ private:
         LOG_INFO("Reporting thread exiting");
     }
 
-    bool ShouldReport() const
-    {
-        std::lock_guard<std::mutex> lock(m_queueMutex);
-        return static_cast<int>(m_callQueue.size()) >= CALL_THRESHOLD;
-    }
-
     bool ShouldAutoStop() const
     {
         auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -292,7 +286,6 @@ private:
         return HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
     }
 
-    // Thread synchronization
     mutable std::mutex m_queueMutex;
     mutable std::mutex m_threadControlMutex;
     std::condition_variable m_reportCv;
@@ -300,7 +293,6 @@ private:
 
     std::queue<ApiCallRecord> m_callQueue;
 
-    // State flags
     std::atomic<bool> m_isWorkThreadRunning{false};
     std::atomic<bool> m_stopReporting{false};
     std::atomic<bool> m_thresholdReached{false};
