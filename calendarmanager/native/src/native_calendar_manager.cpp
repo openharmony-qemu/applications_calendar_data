@@ -18,7 +18,6 @@
 #include "calendar_env.h"
 #include "calendar_log.h"
 #include "native_util.h"
-#include "report_hievent_manager.h"
 
 namespace OHOS::CalendarApi::Native {
 DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &account);
@@ -59,7 +58,6 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
 
 std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount &account)
 {
-    auto beginTime = CalendarApi::ReportHiEventManager::getInstance().getCurrentTime();
     auto valueEvent = BuildValueCalendarAccount(account);
     int errNum = 0;
     int index = 0;
@@ -75,10 +73,8 @@ std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount 
     } while (errNum > 0 && errNum <= MAX_ERR_NUM);
     if (index <= 0) {
         LOG_ERROR("Insert failed");
-        CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("CreateCalendar", false, beginTime);
         return nullptr;
     }
-    CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("CreateCalendar", true, beginTime);
     return std::make_shared<Calendar>(account, index);
 }
 
@@ -133,7 +129,6 @@ std::vector<std::shared_ptr<Calendar>> CalendarManager::GetAllCalendars()
 
 bool CalendarManager::DeleteCalendar(const Calendar &calendar)
 {
-    auto beginTime = CalendarApi::ReportHiEventManager::getInstance().getCurrentTime();
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("_id", calendar.GetId());
     int errNum = 0;
@@ -148,7 +143,6 @@ bool CalendarManager::DeleteCalendar(const Calendar &calendar)
             break;
         }
     } while (errNum > 0 && errNum <= MAX_ERR_NUM);
-    CalendarApi::ReportHiEventManager::getInstance().onApiCallEnd("DeleteCalendar", result == 1, beginTime);
     return result == 1;
 }
 

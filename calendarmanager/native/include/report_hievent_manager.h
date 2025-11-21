@@ -18,7 +18,7 @@
 #include <string>
 #include <cstdint>
 
-namespace OHOS::CalendarApi {
+namespace OHOS::CalendarApi::Native {
 
 class ReportHiEventManager {
 public:
@@ -29,16 +29,8 @@ public:
 
     ~ReportHiEventManager();
 
-    // Public API: Record the end of an API call
-    // Parameters: apiName - name of the API, success - whether the call succeeded, 
-    //           beginTime - start time in milliseconds
-    // Returns: batch start time for the API
     int64_t OnApiCallEnd(const std::string& apiName, bool success, int64_t beginTime);
-
-    // Public API: Get current time in milliseconds
     int64_t GetCurrentTime();
-
-    // Gracefully stop reporting
     void StopReporting();
 
 private:

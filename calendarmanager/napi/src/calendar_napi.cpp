@@ -18,6 +18,7 @@
 #include "napi_util.h"
 #include "napi_queue.h"
 #include "native_util.h"
+#include "report_hievent_manager.h"
 
 namespace {
     const std::string CALENDAR_CLASS_NAME = "Calendar";
@@ -111,7 +112,9 @@ napi_value CalendarNapi::AddEvent(napi_env env, napi_callback_info info)
         CHECK_RETURN_VOID(calendar != nullptr, "CalendarNapi nullptr");
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
+        auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         ctxt->eventId = nativeCalendar->AddEvent(ctxt->event);
+        Native::ReportHiEventManager::GetInstance().OnApiCallEnd("AddEvent", ctxt->eventId > 0, beginTime);
         ctxt->status = (ctxt->eventId > 0) ? napi_ok : napi_generic_failure;
         CHECK_STATUS_RETURN_VOID(ctxt, "AddEvent failed!");
     };
@@ -143,7 +146,9 @@ napi_value CalendarNapi::AddEvents(napi_env env, napi_callback_info info)
         CHECK_RETURN_VOID(calendar != nullptr, "CalendarNapi nullptr");
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
+        auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         ctxt->count = nativeCalendar->AddEvents(ctxt->events);
+        Native::ReportHiEventManager::GetInstance().OnApiCallEnd("AddEvents", ctxt->count > 0, beginTime);
         ctxt->status = (ctxt->count > 0) ? napi_ok : napi_generic_failure;
         CHECK_STATUS_RETURN_VOID(ctxt, "AddEvent failed!");
     };
@@ -170,7 +175,9 @@ napi_value CalendarNapi::DeleteEvent(napi_env env, napi_callback_info info)
         CHECK_RETURN_VOID(calendar != nullptr, "CalendarNapi nullptr");
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
+        auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         ctxt->result = nativeCalendar->DeleteEvent(ctxt->eventId);
+        Native::ReportHiEventManager::GetInstance().OnApiCallEnd("DeleteEvent", ctxt->result, beginTime);
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
 }
@@ -195,7 +202,9 @@ napi_value CalendarNapi::DeleteEvents(napi_env env, napi_callback_info info)
         CHECK_RETURN_VOID(calendar != nullptr, "CalendarNapi nullptr");
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
+        auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         ctxt->result = nativeCalendar->DeleteEvents(ctxt->ids);
+        Native::ReportHiEventManager::GetInstance().OnApiCallEnd("DeleteEvents", ctxt->result, beginTime);
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
 }
@@ -220,7 +229,9 @@ napi_value CalendarNapi::UpdateEvent(napi_env env, napi_callback_info info)
         CHECK_RETURN_VOID(calendar != nullptr, "CalendarNapi nullptr");
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
+        auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         ctxt->result = nativeCalendar->UpdateEvent(ctxt->event);
+        Native::ReportHiEventManager::GetInstance().OnApiCallEnd("UpdateEvent", ctxt->result, beginTime);
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
 }

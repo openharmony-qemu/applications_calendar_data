@@ -16,6 +16,9 @@
 #include "app_event_processor_mgr.h"
 #include "report_hievent_manager.h"
 #include "calendar_log.h"
+#include <mutex>
+#include <thread>
+#include <condition_variable>
 #include <chrono>
 #include <queue>
 #include <unordered_map>
@@ -82,7 +85,7 @@ public:
                 return endTime;
             }
             m_callQueue.push({apiName, success, costMs, endTime});
-            m_lastApiCallTime.store(endTime, std::memory_order_release);
+            m_lastApiCallTime.store(endTime);
         }
 
         EnsureReportingRunning();
@@ -100,7 +103,7 @@ public:
     {
         {
             std::lock_guard<std::mutex> lock(m_threadControlMutex);
-            if (!m_reporting) {
+            if (!m_isWorkThreadRunning.load()) {
                 return;
             }
             m_stopReporting = true;
@@ -112,7 +115,7 @@ public:
             m_reportThread.join();
         }
 
-        m_reporting = false;
+        m_isWorkThreadRunning = false;
         LOG_INFO("ReportHiEventManager reporting stopped");
     }
 
@@ -122,49 +125,34 @@ private:
 
     void EnsureReportingRunning()
     {
-        // Fast-path: if work thread already running, nothing to do
-        if (m_isWorkThreadRunning.load(std::memory_order_acquire)) {
+        if (m_isWorkThreadRunning.load()) {
+            return;
+        }
+        std::unique_lock<std::mutex> lock(m_threadControlMutex);
+        if (m_isWorkThreadRunning.load()) {
             return;
         }
 
-        // Possibly there is an existing thread that needs stopping and joining.
-        // Move it out while holding lock, but join outside the lock to avoid deadlock.
-        std::thread threadToJoin;
-        {
-            std::lock_guard<std::mutex> lock(m_threadControlMutex);
-            if (m_isWorkThreadRunning.load(std::memory_order_acquire)) {
-                return;
-            }
-
-            if (m_reportThread.joinable()) {
-                // request the current thread to stop and take ownership to join outside lock
-                m_stopReporting.store(true, std::memory_order_release);
-                m_reportCv.notify_one();
-                threadToJoin = std::move(m_reportThread);
-            }
+        if (m_reportThread.joinable()) {
+            m_stopReporting.store(true);
+            m_reportCv.notify_one();
+            lock.unlock();
+            m_reportThread.join();
+            lock.lock();
         }
 
-        if (threadToJoin.joinable()) {
-            threadToJoin.join();
-        }
+        //start new thread
+        m_stopReporting.store(false);
+        m_isWorkThreadRunning.store(true);
+        m_reportThread = std::thread([this]() { ReportingThreadFunc(); });
 
-        // Now start a fresh reporting thread under lock
-        {
-            std::lock_guard<std::mutex> lock(m_threadControlMutex);
-            if (m_isWorkThreadRunning.load(std::memory_order_acquire)) {
-                return;
-            }
-            m_stopReporting.store(false, std::memory_order_release);
-            m_reporting.store(true, std::memory_order_release);
-            m_isWorkThreadRunning.store(true, std::memory_order_release);
-            m_reportThread = std::thread([this]() { ReportingThreadFunc(); });
-        }
     }
 
     void CheckReportConditions()
     {
         std::lock_guard<std::mutex> lock(m_queueMutex);
         if (static_cast<int>(m_callQueue.size()) >= CALL_THRESHOLD) {
+            m_thresholdReached.store(true);
             m_reportCv.notify_one();
         }
     }
@@ -179,7 +167,7 @@ private:
                 std::unique_lock<std::mutex> lock(m_threadControlMutex);
                 auto sleepDuration = std::chrono::seconds(1);
                 m_reportCv.wait_for(lock, sleepDuration, [this]() {
-                    return m_stopReporting || ShouldReport();
+                    return m_stopReporting || m_thresholdReached.load();
                 });
             }
 
@@ -192,7 +180,7 @@ private:
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                 now - lastReportTime).count();
             
-            if (elapsed >= REPORT_INTERVAL_SECONDS || m_stopReporting || ShouldReport()) {
+            if (elapsed >= REPORT_INTERVAL_SECONDS || m_stopReporting || m_thresholdReached.exchange(false)) {
                 PerformReporting();
                 lastReportTime = now;
             }
@@ -203,7 +191,6 @@ private:
             PerformReporting();
         }
 
-        m_reporting = false;
         m_isWorkThreadRunning = false;
         LOG_INFO("Reporting thread exiting");
     }
@@ -231,7 +218,6 @@ private:
             if (m_callQueue.empty()) {
                 return;
             }
-            recordsSnapshot = m_callQueue;
             std::swap(recordsSnapshot, m_callQueue);
         }
 
@@ -315,9 +301,9 @@ private:
     std::queue<ApiCallRecord> m_callQueue;
 
     // State flags
-    std::atomic<bool> m_reporting{false};
     std::atomic<bool> m_isWorkThreadRunning{false};
     std::atomic<bool> m_stopReporting{false};
+    std::atomic<bool> m_thresholdReached{false};
     std::atomic<int64_t> m_lastApiCallTime{0};
 
     int64_t m_processorId{-1};
