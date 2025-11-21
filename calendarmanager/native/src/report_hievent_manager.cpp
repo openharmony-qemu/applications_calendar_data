@@ -66,16 +66,14 @@ struct ApiAggregatedStat {
     }
 };
 
-class ReportHiEventManagerImpl {
+class ReportHiEventManager::ReportHiEventManagerImpl {
 public:
-    static ReportHiEventManagerImpl& GetInstance()
-    {
-        static ReportHiEventManagerImpl instance;
-        return instance;
-    }
+    ReportHiEventManagerImpl() = default;
+    ~ReportHiEventManagerImpl() { StopReporting(); }
 
     int64_t OnApiCallEnd(const std::string& apiName, bool success, int64_t beginTime)
     {
+        // api调用结束后记录是否成功和时延写入队列，满足条件后聚合上报
         auto endTime = GetCurrentTime();
         auto costMs = endTime - beginTime;
 
@@ -120,8 +118,6 @@ public:
     }
 
 private:
-    ReportHiEventManagerImpl() = default;
-    ~ReportHiEventManagerImpl() { StopReporting(); }
 
     void EnsureReportingRunning()
     {
@@ -160,7 +156,6 @@ private:
     {
         LOG_INFO("Reporting thread started");
         auto lastReportTime = std::chrono::steady_clock::now();
-
         while (!m_stopReporting) {
             {
                 std::unique_lock<std::mutex> lock(m_threadControlMutex);
@@ -193,10 +188,9 @@ private:
         LOG_INFO("Reporting thread exiting");
     }
 
-    bool ShouldAutoStop() const
+    bool ShouldAutoStop()
     {
-        auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch()).count();
+        auto now = GetCurrentTime();
         auto idleMs = now - m_lastApiCallTime;
         return idleMs > IDLE_TIME_OUT_MS;
     }
@@ -304,23 +298,26 @@ ReportHiEventManager& ReportHiEventManager::GetInstance()
     return instance;
 }
 
-ReportHiEventManager::ReportHiEventManager() {}
+ReportHiEventManager::ReportHiEventManager()
+    : m_impl(std::make_unique<ReportHiEventManagerImpl>())
+{
+}
 
 ReportHiEventManager::~ReportHiEventManager() = default;
 
 int64_t ReportHiEventManager::OnApiCallEnd(const std::string& apiName, bool success, int64_t beginTime)
 {
-    return ReportHiEventManagerImpl::GetInstance().OnApiCallEnd(apiName, success, beginTime);
+    return m_impl->OnApiCallEnd(apiName, success, beginTime);
 }
 
 int64_t ReportHiEventManager::GetCurrentTime()
 {
-    return ReportHiEventManagerImpl::GetInstance().GetCurrentTime();
+    return m_impl->GetCurrentTime();
 }
 
 void ReportHiEventManager::StopReporting()
 {
-    ReportHiEventManagerImpl::GetInstance().StopReporting();
+    m_impl->StopReporting();
 }
 
 } // namespace OHOS::CalendarApi

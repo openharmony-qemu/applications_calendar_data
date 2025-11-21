@@ -17,9 +17,9 @@
 #define OHOS_CALENDAR_REPORT_HIEVENT_MANAGER_H
 #include <string>
 #include <cstdint>
+#include <memory>
 
 namespace OHOS::CalendarApi::Native {
-
 class ReportHiEventManager {
 public:
     static ReportHiEventManager& GetInstance();
@@ -35,6 +35,8 @@ public:
 
 private:
     ReportHiEventManager();
+    class ReportHiEventManagerImpl;
+    std::unique_ptr<ReportHiEventManagerImpl> m_impl;
 };
 
 } // namespace OHOS::CalendarApi
