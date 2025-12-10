@@ -55,7 +55,7 @@ namespace OHOS::CalendarApi::Native {
     void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSet);
     void ResultSetToConfig(CalendarConfig &config, DataShareResultSetPtr &resultSet);
     void SetField(const std::vector<string>& eventKey,
-        std::vector<string>& queryField, std::set<string>& resultSetField);
+        std::vector<string>& queryField, std::set<string>& resultSetField, std::shared_ptr<Error> error = nullptr);
     void GetEventAttendeesValue(std::vector<Event> &events, const std::map<int, std::vector<Attendee>> &attendeesMap);
 
     bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue);
@@ -94,6 +94,13 @@ namespace OHOS::CalendarApi::Native {
         }
         out = value;
         return ret;
+    }
+
+    inline void SetErrCode(std::shared_ptr<Error> error, int errCode)
+    {
+        if (error) {
+            error->code = errCode;
+        }
     }
 }
  // namespace OHOS::Calendar::NativeUtils

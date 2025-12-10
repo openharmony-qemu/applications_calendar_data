@@ -30,6 +30,7 @@ const std::string WRITE_PERMISSION_NAME = "ohos.permission.WRITE_WHOLE_CALENDAR"
 const int DESTROY_DATASHARE_DELAY = 2 * 60 * 1000;
 const int CHECK_INTERVAL_DIVIDER = 4;
 const uint32_t MAX_RETRY_ATTEMPTS = 3;
+const int PERMISSION_ERR_CODE = -2;
 }  // namespace
 
 using namespace OHOS::DataShare;
@@ -144,58 +145,115 @@ std::shared_ptr<DataShare::DataShareHelper> DataShareHelperManager::GetDataShare
     return CreateDataShareHelper(isRead);
 }
 
-int DataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket &value)
+int DataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket &value, std::shared_ptr<Error> error)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
-        LOG_ERROR("Insert dataShareHelper is nullptr");
+        if (error) {
+            error->code = PERMISSION_FAILED;
+            LOG_ERROR("insert error.code = %{public}d", error->code);
+            LOG_ERROR("Insert dataShareHelper is nullptr");
+        } else {
+            LOG_ERROR("error is nullptr");
+        }
         return -1;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
-    auto res = dataShareHelper->Insert(const_cast<Uri &>(uri), value);
+    auto res = dataShareHelper->InsertEx(const_cast<Uri &>(uri), value);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    return res;
+    if (res.first == PERMISSION_ERR_CODE) {
+        LOG_ERROR("insert dataShare permission error");
+        error->code = PERMISSION_FAILED;
+        return -1;
+    }
+    if (res.first != 0) {
+        LOG_ERROR("dataShare insert res.first = %{public}d", res.first);
+        LOG_ERROR("dataShare insert error");
+        if (error) {
+            error->code = INTERNAL_ERROR;
+        }
+        return -1;
+    }
+    return res.second;
 }
 
-int DataShareHelperManager::BatchInsert(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values)
+int DataShareHelperManager::BatchInsert
+(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values, std::shared_ptr<Error> error)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
+        if (error) {
+            error->code = PERMISSION_FAILED;
+        }
         LOG_ERROR("BatchInsert dataShareHelper is nullptr");
         return -1;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->BatchInsert(const_cast<Uri &>(uri), values);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
+    if (res <= 0) {
+        if (error) {
+            error->code = INTERNAL_ERROR;
+        }
+    }
     return res;
 }
 
-int DataShareHelperManager::Update(
-    const Uri &uri, const DataSharePredicates &predicates, const DataShareValuesBucket &value)
+int DataShareHelperManager::Update(const Uri &uri, const DataSharePredicates &predicates,
+    const DataShareValuesBucket &value, std::shared_ptr<Error> error)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
+        if (error) {
+            error->code = PERMISSION_FAILED;
+        }
         LOG_ERROR("Update dataShareHelper is nullptr");
         return -1;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
-    auto res = dataShareHelper->Update(const_cast<Uri &>(uri), predicates, value);
+    auto res = dataShareHelper->UpdateEx(const_cast<Uri &>(uri), predicates, value);
+    if (res.first == PERMISSION_ERR_CODE) {
+        LOG_ERROR("update dataShare permission error");
+        error->code = PERMISSION_FAILED;
+        return -1;
+    }
+    if (res.first != 0) {
+        if (error) {
+            error->code = INTERNAL_ERROR;
+        }
+        LOG_INFO("dataShare errorCode = %{public}d", res.first);
+        return -1;
+    }
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    return res;
+    return res.second;
 }
 
-int DataShareHelperManager::Delete(const Uri &uri, const DataSharePredicates &predicates)
+int DataShareHelperManager::Delete(const Uri &uri, const DataSharePredicates &predicates, std::shared_ptr<Error> error)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
+        if (error) {
+            error->code = PERMISSION_FAILED;
+        }
         LOG_ERROR("Delete dataShareHelper is nullptr");
         return -1;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
-    auto res = dataShareHelper->Delete(const_cast<Uri &>(uri), predicates);
-
+    auto res = dataShareHelper->DeleteEx(const_cast<Uri &>(uri), predicates);
+    if (res.first == PERMISSION_ERR_CODE) {
+        LOG_ERROR("delete dataShare permission error");
+        error->code = PERMISSION_FAILED;
+        return -1;
+    }
+    if (res.first != 0) {
+        if (error) {
+            error->code = INTERNAL_ERROR;
+        }
+        LOG_ERROR("dataShare errorCode = %{public}d", res.first);
+        return -1;
+    }
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    return res;
+    return res.second;
 }
 
 std::shared_ptr<DataShareResultSet> DataShareHelperManager::Query(const Uri &uri, const DataSharePredicates &predicates,
@@ -203,12 +261,22 @@ std::shared_ptr<DataShareResultSet> DataShareHelperManager::Query(const Uri &uri
 {
     auto dataShareHelper = CreateDataShareHelper(true);
     if (!dataShareHelper) {
+        businessError->SetCode(PERMISSION_FAILED);
         LOG_ERROR("Query dataShareHelper is nullptr");
         return nullptr;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->Query(const_cast<Uri &>(uri), predicates, columns, businessError);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
+    if (businessError->GetCode() != 0) {
+        if (businessError->GetCode() == PERMISSION_ERR_CODE) {
+            LOG_ERROR("query dataShare permission error");
+            businessError->SetCode(PERMISSION_FAILED);
+        } else {
+            LOG_ERROR("dataShare query error");
+            businessError->SetCode(INTERNAL_ERROR);
+        }
+    }
     return res;
 }
 }  // namespace OHOS::CalendarApi

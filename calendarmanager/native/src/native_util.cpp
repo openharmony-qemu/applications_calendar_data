@@ -1123,7 +1123,7 @@ void SetServiceFieldInfo(std::vector<string>& queryField)
 }
 
 void FillFieldInfo(const std::string field, std::vector<string>& queryField, std::set<string>& resultSetField,
-    const std::map<string, string> eventField)
+    const std::map<string, string> eventField, std::shared_ptr<Error> error)
 {
     if (field == "location") {
             SetLocationFieldInfo(queryField);
@@ -1169,22 +1169,30 @@ void FillFieldInfo(const std::string field, std::vector<string>& queryField, std
             resultSetField.insert(field);
             return;
         }
-        queryField.emplace_back(eventField.at(field));
+        try {
+            queryField.emplace_back(eventField.at(field));
+        } catch (std::exception &ex) {
+            SetErrCode(error, PARAMETER_ERROR);
+            LOG_ERROR("has no this field");
+            return;
+        }
+        
         resultSetField.insert(field);
 }
 
 void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,
-    std::set<string>& resultSetField, const std::map<string, string> eventField)
+    std::set<string>& resultSetField, const std::map<string, string> eventField, std::shared_ptr<Error> error)
 {
     for (const auto& field : eventKey) {
         if (field == "id") {
             continue;
         }
-        FillFieldInfo(field, queryField, resultSetField, eventField);
+        FillFieldInfo(field, queryField, resultSetField, eventField, error);
     }
 }
 
-void SetField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+void SetField(const std::vector<string>& eventKey, std::vector<string>& queryField,
+ std::set<string>& resultSetField,  std::shared_ptr<Error> error)
 {
     const std::map<string, string> eventField = { { "id", "_id" },
                                                   { "type", "important_event_type" },
@@ -1194,6 +1202,6 @@ void SetField(const std::vector<string>& eventKey, std::vector<string>& queryFie
                                                   { "isAllDay", "allDay" },
                                                   { "timeZone", "eventTimezone" },
                                                   { "description", "description" }};
-    SetFieldInfo(eventKey, queryField, resultSetField, eventField);
+    SetFieldInfo(eventKey, queryField, resultSetField, eventField, error);
 }
 }

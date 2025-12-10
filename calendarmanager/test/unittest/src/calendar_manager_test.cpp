@@ -75,6 +75,36 @@ HWTEST_F(CalendarManagerTest, getCalendar_test_exist, testing::ext::TestSize.Lev
     EXPECT_EQ(accountExpect.type, test_account.type);
 }
 
+HWTEST_F(CalendarManagerTest, getCalendar_test_no_exist, testing::ext::TestSize.Level1)
+{
+    auto error = std::make_shared<Error>();
+    CalendarAccount test_account {
+        "name_getCalendar_test_exist",
+        "local",
+    };
+    auto calendar = CalendarManager::GetInstance().GetCalendar(test_account, error);
+    EXPECT_EQ(calendar->GetId(), -1);
+    EXPECT_EQ(error->code, QUERY_RESULT_EMPTY);
+}
+
+HWTEST_F(CalendarManagerTest, deleteCalendar_test_no_exist, testing::ext::TestSize.Level1)
+{
+    auto error = std::make_shared<Error>();
+    CalendarAccount test_account {
+        "name_getCalendar_test_exist",
+        "local",
+    };
+    auto calendarTest = new Calendar(test_account, 0);
+    auto isDelete = CalendarManager::GetInstance().DeleteCalendar(*calendarTest, error);
+    EXPECT_EQ(isDelete, 0);
+    EXPECT_EQ(error->code, VALUE_ERROR);
+    if (calendarTest) {
+        delete calendarTest;
+        calendarTest = nullptr;
+    }
+    EXPECT_EQ(calendarTest, nullptr);
+}
+
 HWTEST_F(CalendarManagerTest, createCalendar_which_not_exist, testing::ext::TestSize.Level1)
 {
     CalendarAccount test_account {

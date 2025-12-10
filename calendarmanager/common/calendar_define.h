@@ -28,6 +28,18 @@ using std::optional;
 using std::variant;
 
 namespace OHOS::CalendarApi {
+/* Permission verification failed */
+constexpr int PERMISSION_FAILED = 201;
+/* The number or type of parameters is incorrect. */
+constexpr int PARAMETER_ERROR = 401;
+/* Incorrect parameter value */
+constexpr int VALUE_ERROR = 23900001;
+/* String length exceeds range */
+constexpr int STR_LENGTH_ERROR = 23900002;
+/* No specified account found */
+constexpr int QUERY_RESULT_EMPTY = 23900003;
+/* Internal program error */
+constexpr int INTERNAL_ERROR = 23900004;
 
 struct CalendarAccount {
     std::string name;  // readonly
@@ -143,6 +155,13 @@ struct CalendarConfig {
     {
         return enableReminder == other.enableReminder && color == other.color;
     }
+};
+
+struct Error {
+    string message;
+    int code;
+    Error(){ }
+    Error(string errMessage, int errCode) : message(errMessage), code(errCode){ }
 };
 
 }  // namespace OHOS::CalendarApi

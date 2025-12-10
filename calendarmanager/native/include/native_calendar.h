@@ -35,24 +35,27 @@ public:
 
     Calendar() = delete;
     ~Calendar() = default;
-    int AddEvent(const Event& event);
-    int AddEvents(const std::vector<Event>& events);
-    bool DeleteEvent(int id);
-    int DeleteEvents(const std::vector<int>& id);
-    void DeleteAllEvents();
-    bool UpdateEvent(const Event& event);
-    int UpdateEvents(const std::vector<Event>& events);
+    int AddEvent(const Event& event, std::shared_ptr<Error> error = nullptr);
+    int AddEvents(const std::vector<Event>& events, std::shared_ptr<Error> error = nullptr);
+    bool DeleteEvent(int id, std::shared_ptr<Error> error = nullptr);
+    int DeleteEvents(const std::vector<int>& id, std::shared_ptr<Error> error = nullptr);
+    void DeleteAllEvents(std::shared_ptr<Error> error = nullptr);
+    bool UpdateEvent(const Event& event, std::shared_ptr<Error> error = nullptr);
+    int UpdateEvents(const std::vector<Event>& events, std::shared_ptr<Error> error = nullptr);
     CalendarConfig GetConfig();
-    bool SetConfig(const CalendarConfig& config);
-    std::vector<Event> GetEvents(std::shared_ptr<EventFilter> filter, const std::vector<string>& eventKey);
-    void GetAttendeesByEventIds(const std::vector<std::string> &ids, std::vector<Event> &events);
-    void GetRemindersByEventIds(const std::vector<std::string> &ids, std::vector<Event> &events);
-    void InsertReminders(int eventId, vector<int> reminders);
-    int AddEventInfo(const Event& event, int channelId);
+    bool SetConfig(const CalendarConfig& config, std::shared_ptr<Error> error = nullptr);
+    std::vector<Event> GetEvents(std::shared_ptr<EventFilter> filter,
+     const std::vector<string>& eventKey, std::shared_ptr<Error> error = nullptr);
+    void GetAttendeesByEventIds(const std::vector<std::string> &ids,
+     std::vector<Event> &events, std::shared_ptr<Error> error = nullptr);
+    void GetRemindersByEventIds(const std::vector<std::string> &ids, std::vector<Event> &events,
+     std::shared_ptr<Error> error = nullptr);
+    void InsertReminders(int eventId, vector<int> reminders, std::shared_ptr<Error> error = nullptr);
+    int AddEventInfo(const Event& event, int channelId, std::shared_ptr<Error> error = nullptr);
     std::vector<Event> QueryEventInstances(int64_t start, int64_t end, const std::vector<int> &ids,
-     const std::vector<string>& eventKey);
-    void FillEventsInfo(const std::vector<std::string> &eventIds,
-     std::vector<Event> &events, const std::set<std::string>& resultSetField);
+     const std::vector<string>& eventKey, std::shared_ptr<Error> error = nullptr);
+    void FillEventsInfo(const std::vector<std::string> &eventIds, std::vector<Event> &events,
+     const std::set<std::string>& resultSetField, std::shared_ptr<Error> error = nullptr);
     CalendarAccount GetAccount() const
     {
         return m_account;

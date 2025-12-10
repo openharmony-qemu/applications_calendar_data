@@ -22,9 +22,11 @@
 #include "napi/native_api.h"
 #include "napi/native_common.h"
 #include "napi/native_node_api.h"
+#include "calendar_define.h"
 
 namespace OHOS::CalendarApi {
 constexpr size_t ARGC_MAX = 6;
+constexpr size_t STRLEN_MAX = 5000;
 using NapiCbInfoParser = std::function<void(size_t argc, napi_value* argv)>;
 using NapiAsyncExecute = std::function<void(void)>;
 using NapiAsyncComplete = std::function<void(napi_value&)>;
@@ -42,7 +44,7 @@ struct ContextBase {
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
-    std::string error;
+    std::shared_ptr<Error> error;
 
     napi_value self = nullptr;
     void* native = nullptr;
@@ -54,25 +56,51 @@ private:
 };
 
 /* check condition related to argc/argv, return and logging. */
-#define CHECK_ARGS_RETURN_VOID(ctxt, condition, message)                    \
+#define CHECK_ARGS_RETURN_VOID(ctxt, condition, errCode, errMessage)              \
     do {                                                                    \
         if (!(condition)) {                                                 \
             (ctxt)->status = napi_invalid_arg;                              \
-            (ctxt)->error = std::string(message);                           \
-            LOG_ERROR("test (" #condition ") failed: " message);            \
+            if ((ctxt)->error) {                                             \
+                (ctxt)->error->code =  errCode;                              \
+                (ctxt)->error->message = std::string(errMessage);              \
+            }                                                                  \
+            LOG_ERROR("test (" #condition ") failed: " errMessage);            \
             return;                                                         \
         }                                                                   \
     } while (0)
 
-#define CHECK_STATUS_RETURN_VOID(ctxt, message)                        \
+#define CHECK_STATUS_RETURN_VOID(ctxt, errCode, errMessage)                        \
     do {                                                               \
         if ((ctxt)->status != napi_ok) {                               \
-            (ctxt)->error = std::string(message);                      \
-            LOG_ERROR("test (ctxt->status %{public}d) failed: " message, (ctxt)->status);  \
+            if ((ctxt)->error) {                                             \
+                (ctxt)->error->code =  errCode;                              \
+                (ctxt)->error->message = std::string(errMessage);              \
+            }                                                                 \
+            LOG_ERROR("test (ctxt->status %{public}d) failed: " errMessage, (ctxt)->status);  \
             return;                                                    \
         }                                                              \
     } while (0)
 
+#define CHECK_ERRCODE_RETURN_VOID(ctxt, errMessage)                        \
+    do {                                                               \
+        if ((ctxt)->error->code != 0 ) {                               \
+            (ctxt)->error->message = std::string(errMessage);                             \
+            LOG_ERROR("test (ctxt->status %{public}d) failed: " errMessage, (ctxt)->status);  \
+            return;                                                    \
+        }                                              \
+    } while (0)
+
+#define CHECK_ERRCODE_RETURN(error, message, retVal)                  \
+    do {                                             \
+        if ((error)) {                               \
+            if ((error)->code != 0) {                \
+                LOG_ERROR("test failed: " message);  \
+                return retVal;             \
+            }                                        \
+        }                                            \
+                                                     \
+    } while (0)
+    
 /* check condition, return and logging if condition not true. */
 #define CHECK_RETURN(condition, message, retVal)             \
     do {                                                     \

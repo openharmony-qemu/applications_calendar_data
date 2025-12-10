@@ -19,6 +19,7 @@
 #include <memory>
 #include "singleton.h"
 #include "datashare_helper.h"
+#include "calendar_define.h"
 
 namespace OHOS::CalendarApi {
 class DataShareHelperManager : public OHOS::Singleton<DataShareHelperManager> {
@@ -50,7 +51,8 @@ public:
      *
      * @return Returns the index of the inserted data record.
      */
-    int Insert(const Uri &uri, const DataShare::DataShareValuesBucket &value);
+    int Insert(const Uri &uri, const DataShare::DataShareValuesBucket &value,
+        std::shared_ptr<Error> error = nullptr);
     
      /**
      * @brief batch insert data records into the database.
@@ -60,7 +62,8 @@ public:
      *
      * @return Returns the index of the inserted data count.
      */
-    int BatchInsert(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values);
+    int BatchInsert(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values,
+        std::shared_ptr<Error> error = nullptr);
     
     /**
      * @brief Updates data records in the database.
@@ -72,7 +75,7 @@ public:
      * @return Returns the number of data records updated.
      */
     int Update(const Uri &uri, const DataShare::DataSharePredicates &predicates,
-        const DataShare::DataShareValuesBucket &value);
+        const DataShare::DataShareValuesBucket &value, std::shared_ptr<Error> error = nullptr);
 
     /**
      * @brief Deletes one or more data records from the database.
@@ -82,7 +85,8 @@ public:
      *
      * @return Returns the number of data records deleted.
      */
-    int Delete(const Uri &uri, const DataShare::DataSharePredicates &predicates);
+    int Delete(const Uri &uri, const DataShare::DataSharePredicates &predicates,
+        std::shared_ptr<Error> error = nullptr);
 
     /**
      * @brief Query records from the database.

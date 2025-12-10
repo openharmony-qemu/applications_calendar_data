@@ -99,6 +99,24 @@ HWTEST_F(CalendarTest, DeleteEvent_dupilcate, testing::ext::TestSize.Level1)
     EXPECT_EQ(ret, false);
 }
 
+HWTEST_F(CalendarTest, DeleteEvent_no_exist, testing::ext::TestSize.Level1)
+{
+    auto error = std::make_shared<Error>();
+    int eventId = 0;
+    auto ret = calendar->DeleteEvent(eventId, error);
+    EXPECT_EQ(ret, false);
+    EXPECT_EQ(error->code, VALUE_ERROR);
+}
+
+HWTEST_F(CalendarTest, DeleteEvents_no_exist, testing::ext::TestSize.Level1)
+{
+    auto error = std::make_shared<Error>();
+    std::vector<int> eventIds = {0, -1, -2};
+    auto ret = calendar->DeleteEvents(eventIds, error);
+    EXPECT_EQ(ret, false);
+    EXPECT_EQ(error->code, VALUE_ERROR);
+}
+
 HWTEST_F(CalendarTest, AddEvents_test_normal, testing::ext::TestSize.Level1)
 {
     const string title_1 = "AddEvents_test_normal_1";
@@ -233,7 +251,9 @@ HWTEST_F(CalendarTest, UpdateEvent_DeleteRule, testing::ext::TestSize.Level1)
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
     auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
+    LOG_ERROR("1209 1111111111");
     auto events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    LOG_ERROR("1209 2222222222222");
     ASSERT_EQ(1, events.size());
     auto newEvent = events.at(0);
     newEvent.recurrenceRule.value().recurrenceFrequency = NORULE;
@@ -483,8 +503,19 @@ HWTEST_F(CalendarTest, AddEventInfoNoID, testing::ext::TestSize.Level1)
 HWTEST_F(CalendarTest, UpdateEventNoID, testing::ext::TestSize.Level1)
 {
     Event event;
-    bool isUpdataEvent = calendar->UpdateEvent(event);
+    auto error = std::make_shared<Error>();
+    bool isUpdataEvent = calendar->UpdateEvent(event, error);
     ASSERT_EQ(isUpdataEvent, 0);
+    ASSERT_EQ(error->code, VALUE_ERROR);
+}
+
+HWTEST_F(CalendarTest, UpdateEventNoExist, testing::ext::TestSize.Level1)
+{
+    Event event;
+    auto error = std::make_shared<Error>();
+    bool isUpdataEvent = calendar->UpdateEvent(event, error);
+    ASSERT_EQ(isUpdataEvent, 0);
+    ASSERT_EQ(error->code, VALUE_ERROR);
 }
 
 HWTEST_F(CalendarTest, BuildValueEventIsLunar, testing::ext::TestSize.Level1)

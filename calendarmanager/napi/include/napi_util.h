@@ -17,11 +17,13 @@
 #include <cstdint>
 #include <map>
 #include <variant>
+#include <memory>
 #include "calendar_define.h"
 #include "event_filter_napi.h"
 #include "napi/native_api.h"
 #include "napi/native_common.h"
 #include "napi/native_node_api.h"
+#include "calendar_log.h"
 
 namespace OHOS::CalendarApi::NapiUtil {
     napi_status GetValue(napi_env env, napi_value in, napi_value& out);
@@ -127,6 +129,21 @@ namespace OHOS::CalendarApi::NapiUtil {
 
     /* AttendeeType -> napi_value */
     napi_status SetAttendeeType(napi_env env, const Attendee& in, napi_value& out);
+
+     /* check parameter value range */
+    template <typename T>
+    bool checkOptionalValueRange(T maxValue, T minValue, const std::string& prop,
+        std::optional<T> checkValue)
+    {
+        if (!checkValue.has_value()) {
+            return false;
+        }
+        if (checkValue > maxValue || checkValue < minValue) {
+            LOG_ERROR("%{public}s out of range", prop.c_str());
+            return false;
+        }
+        return true;
+    }
 
     /* napi_get_named_property wrapper */
     template <typename T>

@@ -40,7 +40,7 @@ napi_value EventFilterNapi::New(napi_env env, napi_callback_info info)
     LOG_DEBUG("EventFilterNapi new");
     auto ctxt = std::make_shared<ContextBase>();
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
-        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 1, "invalid arguments!");
+        CHECK_ARGS_RETURN_VOID(ctxt, argc >= 1, PARAMETER_ERROR, "invalid arguments!");
     };
     ctxt->GetCbInfoSync(env, info, input);
     NAPI_ASSERT(env, ctxt->status == napi_ok, "invalid arguments!");

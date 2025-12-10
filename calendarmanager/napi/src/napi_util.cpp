@@ -323,6 +323,7 @@ napi_status GetValue(napi_env env, napi_value in, CalendarConfig& out)
         LOG_DEBUG("napi_value color: %{public}s", str.c_str());
         bool ok = Native::ColorParse(str, out.color);
         if (!ok) {
+            LOG_ERROR("color is error");
             return napi_string_expected;
         }
         return napi_ok;

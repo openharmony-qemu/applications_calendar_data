@@ -56,13 +56,13 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
     return valuesBucket;
 }
 
-std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount &account)
+std::shared_ptr<Calendar> CalendarManager::CreateCalendar(const CalendarAccount &account, std::shared_ptr<Error> error)
 {
     auto valueEvent = BuildValueCalendarAccount(account);
     int errNum = 0;
     int index = 0;
     do {
-        index = DataShareHelperManager::GetInstance().Insert(*(m_calendarUri.get()), valueEvent);
+        index = DataShareHelperManager::GetInstance().Insert(*(m_calendarUri.get()), valueEvent, error);
         if (index <= 0) {
             LOG_WARN("Insert index %{public}d", index);
             LOG_WARN("Insert indexNum %{public}d", errNum);
@@ -88,7 +88,8 @@ DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &accoun
     return predicates;
 }
 
-std::shared_ptr<Calendar> CalendarManager::GetCalendar(const std::optional<CalendarAccount> &account)
+std::shared_ptr<Calendar> CalendarManager::GetCalendar(const std::optional<CalendarAccount> &account,
+    std::shared_ptr<Error> error)
 {
     DataShare::DataSharePredicates predicates;
     if (account) {
@@ -98,47 +99,65 @@ std::shared_ptr<Calendar> CalendarManager::GetCalendar(const std::optional<Calen
         predicates = BuildCalendarFilter(defaultAccount);
     }
     std::vector<std::string> columns = {"_id", "account_name", "account_type", "calendar_displayName"};
-    DataShare::DatashareBusinessError error;
-    auto resultSet = DataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
+    DataShare::DatashareBusinessError dataShareError;
+    auto resultSet = DataShareHelperManager::GetInstance()
+    .Query(*(m_calendarUri.get()), predicates, columns, &dataShareError);
     if (!resultSet) {
-        LOG_ERROR("query failed %{public}d, %{public}s", error.GetCode(), error.GetMessage().c_str());
+        LOG_ERROR("query failed %{public}d, %{public}s", dataShareError.GetCode(), dataShareError.GetMessage().c_str());
+        if (error) {
+            error->code = dataShareError.GetCode();
+            error->message = "GetCalendar error!";
+        }
         return nullptr;
     }
     auto calendarSet = ResultSetToCalendars(resultSet);
     if (calendarSet.empty()) {
         LOG_WARN("calendarSet empty");
+        if (error) {
+            error->code = QUERY_RESULT_EMPTY;
+            error->message = "GetCalendar failed!";
+        }
         return std::make_shared<Calendar>(-1);
     }
     LOG_INFO("GetCalendar successed");
     return std::move(calendarSet.at(0));
 }
 
-std::vector<std::shared_ptr<Calendar>> CalendarManager::GetAllCalendars()
+std::vector<std::shared_ptr<Calendar>> CalendarManager::GetAllCalendars(std::shared_ptr<Error> error)
 {
     std::vector<std::shared_ptr<Calendar>> results;
     DataShare::DataSharePredicates predicates;
     std::vector<std::string> columns = {"_id", "account_name", "account_type", "calendar_displayName"};
-    DataShare::DatashareBusinessError error;
-    auto queryResult = DataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns, &error);
+    DataShare::DatashareBusinessError dataShareError;
+    auto queryResult = DataShareHelperManager::GetInstance()
+    .Query(*(m_calendarUri.get()), predicates, columns, &dataShareError);
     if (!queryResult) {
-        LOG_ERROR("query failed %{public}d, %{public}s", error.GetCode(), error.GetMessage().c_str());
+        LOG_ERROR("query failed %{public}d, %{public}s", dataShareError.GetCode(), dataShareError.GetMessage().c_str());
+        if (error) {
+            error->code = dataShareError.GetCode();
+        }
         return results;
     }
     return ResultSetToCalendars(queryResult);
 }
 
-bool CalendarManager::DeleteCalendar(const Calendar &calendar)
+bool CalendarManager::DeleteCalendar(const Calendar &calendar, std::shared_ptr<Error> error)
 {
     DataShare::DataSharePredicates predicates;
     predicates.EqualTo("_id", calendar.GetId());
     int errNum = 0;
     int result = 0;
     do {
-        result = DataShareHelperManager::GetInstance().Delete(*(m_calendarUri.get()), predicates);
-        if (result <= 0) {
+        result = DataShareHelperManager::GetInstance().Delete(*(m_calendarUri.get()), predicates, error);
+        if (result < 0) {
             LOG_WARN("DeleteCalendar %{public}d", result);
             LOG_WARN("DeleteCalendarNum %{public}d", errNum);
             errNum++;
+        } else if (result == 0) {
+            LOG_ERROR("The deleted calendar does not exist!");
+            if (error) {
+                error->code = VALUE_ERROR;
+            }
         } else {
             break;
         }
@@ -146,12 +165,12 @@ bool CalendarManager::DeleteCalendar(const Calendar &calendar)
     return result == 1;
 }
 
-int CalendarManager::DeleteAllCalendars()
+int CalendarManager::DeleteAllCalendars(std::shared_ptr<Error> error)
 {
-    auto calendars = GetAllCalendars();
+    auto calendars = GetAllCalendars(error);
     int count = 0;
     for (const auto &calendar : calendars) {
-        if (DeleteCalendar(*calendar.get())) {
+        if (DeleteCalendar(*calendar.get(), error)) {
             count += 1;
         }
     }
