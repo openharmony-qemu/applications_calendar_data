@@ -90,6 +90,11 @@ private:
         }                                                    \
     } while (0)
 
+#define DECLARE_WRITABLE_NAPI_FUNCTION(name, func)                                 \
+    {                                                                              \
+        (name), nullptr, (func), nullptr, nullptr, nullptr, napi_writable, nullptr \
+    }
+    
 class NapiQueue {
 public:
     static napi_value AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
