@@ -1126,58 +1126,53 @@ void FillFieldInfo(const std::string field, std::vector<string>& queryField, std
     const std::map<string, string> eventField, std::shared_ptr<Error> error)
 {
     if (field == "location") {
-            SetLocationFieldInfo(queryField);
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "service") {
-            SetServiceFieldInfo(queryField);
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "attendee") {
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "reminderTime") {
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "identifier") {
-            queryField.emplace_back("identifier");
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "recurrenceRule") {
-            queryField.emplace_back("rrule");
-            queryField.emplace_back("exdate");
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "isLunar") {
-            queryField.emplace_back("event_calendar_type");
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "instanceStartTime") {
-            queryField.emplace_back("begin");
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "instanceEndTime") {
-            queryField.emplace_back("end");
-            resultSetField.insert(field);
-            return;
-        }
-        try {
-            queryField.emplace_back(eventField.at(field));
-        } catch (std::exception &ex) {
-            SetErrCode(error, PARAMETER_ERROR);
-            LOG_ERROR("has no this field");
-            return;
-        }
-        
+        SetLocationFieldInfo(queryField);
         resultSetField.insert(field);
+        return;
+    }
+    if (field == "service") {
+        SetServiceFieldInfo(queryField);
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "attendee") {
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "reminderTime") {
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "recurrenceRule") {
+        queryField.emplace_back("rrule");
+        queryField.emplace_back("exdate");
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "isLunar") {
+        queryField.emplace_back("event_calendar_type");
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "instanceStartTime") {
+        queryField.emplace_back("begin");
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "instanceEndTime") {
+        queryField.emplace_back("end");
+        resultSetField.insert(field);
+        return;
+    }
+
+    try {
+        queryField.emplace_back(eventField.at(field));
+    } catch (std::exception &ex) {
+        SetErrCode(error, PARAMETER_ERROR);
+        LOG_ERROR("has no this field");
+        return;
+    }
+    resultSetField.insert(field);
 }
 
 void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,

@@ -218,7 +218,7 @@ napi_value CalendarNapi::DeleteEvents(napi_env env, napi_callback_info info)
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
         auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
-       ctxt->result = nativeCalendar->DeleteEvents(ctxt->ids, ctxt->error);
+        ctxt->result = nativeCalendar->DeleteEvents(ctxt->ids, ctxt->error);
         Native::ReportHiEventManager::GetInstance().OnApiCallEnd("DeleteEvents", ctxt->result, beginTime);
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);

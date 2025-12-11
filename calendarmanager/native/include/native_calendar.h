@@ -46,6 +46,8 @@ public:
     bool SetConfig(const CalendarConfig& config, std::shared_ptr<Error> error = nullptr);
     std::vector<Event> GetEvents(std::shared_ptr<EventFilter> filter,
      const std::vector<string>& eventKey, std::shared_ptr<Error> error = nullptr);
+    void BatchGetEvents(std::vector<Event> &events, const std::set<string> &resultSetField,
+     const std::vector<std::string> &eventIds);
     void GetAttendeesByEventIds(const std::vector<std::string> &ids,
      std::vector<Event> &events, std::shared_ptr<Error> error = nullptr);
     void GetRemindersByEventIds(const std::vector<std::string> &ids, std::vector<Event> &events,

@@ -55,15 +55,20 @@ private:
     friend class NapiQueue;
 };
 
+inline void SetErrorValue(std::shared_ptr<Error> error, int code, std::string message) 
+{
+    if (error) {
+        error->code = code;
+        error->message = message;
+    }
+}
+
 /* check condition related to argc/argv, return and logging. */
 #define CHECK_ARGS_RETURN_VOID(ctxt, condition, errCode, errMessage)              \
     do {                                                                    \
         if (!(condition)) {                                                 \
             (ctxt)->status = napi_invalid_arg;                              \
-            if ((ctxt)->error) {                                             \
-                (ctxt)->error->code =  errCode;                              \
-                (ctxt)->error->message = std::string(errMessage);              \
-            }                                                                  \
+            SetErrorValue(ctxt->error, errCode, errMessage);                  \
             LOG_ERROR("test (" #condition ") failed: " errMessage);            \
             return;                                                         \
         }                                                                   \
@@ -72,10 +77,7 @@ private:
 #define CHECK_STATUS_RETURN_VOID(ctxt, errCode, errMessage)                        \
     do {                                                               \
         if ((ctxt)->status != napi_ok) {                               \
-            if ((ctxt)->error) {                                             \
-                (ctxt)->error->code =  errCode;                              \
-                (ctxt)->error->message = std::string(errMessage);              \
-            }                                                                 \
+            SetErrorValue(ctxt->error, errCode, errMessage);                  \
             LOG_ERROR("test (ctxt->status %{public}d) failed: " errMessage, (ctxt)->status);  \
             return;                                                    \
         }                                                              \
@@ -83,11 +85,13 @@ private:
 
 #define CHECK_ERRCODE_RETURN_VOID(ctxt, errMessage)                        \
     do {                                                               \
-        if ((ctxt)->error->code != 0 ) {                               \
-            (ctxt)->error->message = std::string(errMessage);                             \
-            LOG_ERROR("test (ctxt->status %{public}d) failed: " errMessage, (ctxt)->status);  \
-            return;                                                    \
-        }                                              \
+        if (ctxt->error) {                                                   \
+            if ((ctxt)->error->code != 0 ) {                               \
+                (ctxt)->error->message = std::string(errMessage);                             \
+                LOG_ERROR("test (ctxt->status %{public}d) failed: " errMessage, (ctxt)->status);  \
+                return;                                                    \
+            }                                                              \
+        }                                                                  \
     } while (0)
 
 #define CHECK_ERRCODE_RETURN(error, message, retVal)                  \

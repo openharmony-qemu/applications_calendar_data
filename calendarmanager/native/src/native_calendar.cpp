@@ -325,12 +325,7 @@ std::vector<Event> Calendar::GetEvents(std::shared_ptr<EventFilter> filter,
         for (size_t j = start; j < end; ++j) {
             queryIdsVec.emplace_back(eventIds[j]);
         }
-        if (resultSetField.count("attendee")) {
-            GetAttendeesByEventIds(queryIdsVec, events, error);
-        }
-        if (resultSetField.count("reminderTime")) {
-            GetRemindersByEventIds(queryIdsVec, events, error);
-        }
+        FillEventsInfo(queryIdsVec, events, resultSetField, error);
     }
     LOG_INFO("query finished");
     return events;
