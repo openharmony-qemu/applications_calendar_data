@@ -55,7 +55,7 @@ private:
     friend class NapiQueue;
 };
 
-inline void SetErrorValue(std::shared_ptr<Error> error, int code, std::string message) 
+inline void SetErrorValue(std::shared_ptr<Error> error, int code, std::string message)
 {
     if (error) {
         error->code = code;
@@ -68,7 +68,7 @@ inline void SetErrorValue(std::shared_ptr<Error> error, int code, std::string me
     do {                                                                    \
         if (!(condition)) {                                                 \
             (ctxt)->status = napi_invalid_arg;                              \
-            SetErrorValue(ctxt->error, errCode, errMessage);                  \
+            SetErrorValue((ctxt)->error, errCode, errMessage);                  \
             LOG_ERROR("test (" #condition ") failed: " errMessage);            \
             return;                                                         \
         }                                                                   \
@@ -77,7 +77,7 @@ inline void SetErrorValue(std::shared_ptr<Error> error, int code, std::string me
 #define CHECK_STATUS_RETURN_VOID(ctxt, errCode, errMessage)                        \
     do {                                                               \
         if ((ctxt)->status != napi_ok) {                               \
-            SetErrorValue(ctxt->error, errCode, errMessage);                  \
+            SetErrorValue((ctxt)->error, errCode, errMessage);                  \
             LOG_ERROR("test (ctxt->status %{public}d) failed: " errMessage, (ctxt)->status);  \
             return;                                                    \
         }                                                              \
@@ -85,7 +85,7 @@ inline void SetErrorValue(std::shared_ptr<Error> error, int code, std::string me
 
 #define CHECK_ERRCODE_RETURN_VOID(ctxt, errMessage)                        \
     do {                                                               \
-        if (ctxt->error) {                                                   \
+        if ((ctxt)->error) {                                                   \
             if ((ctxt)->error->code != 0 ) {                               \
                 (ctxt)->error->message = std::string(errMessage);                             \
                 LOG_ERROR("test (ctxt->status %{public}d) failed: " errMessage, (ctxt)->status);  \

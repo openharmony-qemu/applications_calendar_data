@@ -332,17 +332,17 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
+struct InstancesContext : public ContextBase {
+    int64_t start;
+    int64_t end;
+    std::vector<int> ids;
+    std::vector<std::string> eventKeys;
+    std::vector<Event> events;
+};
 
 napi_value CalendarNapi::QueryEventInstances(napi_env env, napi_callback_info info)
 {
-    struct GetEventsContext : public ContextBase {
-        int64_t start;
-        int64_t end;
-        std::vector<int> ids;
-        std::vector<std::string> eventKeys;
-        std::vector<Event> events;
-    };
-    auto ctxt = std::make_shared<GetEventsContext>();
+    auto ctxt = std::make_shared<InstancesContext>();
     ctxt->error = std::make_shared<Error>("", 0);
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         CHECK_ARGS_RETURN_VOID(ctxt, argc <= 4, PARAMETER_ERROR, "invalid arguments!");
