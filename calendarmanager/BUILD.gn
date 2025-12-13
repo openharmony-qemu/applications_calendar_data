@@ -13,6 +13,7 @@
 
 import("//build/config/components/ets_frontend/es2abc_config.gni")
 import("//build/ohos.gni")
+import("//applications/standard/calendardata/calendarmanager/calendardata.gni")
 
 config("calendarmanager_public_config") {
   include_dirs = [
@@ -93,8 +94,12 @@ ohos_shared_library("calendarmanager") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
-    "hiappevent:hiappevent_innerapi",
   ]
+  defines = []
+  if (device_usage_hiappevent_enabled) {
+    defines += [ "DEVICE_USAGE_HIAPPEVENT_ENABLE" ]
+    external_deps += [ "hiappevent:hiappevent_innerapi" ]
+  }
 
   public_deps = []
   relative_install_dir = "module"
@@ -139,8 +144,13 @@ ohos_static_library("calendarmanager_static") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
-    "hiappevent:hiappevent_innerapi",
   ]
+
+  defines = []
+  if (device_usage_hiappevent_enabled) {
+    defines += [ "DEVICE_USAGE_HIAPPEVENT_ENABLE" ]
+    external_deps += [ "hiappevent:hiappevent_innerapi" ]
+  }
 
   public_deps = []
   part_name = "calendar_data"

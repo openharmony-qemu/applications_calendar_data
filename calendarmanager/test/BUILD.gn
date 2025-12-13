@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//applications/standard/calendardata/calendarmanager/calendardata.gni")
 
 ## UnitTest calendarmanager_test {{{
 config("test_public_config") {
@@ -77,10 +78,13 @@ ohos_unittest("calendarmanager_test") {
     "ability_runtime:cj_extensionkit_native",
     "googletest:gmock",
     "googletest:gtest",
-    "hiappevent:hiappevent_innerapi",
   ]
 
   defines = []
+  if (device_usage_hiappevent_enabled) {
+    defines += [ "DEVICE_USAGE_HIAPPEVENT_ENABLE" ]
+    external_deps += [ "hiappevent:hiappevent_innerapi" ]
+  }
 }
 
 ## UnitTest calendarmanager_test }}}
