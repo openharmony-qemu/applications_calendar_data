@@ -39,5 +39,5 @@ private:
     std::unique_ptr<ReportHiEventManagerImpl> m_impl;
 };
 
-} // namespace OHOS::CalendarApi
+} // namespace OHOS::CalendarApi::Native
 #endif //OHOS_CALENDAR_REPORT_HIEVENT_MANAGER_H

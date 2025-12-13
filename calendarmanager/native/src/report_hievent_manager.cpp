@@ -12,8 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "app_event.h"
-#include "app_event_processor_mgr.h"
 #include "report_hievent_manager.h"
 #include "calendar_log.h"
 #include <mutex>
@@ -23,6 +21,9 @@
 #include <queue>
 #include <unordered_map>
 #include <climits>
+#ifdef DEVICE_USAGE_HIAPPEVENT_ENABLE
+#include "app_event.h"
+#include "app_event_processor_mgr.h"
 
 namespace {
     constexpr int IDLE_TIME_OUT_MS = 180000;
@@ -31,6 +32,7 @@ namespace {
     constexpr int64_t REPORT_NOT_SUPPORT_CODE = -200;
     constexpr size_t MAX_QUEUE_SIZE = 2000;
 }
+#endif
 
 namespace OHOS::CalendarApi::Native {
 
@@ -66,6 +68,7 @@ struct ApiAggregatedStat {
     }
 };
 
+#ifdef DEVICE_USAGE_HIAPPEVENT_ENABLE
 class ReportHiEventManager::ReportHiEventManagerImpl {
 public:
     ReportHiEventManagerImpl() = default;
@@ -292,6 +295,30 @@ private:
     int64_t m_processorId{-1};
 };
 
+#else
+class ReportHiEventManager::ReportHiEventManagerImpl {
+public:
+    ReportHiEventManagerImpl()
+    {
+        LOG_WARN("Device usage hiappevent is not enabled, reporting disabled.");
+    }
+    ~ReportHiEventManagerImpl() = default;
+
+    int64_t OnApiCallEnd(const std::string& apiName, bool success, int64_t beginTime)
+    {
+        return beginTime;
+    }
+
+    int64_t GetCurrentTime()
+    {
+        return 0;
+    }
+
+    void StopReporting()
+    {
+    }
+#endif
+
 ReportHiEventManager& ReportHiEventManager::GetInstance()
 {
     static ReportHiEventManager instance;
@@ -320,4 +347,4 @@ void ReportHiEventManager::StopReporting()
     m_impl->StopReporting();
 }
 
-} // namespace OHOS::CalendarApi
+} // namespace OHOS::CalendarApi::Native
