@@ -125,7 +125,7 @@ struct GetCalendarContext : public ContextBase {
                 this->account = std::nullopt;
             } else {
                 CalendarAccount tmpAccount;
-                this->status = NapiUtil::GetValue(env, argv[0], tmpAccount);
+                NapiUtil::GetValue(env, argv[0], tmpAccount);
                 this->account = tmpAccount;
             }
             CHECK_STATUS_RETURN_VOID(this, VALUE_ERROR, "invalid arg[0], i.e. invalid keys!");

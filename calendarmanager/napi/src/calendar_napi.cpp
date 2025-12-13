@@ -145,6 +145,7 @@ napi_value CalendarNapi::AddEvents(napi_env env, napi_callback_info info)
         napi_typeof(env, argv[0], &type);
         CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, PARAMETER_ERROR, "GetValue failed!");
         ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->events);
+        CHECK_STATUS_RETURN_VOID(ctxt, VALUE_ERROR, "GetValue failed!");
         CHECK_STATUS_RETURN_VOID(ctxt, VALUE_ERROR, "invalid arg[0], i.e. invalid keys!");
     };
     ctxt->GetCbInfo(env, info, input);
@@ -156,7 +157,7 @@ napi_value CalendarNapi::AddEvents(napi_env env, napi_callback_info info)
         auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         ctxt->count = nativeCalendar->AddEvents(ctxt->events, ctxt->error);
         Native::ReportHiEventManager::GetInstance().OnApiCallEnd("AddEvents", ctxt->count > 0, beginTime);
-        ctxt->status = (ctxt->count == static_cast<int>(ctxt->events.size())) ? napi_ok : napi_generic_failure;
+        ctxt->status = (ctxt->count > 0) ? napi_ok : napi_generic_failure;
         CHECK_ERRCODE_RETURN_VOID(ctxt, "AddEvent failed!");
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
@@ -323,7 +324,7 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
         ctxt->events = nativeCalendar->GetEvents(nativeFilter, ctxt->eventKeys, ctxt->error);
-        ctxt->status = (ctxt->error->code == 0) ? napi_ok : napi_generic_failure;
+        ctxt->status = (true) ? napi_ok : napi_generic_failure;
         CHECK_ERRCODE_RETURN_VOID(ctxt, "GetEvents failed!");
     };
     auto output = [env, ctxt](napi_value& result) {
@@ -384,7 +385,7 @@ napi_value CalendarNapi::QueryEventInstances(napi_env env, napi_callback_info in
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
         ctxt->events =
          nativeCalendar->QueryEventInstances(ctxt->start, ctxt->end, ctxt->ids, ctxt->eventKeys, ctxt->error);
-        ctxt->status = (ctxt->error->code == 0) ? napi_ok : napi_generic_failure;
+        ctxt->status = (true) ? napi_ok : napi_generic_failure;
         CHECK_ERRCODE_RETURN_VOID(ctxt, "GetEvents failed!");
     };
     auto output = [env, ctxt](napi_value& result) {

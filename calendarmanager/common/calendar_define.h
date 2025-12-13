@@ -32,6 +32,8 @@ namespace OHOS::CalendarApi {
 constexpr int PERMISSION_FAILED = 201;
 /* The number or type of parameters is incorrect. */
 constexpr int PARAMETER_ERROR = 401;
+/* The device does not support */
+constexpr int DIVICE_ERROR = 801;
 /* Incorrect parameter value */
 constexpr int VALUE_ERROR = 23900001;
 /* String length exceeds range */

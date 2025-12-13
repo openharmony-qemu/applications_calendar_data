@@ -26,7 +26,6 @@
 
 namespace OHOS::CalendarApi {
 constexpr size_t ARGC_MAX = 6;
-constexpr size_t STRLEN_MAX = 5000;
 using NapiCbInfoParser = std::function<void(size_t argc, napi_value* argv)>;
 using NapiAsyncExecute = std::function<void(void)>;
 using NapiAsyncComplete = std::function<void(napi_value&)>;

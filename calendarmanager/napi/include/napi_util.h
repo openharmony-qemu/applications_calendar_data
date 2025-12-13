@@ -17,13 +17,11 @@
 #include <cstdint>
 #include <map>
 #include <variant>
-#include <memory>
 #include "calendar_define.h"
 #include "event_filter_napi.h"
 #include "napi/native_api.h"
 #include "napi/native_common.h"
 #include "napi/native_node_api.h"
-#include "calendar_log.h"
 
 namespace OHOS::CalendarApi::NapiUtil {
     napi_status GetValue(napi_env env, napi_value in, napi_value& out);

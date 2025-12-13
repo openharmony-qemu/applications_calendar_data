@@ -82,9 +82,10 @@ int Calendar::AddEventInfo(const Event& event, int channelId, std::shared_ptr<Er
     }
     if (valueAttendees.size() > 0) {
         auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees, error);
-        if (count != static_cast<int>(valueAttendees.size())) {
-            LOG_ERROR("batchInsert attendees failed");
-            return -1;
+        if (error) {
+            if (error != 0) {
+                LOG_ERROR("insert attendees error, errorCode = %{public}d", error->code);
+            }
         }
         LOG_INFO("batchInsert attendees count %{private}d", count);
     }
@@ -92,6 +93,11 @@ int Calendar::AddEventInfo(const Event& event, int channelId, std::shared_ptr<Er
     // insert reminder
     if (event.reminderTime.has_value()) {
         InsertReminders(eventId, event.reminderTime.value(), error);
+        if (error) {
+            if (error != 0) {
+                LOG_ERROR("insert reminderTime error, errorCode = %{public}d", error->code);
+            }
+        }
     }
 
     return eventId;
@@ -215,7 +221,6 @@ bool Calendar::UpdateEvent(const Event& event, std::shared_ptr<Error> error)
         predicates.EqualTo("event_id", eventId);
         auto ret = DataShareHelperManager::GetInstance().Delete(*(m_reminderUrl.get()), predicates, error);
         LOG_INFO("Delete reminder num %{public}d", ret);
-        CHECK_RETURN(error->code == 0, "delete event reminders error", false);
     }
     if (event.reminderTime.has_value()) {
         InsertReminders(eventId, event.reminderTime.value(), error);
