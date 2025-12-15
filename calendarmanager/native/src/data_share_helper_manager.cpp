@@ -168,7 +168,6 @@ int DataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket &
     }
     if (res.first != 0) {
         LOG_ERROR("dataShare insert res.first = %{public}d", res.first);
-        LOG_ERROR("dataShare insert error");
         if (error) {
             error->code = INTERNAL_ERROR;
         }

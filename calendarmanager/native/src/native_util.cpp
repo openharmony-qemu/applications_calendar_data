@@ -14,7 +14,6 @@
  */
 #include <sstream>
 #include <iomanip>
-#include "calendar_log.h"
 #include "native_util.h"
 #include <ctime>
 #include <numeric>
@@ -1122,6 +1121,19 @@ void SetServiceFieldInfo(std::vector<string>& queryField)
     queryField.emplace_back("service_description");
 }
 
+void FillFieldDefaultInfo(const std::string &field, std::vector<string>& queryField,
+    const std::map<string, string> &eventField, std::set<string>& resultSetField, std::shared_ptr<Error> error)
+{
+    try {
+        queryField.emplace_back(eventField.at(field));
+    } catch (std::exception &ex) {
+        SetErrCode(error, PARAMETER_ERROR);
+        LOG_ERROR("has no this field");
+        return;
+    }
+    resultSetField.insert(field);
+}
+
 void FillFieldInfo(const std::string field, std::vector<string>& queryField, std::set<string>& resultSetField,
     const std::map<string, string> eventField, std::shared_ptr<Error> error)
 {
@@ -1140,6 +1152,11 @@ void FillFieldInfo(const std::string field, std::vector<string>& queryField, std
         return;
     }
     if (field == "reminderTime") {
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "identifier") {
+        queryField.emplace_back("identifier");
         resultSetField.insert(field);
         return;
     }
@@ -1164,15 +1181,7 @@ void FillFieldInfo(const std::string field, std::vector<string>& queryField, std
         resultSetField.insert(field);
         return;
     }
-
-    try {
-        queryField.emplace_back(eventField.at(field));
-    } catch (std::exception &ex) {
-        SetErrCode(error, PARAMETER_ERROR);
-        LOG_ERROR("has no this field");
-        return;
-    }
-    resultSetField.insert(field);
+    FillFieldDefaultInfo(field, queryField, eventField, resultSetField, error);
 }
 
 void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,

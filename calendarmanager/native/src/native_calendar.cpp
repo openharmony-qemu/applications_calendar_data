@@ -15,7 +15,6 @@
 
 #include "native_calendar.h"
 #include "data_share_helper_manager.h"
-#include "calendar_log.h"
 #include "calendar_env.h"
 #include "data_ability_helper.h"
 #include "native_util.h"
@@ -202,7 +201,7 @@ bool Calendar::UpdateEvent(const Event& event, std::shared_ptr<Error> error)
         predicates.EqualTo("event_id", eventId);
         auto ret = DataShareHelperManager::GetInstance().Delete(*(m_attendeeUri.get()), predicates, error);
         LOG_INFO("Delete attendee num %{public}d", ret);
-        CHECK_RETURN(error->code == 0, "delete event attendees error", false);
+        CHeckErrPrintLog(error, "updateEvent delete attendee error");
     }
     auto valueAttendees = std::vector<DataShare::DataShareValuesBucket>();
     for (const auto &attendee : event.attendees) {
@@ -212,7 +211,7 @@ bool Calendar::UpdateEvent(const Event& event, std::shared_ptr<Error> error)
     if (valueAttendees.size() > 0) {
         auto count = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees, error);
         LOG_INFO("batchInsert attendees count %{public}d", count);
-        CHECK_RETURN(error->code == 0, "BatchInsert event error", false);
+        CHeckErrPrintLog(error, "updateEvent batchInsert attendee error");
     }
     
     {
@@ -221,9 +220,11 @@ bool Calendar::UpdateEvent(const Event& event, std::shared_ptr<Error> error)
         predicates.EqualTo("event_id", eventId);
         auto ret = DataShareHelperManager::GetInstance().Delete(*(m_reminderUrl.get()), predicates, error);
         LOG_INFO("Delete reminder num %{public}d", ret);
+        CHeckErrPrintLog(error, "updateEvent delete reminder error");
     }
     if (event.reminderTime.has_value()) {
         InsertReminders(eventId, event.reminderTime.value(), error);
+        CHeckErrPrintLog(error, "updateEvent insert reminder error");
     }
 
     return ret == 1;
@@ -252,6 +253,7 @@ void Calendar::GetAttendeesByEventIds(const std::vector<std::string> &ids, std::
     auto result = DataShareHelperManager::GetInstance()
     .Query(*(m_attendeeUri.get()), predicates, columns, &dataShareError);
     if (result == nullptr) {
+        SetErrCode(error, dataShareError.GetCode());
         LOG_ERROR("result is null");
         return;
     }
@@ -274,6 +276,7 @@ void Calendar::GetRemindersByEventIds(const std::vector<std::string> &ids, std::
     auto result = DataShareHelperManager::GetInstance()
     .Query(*(m_reminderUrl.get()), predicates, columns, &dataShareError);
     if (result == nullptr) {
+        SetErrCode(error, dataShareError.GetCode());
         LOG_ERROR("result is null");
         return;
     }
@@ -341,9 +344,11 @@ void Calendar::FillEventsInfo(const std::vector<std::string> &eventIds, std::vec
 {
     if (resultSetField.count("attendee")) {
         GetAttendeesByEventIds(eventIds, events, error);
+        CHeckErrPrintLog(error, "GetAttendeesByEventIds error");
     }
     if (resultSetField.count("reminderTime")) {
         GetRemindersByEventIds(eventIds, events, error);
+        CHeckErrPrintLog(error, "GetRemindersByEventIds error");
     }
 }
 

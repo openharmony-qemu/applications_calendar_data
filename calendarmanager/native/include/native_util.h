@@ -25,6 +25,7 @@
 #include "datashare_result_set.h"
 #include "datashare_values_bucket.h"
 #include "native_calendar.h"
+#include "calendar_log.h"
 
 namespace OHOS::CalendarApi::Native {
     using DataShareResultSetPtr = std::shared_ptr<DataShare::DataShareResultSet>;
@@ -100,6 +101,15 @@ namespace OHOS::CalendarApi::Native {
     {
         if (error) {
             error->code = errCode;
+        }
+    }
+
+    inline void CHeckErrPrintLog(std::shared_ptr<Error> error, std::string errLog)
+    {
+        if (error) {
+            if (error->code != 0) {
+                LOG_ERROR("native error : %{public}s", errLog.c_str());
+            }
         }
     }
 }
