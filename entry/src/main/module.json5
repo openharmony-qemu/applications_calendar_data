@@ -39,7 +39,9 @@
         "srcEntry": "./ets/DataAbility/DataShareExtAbility.ets",
         "type": "dataShare",
         "uri": "datashare://calendardata",
-        "exported": true
+        "exported": true,
+        "writePermission": "ohos.permission.WRITE_CALENDAR",
+        "readPermission": "ohos.permission.READ_CALENDAR"
       }
     ],
     "metadata": [
