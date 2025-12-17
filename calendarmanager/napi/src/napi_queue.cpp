@@ -84,7 +84,6 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
     } else {
         napi_get_undefined(env, &promise);
     }
-
     napi_value resource = nullptr;
     napi_create_string_utf8(env, name.c_str(), NAPI_AUTO_LENGTH, &resource);
     napi_create_async_work(
