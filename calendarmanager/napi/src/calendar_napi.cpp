@@ -66,9 +66,11 @@ napi_value CalendarNapi::New(napi_env env, napi_callback_info info)
         auto* calendar = reinterpret_cast<CalendarNapi*>(data);
         CHECK_RETURN_VOID(calendar != nullptr, "finalize null!");
         delete calendar;
+        calendar = nullptr;
     };
     if (napi_wrap(env, ctxt->self, calendar, finalize, nullptr, nullptr) != napi_ok) {
         delete calendar;
+        calendar = nullptr;
         GET_AND_THROW_LAST_ERROR(env);
         return nullptr;
     }

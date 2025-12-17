@@ -317,6 +317,7 @@ public:
     void StopReporting()
     {
     }
+};
 #endif
 
 ReportHiEventManager& ReportHiEventManager::GetInstance()
