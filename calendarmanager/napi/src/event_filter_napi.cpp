@@ -53,9 +53,11 @@ napi_value EventFilterNapi::New(napi_env env, napi_callback_info info)
         auto* instance = reinterpret_cast<EventFilterNapi*>(data);
         CHECK_RETURN_VOID(instance != nullptr, "finalize null!");
         delete instance;
+        instance = nullptr;
     };
     if (napi_wrap(env, ctxt->self, instance, finalize, nullptr, nullptr) != napi_ok) {
         delete instance;
+        instance = nullptr;
         GET_AND_THROW_LAST_ERROR(env);
         return nullptr;
     }

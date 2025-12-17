@@ -111,12 +111,14 @@ napi_value NapiQueue::AsyncWork(napi_env env, std::shared_ptr<ContextBase> ctxt,
             }
             GenerateOutput(*actx, output);
             delete actx;
+            actx = nullptr;
         },
         reinterpret_cast<void*>(aCtx), &aCtx->work);
     auto status = napi_queue_async_work(env, aCtx->work);
     if (status != napi_ok) {
         napi_get_undefined(env, &promise);
         delete aCtx;
+        aCtx = nullptr;
     }
     return promise;
 }
