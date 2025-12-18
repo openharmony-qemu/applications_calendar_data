@@ -70,7 +70,6 @@ ohos_unittest("calendarmanager_test") {
     "c_utils:utils",
     "access_token:libtokenid_sdk",
     "hilog:libhilog",
-    "hilog:libhilog_base",
     "jsoncpp:jsoncpp",
     "os_account:libaccountkits",
     "os_account:os_account_innerkits",
