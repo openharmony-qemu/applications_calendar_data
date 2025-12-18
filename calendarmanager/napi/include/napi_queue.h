@@ -43,7 +43,7 @@ struct ContextBase {
     napi_env env = nullptr;
     napi_value output = nullptr;
     napi_status status = napi_invalid_arg;
-    std::shared_ptr<Error> error;
+    Error error;
 
     napi_value self = nullptr;
     void* native = nullptr;
@@ -54,12 +54,11 @@ private:
     friend class NapiQueue;
 };
 
-inline void SetErrorValue(std::shared_ptr<Error> error, int code, std::string message)
+inline void SetErrorValue(Error &error, int code, std::string message)
 {
-    if (error) {
-        error->code = code;
-        error->message = message;
-    }
+    error.code = code;
+    error.message = message;
+    LOG_ERROR("test failed: %{public}s", message.c_str());
 }
 
 /* check condition related to argc/argv, return and logging. */
@@ -84,23 +83,30 @@ inline void SetErrorValue(std::shared_ptr<Error> error, int code, std::string me
 
 #define CHECK_ERRCODE_RETURN_VOID(ctxt, errMessage)                        \
     do {                                                               \
-        if ((ctxt)->error) {                                                   \
-            if ((ctxt)->error->code != 0 ) {                               \
-                (ctxt)->error->message = std::string(errMessage);                             \
+            if ((ctxt)->error.code != 0 ) {                               \
+                (ctxt)->error.message = std::string(errMessage);                             \
                 LOG_ERROR("test (ctxt->status %{public}d) failed: " errMessage, (ctxt)->status);  \
                 return;                                                    \
             }                                                              \
-        }                                                                  \
+    } while (0)
+
+#define CHECK_RESULT_RETURN_VOID(ctxt, result, errMessage, value)                        \
+    do {                                                               \
+            if (auto *errorRet = std::get_if<1>(&result)) {                               \
+                SetErrorValue((ctxt)->error, errorRet->code, errMessage);           \
+                (ctxt)->status = napi_generic_failure;                              \
+                return;                                                    \
+            }                                                                \
+            (ctxt)->status = napi_ok;                                         \
+            value = std::get<0>(result);                                                      \
     } while (0)
 
 #define CHECK_ERRCODE_RETURN(error, message, retVal)                  \
     do {                                             \
-        if ((error)) {                               \
-            if ((error)->code != 0) {                \
+            if ((error).code != 0) {                \
                 LOG_ERROR("test failed: " message);  \
                 return retVal;             \
             }                                        \
-        }                                            \
                                                      \
     } while (0)
     

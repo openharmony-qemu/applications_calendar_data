@@ -162,7 +162,7 @@ struct CalendarConfig {
 struct Error {
     string message;
     int code;
-    Error(){ }
+    Error() : message(""), code(0){ }
     Error(string errMessage, int errCode) : message(errMessage), code(errCode){ }
 };
 

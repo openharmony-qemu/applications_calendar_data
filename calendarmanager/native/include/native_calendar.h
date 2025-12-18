@@ -22,8 +22,10 @@
 #include "uri.h"
 using Uri = OHOS::Uri;
 namespace OHOS::CalendarApi::Native {
+// template <typename T>
 class Calendar final {
 public:
+    // using ValueOrError = std::variant<T, Error>;
     Calendar(int id);
     Calendar(CalendarAccount account, int id);
     Calendar(Calendar&& other) : m_account(std::move(other.m_account)), m_id(other.m_id)
@@ -35,29 +37,28 @@ public:
 
     Calendar() = delete;
     ~Calendar() = default;
-    int AddEvent(const Event& event, std::shared_ptr<Error> error = nullptr);
-    int AddEvents(const std::vector<Event>& events, std::shared_ptr<Error> error = nullptr);
-    bool DeleteEvent(int id, std::shared_ptr<Error> error = nullptr);
-    int DeleteEvents(const std::vector<int>& id, std::shared_ptr<Error> error = nullptr);
-    void DeleteAllEvents(std::shared_ptr<Error> error = nullptr);
-    bool UpdateEvent(const Event& event, std::shared_ptr<Error> error = nullptr);
-    int UpdateEvents(const std::vector<Event>& events, std::shared_ptr<Error> error = nullptr);
+    std::variant<int, Error> AddEvent(const Event& event);
+    std::variant<int, Error> AddEvents(const std::vector<Event>& events);
+    std::variant<bool, Error> DeleteEvent(int id);
+    std::variant<int, Error> DeleteEvents(const std::vector<int>& id);
+    void DeleteAllEvents();
+    std::variant<bool, Error> UpdateEvent(const Event& event);
+    int UpdateEvents(const std::vector<Event>& events);
     CalendarConfig GetConfig();
-    bool SetConfig(const CalendarConfig& config, std::shared_ptr<Error> error = nullptr);
-    std::vector<Event> GetEvents(std::shared_ptr<EventFilter> filter,
-     const std::vector<string>& eventKey, std::shared_ptr<Error> error = nullptr);
+    std::variant<bool, Error> SetConfig(const CalendarConfig& config);
+    std::variant<std::vector<Event>, Error> GetEvents(std::shared_ptr<EventFilter> filter,
+     const std::vector<string>& eventKey);
     void BatchGetEvents(std::vector<Event> &events, const std::set<string> &resultSetField,
      const std::vector<std::string> &eventIds);
     void GetAttendeesByEventIds(const std::vector<std::string> &ids,
-     std::vector<Event> &events, std::shared_ptr<Error> error = nullptr);
-    void GetRemindersByEventIds(const std::vector<std::string> &ids, std::vector<Event> &events,
-     std::shared_ptr<Error> error = nullptr);
-    void InsertReminders(int eventId, vector<int> reminders, std::shared_ptr<Error> error = nullptr);
-    int AddEventInfo(const Event& event, int channelId, std::shared_ptr<Error> error = nullptr);
-    std::vector<Event> QueryEventInstances(int64_t start, int64_t end, const std::vector<int> &ids,
-     const std::vector<string>& eventKey, std::shared_ptr<Error> error = nullptr);
+     std::vector<Event> &events);
+    void GetRemindersByEventIds(const std::vector<std::string> &ids, std::vector<Event> &events);
+    void InsertReminders(int eventId, vector<int> reminders);
+    std::variant<int, Error> AddEventInfo(const Event& event, int channelId);
+    std::variant<std::vector<Event>, Error> QueryEventInstances(int64_t start, int64_t end, const std::vector<int> &ids,
+     const std::vector<string>& eventKey);
     void FillEventsInfo(const std::vector<std::string> &eventIds, std::vector<Event> &events,
-     const std::set<std::string>& resultSetField, std::shared_ptr<Error> error = nullptr);
+     const std::set<std::string>& resultSetField);
     CalendarAccount GetAccount() const
     {
         return m_account;

@@ -133,10 +133,8 @@ void NapiQueue::GenerateOutput(AsyncContext &ctx, napi_value output)
     } else {
         napi_value message = nullptr;
         napi_value code = nullptr;
-        if (ctx.ctx->error) {
-            napi_create_string_utf8(ctx.env, ctx.ctx->error->message.c_str(), NAPI_AUTO_LENGTH, &message);
-            napi_create_int32(ctx.env, ctx.ctx->error->code, &code);
-        }
+        napi_create_string_utf8(ctx.env, ctx.ctx->error.message.c_str(), NAPI_AUTO_LENGTH, &message);
+        napi_create_int32(ctx.env, ctx.ctx->error.code, &code);
         napi_create_error(ctx.env, code, message, &result[RESULT_ERROR]);
         napi_get_undefined(ctx.env, &result[RESULT_DATA]);
     }
