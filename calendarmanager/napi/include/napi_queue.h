@@ -92,13 +92,13 @@ inline void SetErrorValue(Error &error, int code, std::string message)
 
 #define CHECK_RESULT_RETURN_VOID(ctxt, result, errMessage, retValue)                        \
     do {                                                               \
-            if (result.is_err()) {                               \
-                SetErrorValue((ctxt)->error, result.error().code, errMessage);           \
+            if ((result).is_err()) {                               \
+                SetErrorValue((ctxt)->error, (result).error().code, errMessage);           \
                 (ctxt)->status = napi_generic_failure;                              \
                 return;                                                    \
             }                                                                \
             (ctxt)->status = napi_ok;                                         \
-            retValue = result.value();                                                      \
+            retValue = (result).value();                                                      \
     } while (0)
 
 #define CHECK_ERRCODE_RETURN(error, message, retVal)                  \
