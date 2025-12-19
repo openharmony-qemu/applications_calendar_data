@@ -22,10 +22,8 @@
 #include "uri.h"
 using Uri = OHOS::Uri;
 namespace OHOS::CalendarApi::Native {
-// template <typename T>
 class Calendar final {
 public:
-    // using ValueOrError = std::variant<T, Error>;
     Calendar(int id);
     Calendar(CalendarAccount account, int id);
     Calendar(Calendar&& other) : m_account(std::move(other.m_account)), m_id(other.m_id)

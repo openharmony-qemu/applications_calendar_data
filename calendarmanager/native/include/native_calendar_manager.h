@@ -23,10 +23,8 @@
 #include "uri.h"
 using Uri = OHOS::Uri;
 namespace OHOS::CalendarApi::Native {
-//template <typename T>
 class CalendarManager {
 public:
-   // using ValueOrError = std::variant<T, Error>;
     static CalendarManager &GetInstance();
     CalendarManager();
     ~CalendarManager() {};
