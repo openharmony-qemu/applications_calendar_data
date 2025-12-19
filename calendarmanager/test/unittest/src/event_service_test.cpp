@@ -31,14 +31,15 @@ class EventServiceTest : public testing::Test {
 public:
     static void SetUpTestSuite(void)
     {
-        calendar = CalendarManager::GetInstance().CreateCalendar(account);
+        auto result = CalendarManager::GetInstance().CreateCalendar(account);
+        calendar = result.value();
         ASSERT_TRUE(calendar != nullptr);
     }
 
     static void TearDownTestSuite(void)
     {
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-        ASSERT_TRUE(ret);
+        ASSERT_TRUE(ret.value());
     }
     void SetUp() {};
     void TearDown() {};
@@ -59,8 +60,9 @@ HWTEST_F(EventServiceTest, AddEventWithService, testing::ext::TestSize.Level1)
     };
     event.service = std::make_optional<EventService>(testService);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterByTitle(title), {});
+    ASSERT_NE(eventId.value(), 0);
+    auto retGet = calendar->GetEvents(FilterByTitle(title), {});
+    auto events = retGet.value();
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -77,8 +79,9 @@ HWTEST_F(EventServiceTest, AddEventWithNoService, testing::ext::TestSize.Level1)
     const string title = "AddEventWithNoService";
     event.title = title;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterByTitle(title), {});
+    ASSERT_NE(eventId.value(), 0);
+    auto retGet = calendar->GetEvents(FilterByTitle(title), {});
+    auto events = retGet.value();
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);

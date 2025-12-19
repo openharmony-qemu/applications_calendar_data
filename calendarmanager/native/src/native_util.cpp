@@ -1122,12 +1122,12 @@ void SetServiceFieldInfo(std::vector<string>& queryField)
 }
 
 void FillFieldDefaultInfo(const std::string &field, std::vector<string>& queryField,
-    const std::map<string, string> &eventField, std::set<string>& resultSetField, std::shared_ptr<Error> error)
+    const std::map<string, string> &eventField, std::set<string>& resultSetField, Error &error)
 {
     try {
         queryField.emplace_back(eventField.at(field));
     } catch (std::exception &ex) {
-        SetErrCode(error, PARAMETER_ERROR);
+        error.code = PARAMETER_INVALID;
         LOG_ERROR("has no this field");
         return;
     }
@@ -1135,7 +1135,7 @@ void FillFieldDefaultInfo(const std::string &field, std::vector<string>& queryFi
 }
 
 void FillFieldInfo(const std::string field, std::vector<string>& queryField, std::set<string>& resultSetField,
-    const std::map<string, string> eventField, std::shared_ptr<Error> error)
+    const std::map<string, string> eventField, Error &error)
 {
     if (field == "location") {
         SetLocationFieldInfo(queryField);
@@ -1185,7 +1185,7 @@ void FillFieldInfo(const std::string field, std::vector<string>& queryField, std
 }
 
 void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,
-    std::set<string>& resultSetField, const std::map<string, string> eventField, std::shared_ptr<Error> error)
+    std::set<string>& resultSetField, const std::map<string, string> eventField, Error &error)
 {
     for (const auto& field : eventKey) {
         if (field == "id") {
@@ -1196,7 +1196,7 @@ void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& quer
 }
 
 void SetField(const std::vector<string>& eventKey, std::vector<string>& queryField,
- std::set<string>& resultSetField,  std::shared_ptr<Error> error)
+ std::set<string>& resultSetField,  Error &error)
 {
     const std::map<string, string> eventField = { { "id", "_id" },
                                                   { "type", "important_event_type" },

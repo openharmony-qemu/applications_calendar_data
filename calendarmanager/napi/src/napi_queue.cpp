@@ -37,9 +37,9 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     size_t argc = ARGC_MAX;
     napi_value argv[ARGC_MAX] = { nullptr };
     status = napi_get_cb_info(env, info, &argc, argv, &self, nullptr);
-    CHECK_STATUS_RETURN_VOID(this, PARAMETER_ERROR, " napi_get_cb_info failed!");
-    CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, PARAMETER_ERROR, " too many arguments!");
-    CHECK_ARGS_RETURN_VOID(this, self != nullptr, PARAMETER_ERROR, " no JavaScript this argument!");
+    CHECK_STATUS_RETURN_VOID(this, PARAMETER_INVALID, " napi_get_cb_info failed!");
+    CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, PARAMETER_INVALID, " too many arguments!");
+    CHECK_ARGS_RETURN_VOID(this, self != nullptr, PARAMETER_INVALID, " no JavaScript this argument!");
     if (!sync) {
         napi_create_reference(env, self, 1, &selfRef);
     }
@@ -64,7 +64,7 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     if (parse) {
         parse(argc, argv);
     } else {
-        CHECK_ARGS_RETURN_VOID(this, argc == 0, PARAMETER_ERROR, " required no arguments!");
+        CHECK_ARGS_RETURN_VOID(this, argc == 0, PARAMETER_INVALID, " required no arguments!");
     }
 }
 
@@ -133,10 +133,8 @@ void NapiQueue::GenerateOutput(AsyncContext &ctx, napi_value output)
     } else {
         napi_value message = nullptr;
         napi_value code = nullptr;
-        if (ctx.ctx->error) {
-            napi_create_string_utf8(ctx.env, ctx.ctx->error->message.c_str(), NAPI_AUTO_LENGTH, &message);
-            napi_create_int32(ctx.env, ctx.ctx->error->code, &code);
-        }
+        napi_create_string_utf8(ctx.env, ctx.ctx->error.message.c_str(), NAPI_AUTO_LENGTH, &message);
+        napi_create_int32(ctx.env, ctx.ctx->error.code, &code);
         napi_create_error(ctx.env, code, message, &result[RESULT_ERROR]);
         napi_get_undefined(ctx.env, &result[RESULT_DATA]);
     }

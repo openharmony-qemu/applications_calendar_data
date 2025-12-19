@@ -23,19 +23,19 @@
 #include "uri.h"
 using Uri = OHOS::Uri;
 namespace OHOS::CalendarApi::Native {
+//template <typename T>
 class CalendarManager {
 public:
+   // using ValueOrError = std::variant<T, Error>;
     static CalendarManager &GetInstance();
     CalendarManager();
     ~CalendarManager() {};
     static bool IsDefaultAccount(const CalendarAccount& account);
-    std::shared_ptr<Calendar> CreateCalendar(const CalendarAccount& account,
-     std::shared_ptr<Error> error = nullptr);
-    std::shared_ptr<Calendar> GetCalendar(const std::optional<CalendarAccount>& account,
-     std::shared_ptr<Error> error = nullptr);
-    std::vector<std::shared_ptr<Calendar>> GetAllCalendars(std::shared_ptr<Error> error = nullptr);
-    bool DeleteCalendar(const Calendar& calendar, std::shared_ptr<Error> error = nullptr);
-    int DeleteAllCalendars(std::shared_ptr<Error> error = nullptr);
+    Result<std::shared_ptr<Calendar>> CreateCalendar(const CalendarAccount& account);
+    Result<std::shared_ptr<Calendar>> GetCalendar(const std::optional<CalendarAccount>& account);
+    Result<std::vector<std::shared_ptr<Calendar>>> GetAllCalendars();
+    Result<bool> DeleteCalendar(const Calendar& calendar);
+    int DeleteAllCalendars();
 private:
     std::unique_ptr<Uri> m_calendarUri;
 };

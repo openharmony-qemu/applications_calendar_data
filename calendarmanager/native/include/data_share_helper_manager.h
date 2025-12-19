@@ -31,7 +31,6 @@ public:
      *
      * @param highHelper High permissions dataShareHelper.
      *
-     * @return Returns DataShareHelper instance or nullptr when failed.
      */
     void SetDataShareHelper(std::shared_ptr<DataShare::DataShareHelper> lowHelper,
      std::shared_ptr<DataShare::DataShareHelper> highHelper);
@@ -51,8 +50,7 @@ public:
      *
      * @return Returns the index of the inserted data record.
      */
-    int Insert(const Uri &uri, const DataShare::DataShareValuesBucket &value,
-        std::shared_ptr<Error> error = nullptr);
+    Result<int> Insert(const Uri &uri, const DataShare::DataShareValuesBucket &value);
     
      /**
      * @brief batch insert data records into the database.
@@ -62,8 +60,7 @@ public:
      *
      * @return Returns the index of the inserted data count.
      */
-    int BatchInsert(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values,
-        std::shared_ptr<Error> error = nullptr);
+    Result<int> BatchInsert(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values);
     
     /**
      * @brief Updates data records in the database.
@@ -74,8 +71,8 @@ public:
      *
      * @return Returns the number of data records updated.
      */
-    int Update(const Uri &uri, const DataShare::DataSharePredicates &predicates,
-        const DataShare::DataShareValuesBucket &value, std::shared_ptr<Error> error = nullptr);
+    Result<int> Update(const Uri &uri, const DataShare::DataSharePredicates &predicates,
+       const DataShare::DataShareValuesBucket &value);
 
     /**
      * @brief Deletes one or more data records from the database.
@@ -85,8 +82,7 @@ public:
      *
      * @return Returns the number of data records deleted.
      */
-    int Delete(const Uri &uri, const DataShare::DataSharePredicates &predicates,
-        std::shared_ptr<Error> error = nullptr);
+    Result<int> Delete(const Uri &uri, const DataShare::DataSharePredicates &predicates);
 
     /**
      * @brief Query records from the database.
@@ -98,9 +94,8 @@ public:
      *
      * @return Returns the query result.
      */
-    std::shared_ptr<DataShare::DataShareResultSet> Query(const Uri &uri,
-        const DataShare::DataSharePredicates &predicates, std::vector<std::string> &columns,
-        DataShare::DatashareBusinessError *businessError = nullptr);
+    Result<std::shared_ptr<DataShare::DataShareResultSet>> Query(const Uri &uri,
+        const DataShare::DataSharePredicates &predicates, std::vector<std::string> &columns);
 private:
      /**
      * @brief Create a dataShareHelper instance based on read or write operations.

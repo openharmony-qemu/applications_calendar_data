@@ -31,13 +31,13 @@ namespace OHOS::CalendarApi {
 /* Permission verification failed */
 constexpr int PERMISSION_FAILED = 201;
 /* The number or type of parameters is incorrect. */
-constexpr int PARAMETER_ERROR = 401;
+constexpr int PARAMETER_INVALID = 401;
 /* The device does not support */
-constexpr int DIVICE_ERROR = 801;
+constexpr int DEVICE_NOT_SUPPORT = 801;
 /* Incorrect parameter value */
-constexpr int VALUE_ERROR = 23900001;
+constexpr int PARAMETER_VALUE_OUTRANGE = 23900001;
 /* String length exceeds range */
-constexpr int STR_LENGTH_ERROR = 23900002;
+constexpr int PARAMETER_STRLEN_OUTRANGE = 23900002;
 /* No specified account found */
 constexpr int QUERY_RESULT_EMPTY = 23900003;
 /* Internal program error */
@@ -162,8 +162,26 @@ struct CalendarConfig {
 struct Error {
     string message;
     int code;
-    Error(){ }
+    Error() : message(""), code(0){ }
     Error(string errMessage, int errCode) : message(errMessage), code(errCode){ }
+};
+
+template <typename T>
+class Result {
+public:
+    using ValueOrError = std::variant<T, Error>;
+
+    explicit Result(T value) : value_or_error(std::move(value)) {}
+    explicit Result(Error error) : value_or_error(std::move(error)) {}
+
+    bool is_ok() const { return std::holds_alternative<T>(value_or_error); }
+    bool is_err() const { return std::holds_alternative<Error>(value_or_error); }
+
+    const T& value() const { return std::get<T>(value_or_error); }
+    const Error& error() const { return std::get<Error>(value_or_error); }
+
+private:
+    ValueOrError value_or_error;
 };
 
 }  // namespace OHOS::CalendarApi

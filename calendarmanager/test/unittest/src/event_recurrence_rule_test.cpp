@@ -32,14 +32,15 @@ class EventRecurrenceRuleTest : public testing::Test {
 public:
     static void SetUpTestSuite(void)
     {
-        calendar = CalendarManager::GetInstance().CreateCalendar(account);
+        auto result = CalendarManager::GetInstance().CreateCalendar(account);
+        calendar = result.value();
         ASSERT_TRUE(calendar != nullptr);
     }
 
     static void TearDownTestSuite(void)
     {
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-        ASSERT_TRUE(ret);
+        ASSERT_TRUE(ret.value());
     }
     void SetUp() {};
     void TearDown() {};
