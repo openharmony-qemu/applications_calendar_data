@@ -31,8 +31,7 @@ class EventReminderTest : public testing::Test {
 public:
     static void SetUpTestSuite(void)
     {
-        auto result = CalendarManager::GetInstance().CreateCalendar(account);
-        calendar = std::get<0>(result);
+        calendar = CalendarManager::GetInstance().CreateCalendar(account);
         ASSERT_TRUE(calendar != nullptr);
         LOG_INFO("SetUpTestCase SUCCESS");
     }
@@ -40,7 +39,7 @@ public:
     static void TearDownTestSuite(void)
     {
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-        ASSERT_TRUE(std::get<0>(ret));
+        ASSERT_TRUE(ret);
         LOG_INFO("TearDownTestSuite SUCCESS");
     }
     void SetUp() {};
@@ -59,9 +58,8 @@ HWTEST_F(EventReminderTest, AddEventWithReminder, testing::ext::TestSize.Level1)
     event.reminderTime = reminderTime;
     auto eventId = calendar->AddEvent(event);
     std::vector<string> eventKey;
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterByTitle(title), eventKey);
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), eventKey);
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_NE(resultEvent.reminderTime, std::nullopt);
@@ -75,18 +73,16 @@ HWTEST_F(EventReminderTest, DelEventWithReminder, testing::ext::TestSize.Level1)
     const std::vector<int> reminderTime = {0, 1, 2};
     event.title = title;
     event.reminderTime = reminderTime;
-    auto retAdd = calendar->AddEvent(event);
-    auto eventId = std::get<0>(retAdd);
+    auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
     std::vector<string> eventKey;
-    auto retGet = calendar->GetEvents(FilterByTitle(title), eventKey);
-    auto events = std::get<0>(retGet);
+    auto events = calendar->GetEvents(FilterByTitle(title), eventKey);
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_NE(resultEvent.reminderTime, std::nullopt);
     ASSERT_THAT(resultEvent.reminderTime.value(), ::testing::ElementsAreArray(reminderTime));
     auto ret = calendar->DeleteEvent(eventId);
-    ASSERT_EQ(std::get<0>(ret), 1);
+    ASSERT_EQ(ret, 1);
 }
 
 HWTEST_F(EventReminderTest, UpdateEventWithReminder, testing::ext::TestSize.Level1)
@@ -97,10 +93,9 @@ HWTEST_F(EventReminderTest, UpdateEventWithReminder, testing::ext::TestSize.Leve
     event.title = title;
     event.reminderTime = reminderTime;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
+    ASSERT_NE(eventId, 0);
     std::vector<string> eventKey;
-    auto result = calendar->GetEvents(FilterByTitle(title), eventKey);
-    auto events = std::get<0>(result);
+    auto events = calendar->GetEvents(FilterByTitle(title), eventKey);
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_NE(resultEvent.reminderTime, std::nullopt);
@@ -108,9 +103,8 @@ HWTEST_F(EventReminderTest, UpdateEventWithReminder, testing::ext::TestSize.Leve
     const std::vector<int> newReminderTime = {4, 5, 6};
     resultEvent.reminderTime = newReminderTime;
     auto ret = calendar->UpdateEvent(resultEvent);
-    ASSERT_EQ(std::get<0>(ret), 1);
-    result = calendar->GetEvents(FilterByTitle(title), eventKey);
-    events = std::get<0>(result);
+    ASSERT_EQ(ret, 1);
+    events = calendar->GetEvents(FilterByTitle(title), eventKey);
     ASSERT_EQ(events.size(), 1);
     auto newResultEvent = events.at(0);
     EXPECT_NE(newResultEvent.reminderTime, std::nullopt);

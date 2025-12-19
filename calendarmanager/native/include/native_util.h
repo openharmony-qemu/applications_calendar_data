@@ -56,7 +56,7 @@ namespace OHOS::CalendarApi::Native {
     void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSet);
     void ResultSetToConfig(CalendarConfig &config, DataShareResultSetPtr &resultSet);
     void SetField(const std::vector<string>& eventKey,
-        std::vector<string>& queryField, std::set<string>& resultSetField, Error &error);
+        std::vector<string>& queryField, std::set<string>& resultSetField, std::shared_ptr<Error> error = nullptr);
     void GetEventAttendeesValue(std::vector<Event> &events, const std::map<int, std::vector<Attendee>> &attendeesMap);
 
     bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue);
@@ -97,14 +97,19 @@ namespace OHOS::CalendarApi::Native {
         return ret;
     }
 
-    inline void CheckIntRetPrintLog(std::variant<int, Error> result,
-        std::string errLog, std::string succeessLog)
+    inline void SetErrCode(std::shared_ptr<Error> error, int errCode)
     {
-        if (std::get_if<1>(&result)) {
-            LOG_ERROR("native error : %{public}s", errLog.c_str());
-        } else {
-            auto count = std::get<int>(result);
-            LOG_INFO("%{public}s %{public}d", succeessLog.c_str(), count);
+        if (error) {
+            error->code = errCode;
+        }
+    }
+
+    inline void CHeckErrPrintLog(std::shared_ptr<Error> error, std::string errLog)
+    {
+        if (error) {
+            if (error->code != 0) {
+                LOG_ERROR("native error : %{public}s", errLog.c_str());
+            }
         }
     }
 }

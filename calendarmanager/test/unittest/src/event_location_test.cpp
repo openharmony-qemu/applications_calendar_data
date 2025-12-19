@@ -31,15 +31,14 @@ class EventLocationTest : public testing::Test {
 public:
     static void SetUpTestSuite(void)
     {
-        auto result = CalendarManager::GetInstance().CreateCalendar(account);
-        calendar = std::get<0>(result);
+        calendar = CalendarManager::GetInstance().CreateCalendar(account);
         ASSERT_TRUE(calendar != nullptr);
     }
 
     static void TearDownTestSuite(void)
     {
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-        ASSERT_TRUE(std::get<0>(ret));
+        ASSERT_TRUE(ret);
     }
     void SetUp() {};
     void TearDown() {};
@@ -56,9 +55,8 @@ HWTEST_F(EventLocationTest, AddEventWithLocation, testing::ext::TestSize.Level1)
     Location testLocation {"test", 123.12, 45.45};
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto retGet = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = std::get<0>(retGet);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), {});
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -81,17 +79,16 @@ HWTEST_F(EventLocationTest, AddEventWithMaxLocation, testing::ext::TestSize.Leve
     };
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), {});
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
     ASSERT_NE(resultEvent.location, std::nullopt);
-    auto resultGet = resultEvent.location.value();
-    EXPECT_EQ(resultGet.location.value(), testLocation.location.value());
-    EXPECT_EQ(resultGet.longitude.value(), testLocation.longitude.value());
-    EXPECT_EQ(resultGet.latitude.value(), testLocation.latitude.value());
+    auto result = resultEvent.location.value();
+    EXPECT_EQ(result.location.value(), testLocation.location.value());
+    EXPECT_EQ(result.longitude.value(), testLocation.longitude.value());
+    EXPECT_EQ(result.latitude.value(), testLocation.latitude.value());
 }
 
 HWTEST_F(EventLocationTest, AddEventWithMinLocation, testing::ext::TestSize.Level1)
@@ -106,9 +103,8 @@ HWTEST_F(EventLocationTest, AddEventWithMinLocation, testing::ext::TestSize.Leve
     };
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto retGet = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = std::get<0>(retGet);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), {});
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -131,9 +127,8 @@ HWTEST_F(EventLocationTest, AddEventWithOutMinLocation, testing::ext::TestSize.L
     };
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto retGet = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = std::get<0>(retGet);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), {});
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -156,9 +151,8 @@ HWTEST_F(EventLocationTest, AddEventWithOutMaxLocation, testing::ext::TestSize.L
     };
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto retGet = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = std::get<0>(retGet);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), {});
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);

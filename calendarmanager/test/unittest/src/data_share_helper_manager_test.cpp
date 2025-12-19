@@ -54,8 +54,7 @@ HWTEST_F(DataShareHelperManagerTest, Insert_test_001, testing::ext::TestSize.Lev
     DataShare::DataShareValuesBucket value;
     DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
     auto ret = DataShareHelperManager::GetInstance().Insert(testUrl, value);
-    auto error = std::get<1>(ret);
-    EXPECT_EQ(error.code, PERMISSION_FAILED);
+    ASSERT_TRUE(ret == -1);
 }
 
 HWTEST_F(DataShareHelperManagerTest, Insert_test_error, testing::ext::TestSize.Level1)
@@ -63,9 +62,10 @@ HWTEST_F(DataShareHelperManagerTest, Insert_test_error, testing::ext::TestSize.L
     OHOS::Uri testUrl("");
     DataShare::DataShareValuesBucket value;
     DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
-    auto ret = DataShareHelperManager::GetInstance().Insert(testUrl, value);
-    auto error = std::get<1>(ret);
-    EXPECT_EQ(error.code, PERMISSION_FAILED);
+    std::shared_ptr<Error> error = std::make_shared<Error>("", 0);
+    auto ret = DataShareHelperManager::GetInstance().Insert(testUrl, value, error);
+    ASSERT_TRUE(ret == -1);
+    EXPECT_EQ(error->code, PERMISSION_FAILED);
 }
 
 HWTEST_F(DataShareHelperManagerTest, Update_test_001, testing::ext::TestSize.Level1)
@@ -75,8 +75,7 @@ HWTEST_F(DataShareHelperManagerTest, Update_test_001, testing::ext::TestSize.Lev
     DataShare::DataShareValuesBucket value;
     DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
     auto ret = DataShareHelperManager::GetInstance().Update(testUrl, predicates, value);
-    auto error = std::get<1>(ret);
-    EXPECT_EQ(error.code, PERMISSION_FAILED);
+    ASSERT_TRUE(ret == -1);
 }
 
 HWTEST_F(DataShareHelperManagerTest, Update_test_error, testing::ext::TestSize.Level1)
@@ -85,9 +84,10 @@ HWTEST_F(DataShareHelperManagerTest, Update_test_error, testing::ext::TestSize.L
     DataShare::DataSharePredicates predicates;
     DataShare::DataShareValuesBucket value;
     DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
-    auto ret = DataShareHelperManager::GetInstance().Update(testUrl, predicates, value);
-    auto error = std::get<1>(ret);
-    EXPECT_EQ(error.code, PERMISSION_FAILED);
+    std::shared_ptr<Error> error = std::make_shared<Error>();
+    auto ret = DataShareHelperManager::GetInstance().Update(testUrl, predicates, value, error);
+    ASSERT_TRUE(ret == -1);
+    EXPECT_EQ(error->code, PERMISSION_FAILED);
 }
 
 HWTEST_F(DataShareHelperManagerTest, Delete_test_001, testing::ext::TestSize.Level1)
@@ -96,8 +96,7 @@ HWTEST_F(DataShareHelperManagerTest, Delete_test_001, testing::ext::TestSize.Lev
     DataShare::DataSharePredicates predicates;
     DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
     auto ret = DataShareHelperManager::GetInstance().Delete(testUrl, predicates);
-    auto error = std::get<1>(ret);
-    EXPECT_EQ(error.code, PERMISSION_FAILED);
+    ASSERT_TRUE(ret == -1);
 }
 
 HWTEST_F(DataShareHelperManagerTest, Delete_test_error, testing::ext::TestSize.Level1)
@@ -105,9 +104,10 @@ HWTEST_F(DataShareHelperManagerTest, Delete_test_error, testing::ext::TestSize.L
     OHOS::Uri testUrl("");
     DataShare::DataSharePredicates predicates;
     DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
-    auto ret = DataShareHelperManager::GetInstance().Delete(testUrl, predicates);
-    auto error = std::get<1>(ret);
-    EXPECT_EQ(error.code, PERMISSION_FAILED);
+    std::shared_ptr<Error> error = std::make_shared<Error>("", 0);
+    auto ret = DataShareHelperManager::GetInstance().Delete(testUrl, predicates, error);
+    ASSERT_TRUE(ret == -1);
+    EXPECT_EQ(error->code, PERMISSION_FAILED);
 }
 
 HWTEST_F(DataShareHelperManagerTest, Query_test_001, testing::ext::TestSize.Level1)
@@ -115,9 +115,10 @@ HWTEST_F(DataShareHelperManagerTest, Query_test_001, testing::ext::TestSize.Leve
     OHOS::Uri testUrl("");
     DataShare::DataSharePredicates predicates;
     std::vector<std::string> columns;
+    DataShare::DatashareBusinessError error;
     DataShareHelperManager::GetInstance().SetDataShareHelper(nullptr, nullptr);
-    auto ret = DataShareHelperManager::GetInstance().Query(testUrl, predicates, columns);
-    auto error = std::get<1>(ret);
-    EXPECT_EQ(error.code, PERMISSION_FAILED);
+    auto ret = DataShareHelperManager::GetInstance().Query(testUrl, predicates, columns, &error);
+    ASSERT_TRUE(ret == nullptr);
+    EXPECT_EQ(error.GetCode(), PERMISSION_FAILED);
 }
 }

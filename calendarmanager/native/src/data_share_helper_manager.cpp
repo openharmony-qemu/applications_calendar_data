@@ -145,107 +145,135 @@ std::shared_ptr<DataShare::DataShareHelper> DataShareHelperManager::GetDataShare
     return CreateDataShareHelper(isRead);
 }
 
-std::variant<int, Error> DataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket &value)
+int DataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket &value, std::shared_ptr<Error> error)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
-        LOG_ERROR("insert dataShareHelper null");
-        return Error{"", PERMISSION_FAILED};
+        if (error) {
+            error->code = PERMISSION_FAILED;
+            LOG_ERROR("insert error.code = %{public}d", error->code);
+            LOG_ERROR("Insert dataShareHelper is nullptr");
+        } else {
+            LOG_ERROR("error is nullptr");
+        }
+        return -1;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->InsertEx(const_cast<Uri &>(uri), value);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
     if (res.first == PERMISSION_ERR_CODE) {
         LOG_ERROR("insert dataShare permission error");
-        return Error{"", PERMISSION_FAILED};
+        error->code = PERMISSION_FAILED;
+        return -1;
     }
     if (res.first != 0) {
-        LOG_ERROR("dataShare insert internal error");
-        return Error{"", INTERNAL_ERROR};
+        LOG_ERROR("dataShare insert res.first = %{public}d", res.first);
+        if (error) {
+            error->code = INTERNAL_ERROR;
+        }
+        return -1;
     }
     return res.second;
 }
 
-
-std::variant<int, Error> DataShareHelperManager::BatchInsert
-(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values)
+int DataShareHelperManager::BatchInsert
+(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values, std::shared_ptr<Error> error)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
+        if (error) {
+            error->code = PERMISSION_FAILED;
+        }
         LOG_ERROR("BatchInsert dataShareHelper is nullptr");
-        return Error{"", PERMISSION_FAILED};
+        return -1;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->BatchInsert(const_cast<Uri &>(uri), values);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
     if (res <= 0) {
-        return Error{"", INTERNAL_ERROR};
+        if (error) {
+            error->code = INTERNAL_ERROR;
+        }
     }
     return res;
 }
 
-std::variant<int, Error> DataShareHelperManager::Update(const Uri &uri, const DataSharePredicates &predicates,
-    const DataShareValuesBucket &value)
+int DataShareHelperManager::Update(const Uri &uri, const DataSharePredicates &predicates,
+    const DataShareValuesBucket &value, std::shared_ptr<Error> error)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
+        if (error) {
+            error->code = PERMISSION_FAILED;
+        }
         LOG_ERROR("Update dataShareHelper is nullptr");
-        return Error{"", PERMISSION_FAILED};
+        return -1;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->UpdateEx(const_cast<Uri &>(uri), predicates, value);
-    useCount.fetch_sub(1, std::memory_order_seq_cst);
     if (res.first == PERMISSION_ERR_CODE) {
         LOG_ERROR("update dataShare permission error");
-        return Error{"", PERMISSION_FAILED};
+        error->code = PERMISSION_FAILED;
+        return -1;
     }
     if (res.first != 0) {
+        if (error) {
+            error->code = INTERNAL_ERROR;
+        }
         LOG_INFO("dataShare errorCode = %{public}d", res.first);
-        return Error{"", INTERNAL_ERROR};
+        return -1;
     }
+    useCount.fetch_sub(1, std::memory_order_seq_cst);
     return res.second;
 }
 
-std::variant<int, Error> DataShareHelperManager::Delete(const Uri &uri, const DataSharePredicates &predicates)
+int DataShareHelperManager::Delete(const Uri &uri, const DataSharePredicates &predicates, std::shared_ptr<Error> error)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
+        if (error) {
+            error->code = PERMISSION_FAILED;
+        }
         LOG_ERROR("Delete dataShareHelper is nullptr");
-        return Error{"", PERMISSION_FAILED};
+        return -1;
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->DeleteEx(const_cast<Uri &>(uri), predicates);
-    useCount.fetch_sub(1, std::memory_order_seq_cst);
     if (res.first == PERMISSION_ERR_CODE) {
         LOG_ERROR("delete dataShare permission error");
-        return Error{"", PERMISSION_FAILED};
+        error->code = PERMISSION_FAILED;
+        return -1;
     }
     if (res.first != 0) {
+        if (error) {
+            error->code = INTERNAL_ERROR;
+        }
         LOG_ERROR("dataShare errorCode = %{public}d", res.first);
-        return Error{"", INTERNAL_ERROR};
+        return -1;
     }
+    useCount.fetch_sub(1, std::memory_order_seq_cst);
     return res.second;
 }
 
-std::variant<std::shared_ptr<DataShareResultSet>, Error> DataShareHelperManager::Query
-    (const Uri &uri, const DataSharePredicates &predicates, std::vector<std::string> &columns)
+std::shared_ptr<DataShareResultSet> DataShareHelperManager::Query(const Uri &uri, const DataSharePredicates &predicates,
+    std::vector<std::string> &columns, DatashareBusinessError *businessError)
 {
     auto dataShareHelper = CreateDataShareHelper(true);
     if (!dataShareHelper) {
+        businessError->SetCode(PERMISSION_FAILED);
         LOG_ERROR("Query dataShareHelper is nullptr");
-        return Error{"", PERMISSION_FAILED};
+        return nullptr;
     }
-    DatashareBusinessError businessError;
     useCount.fetch_add(1, std::memory_order_seq_cst);
-    auto res = dataShareHelper->Query(const_cast<Uri &>(uri), predicates, columns, &businessError);
+    auto res = dataShareHelper->Query(const_cast<Uri &>(uri), predicates, columns, businessError);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    if (businessError.GetCode() != 0) {
-        if (businessError.GetCode() == PERMISSION_ERR_CODE) {
+    if (businessError->GetCode() != 0) {
+        if (businessError->GetCode() == PERMISSION_ERR_CODE) {
             LOG_ERROR("query dataShare permission error");
-            return Error{"", PERMISSION_FAILED};
+            businessError->SetCode(PERMISSION_FAILED);
         } else {
             LOG_ERROR("dataShare query error");
-            return Error{"", INTERNAL_ERROR};
+            businessError->SetCode(INTERNAL_ERROR);
         }
     }
     return res;

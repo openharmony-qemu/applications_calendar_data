@@ -32,8 +32,7 @@ public:
     static void SetUpTestSuite(void)
     {
         LOG_INFO("CreateCalendar");
-        auto result = CalendarManager::GetInstance().CreateCalendar(account);
-        calendar = std::get<0>(result);
+        calendar = CalendarManager::GetInstance().CreateCalendar(account);
         ASSERT_TRUE(calendar != nullptr);
         LOG_INFO("SetUpTestCase SUCCESS");
     }
@@ -42,7 +41,7 @@ public:
     {
         LOG_INFO("DeleteCalendar");
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-        ASSERT_TRUE(std::get<0>(ret));
+        ASSERT_TRUE(ret);
         LOG_INFO("TearDownTestSuite SUCCESS");
     }
     void SetUp() {};
@@ -77,11 +76,9 @@ HWTEST_F(EventAttendeeTest, AddEventWithOneAttendee, testing::ext::TestSize.Leve
         {"test_attendee_name4", "test_attendee4@abc.com", PARTICIPANT, UNRESPONSIVE, RESOURCE}
     };
     event.attendees = testAttendees;
-    auto addRet = calendar->AddEvent(event);
-    auto eventId = std::get<0>(addRet);
+    auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
-    auto getRet = calendar->GetEvents(FilterByTitle("AddEventWithOneAttendee"), {});
-    auto events = std::get<0>(getRet);
+    auto events = calendar->GetEvents(FilterByTitle("AddEventWithOneAttendee"), {});
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -105,17 +102,13 @@ HWTEST_F(EventAttendeeTest, DelEventWithAttendee, testing::ext::TestSize.Level1)
     };
     event1.attendees = testAttendees;
     event2.attendees = testAttendees;
-    auto addRet = calendar->AddEvent(event1);
-    auto eventId1 = std::get<0>(addRet);
+    auto eventId1 = calendar->AddEvent(event1);
     ASSERT_NE(eventId1, 0);
-    addRet = calendar->AddEvent(event2);
-    auto eventId2 = std::get<0>(addRet);
+    auto eventId2 = calendar->AddEvent(event2);
     ASSERT_NE(eventId2, 0);
     auto ret = calendar->DeleteEvent(eventId1);
-    auto delRet = std::get<0>(ret);
-    ASSERT_EQ(delRet, 1);
-    auto getRet = calendar->GetEvents(FilterById({eventId2}), {});
-    auto events = std::get<0>(getRet);
+    ASSERT_EQ(ret, 1);
+    auto events = calendar->GetEvents(FilterById({eventId2}), {});
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     ASSERT_EQ(resultEvent.title.value(), title2);
@@ -133,11 +126,9 @@ HWTEST_F(EventAttendeeTest, UpdateEventWithAttendee, testing::ext::TestSize.Leve
         {"test_attendee_name4", "test_attendee4@abc.com", PARTICIPANT, UNRESPONSIVE, RESOURCE}
     };
     event.attendees = testAttendees;
-    auto addRet = calendar->AddEvent(event);
-    auto eventId = std::get<0>(addRet);
+    auto eventId = calendar->AddEvent(event);
     ASSERT_NE(eventId, 0);
-    auto getRet = calendar->GetEvents(FilterById({eventId}), {});
-    auto events = std::get<0>(getRet);
+    auto events = calendar->GetEvents(FilterById({eventId}), {});
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     ASSERT_THAT(resultEvent.attendees, testing::ElementsAreArray(testAttendees));
@@ -150,8 +141,7 @@ HWTEST_F(EventAttendeeTest, UpdateEventWithAttendee, testing::ext::TestSize.Leve
     };
     resultEvent.attendees = newTestAttendees;
     calendar->UpdateEvent(resultEvent);
-    getRet = calendar->GetEvents(FilterById({eventId}), {});
-    events = std::get<0>(getRet);
+    events = calendar->GetEvents(FilterById({eventId}), {});
     ASSERT_EQ(events.size(), 1);
     resultEvent = events.at(0);
     CompareAttendeeVec(resultEvent.attendees, newTestAttendees);

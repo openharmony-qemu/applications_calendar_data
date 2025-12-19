@@ -40,6 +40,7 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
         napi_ref ref = nullptr;
     };
     auto ctxt = std::make_shared<CreateCalendarContext>();
+    ctxt->error = std::make_shared<Error>("", 0);
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         // required 1 arguments :: <CalendarAccount>
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, PARAMETER_ERROR, "invalid arguments!");
@@ -52,16 +53,11 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
 
     auto execute = [ctxt]() {
         auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
-        auto result = Native::CalendarManager::GetInstance().CreateCalendar(ctxt->account);
-        auto* retErr = std::get_if<Error>(&result);
+        auto nativteCalendar = Native::CalendarManager::GetInstance().CreateCalendar(ctxt->account, ctxt->error);
         Native::ReportHiEventManager::GetInstance()
-            .OnApiCallEnd("CreateCalendar", retErr == nullptr, beginTime);
-        if (retErr) {
-            ctxt->error = *retErr;
-            ctxt->status = napi_generic_failure;
-            CHECK_ERRCODE_RETURN_VOID(ctxt, "CreateCalendar failed!");
-        }
-        auto nativteCalendar = std::get<0>(result);
+            .OnApiCallEnd("CreateCalendar", nativteCalendar != nullptr, beginTime);
+        ctxt->status = (nativteCalendar != nullptr) ? napi_ok : napi_generic_failure;
+        CHECK_ERRCODE_RETURN_VOID(ctxt, "CreateCalendar failed!");
         ctxt->calendar->SetNative(nativteCalendar);
         ctxt->id = nativteCalendar->GetId();
     };
@@ -85,6 +81,7 @@ napi_value CalendarManagerNapi::DeleteCalendar(napi_env env, napi_callback_info 
         bool delResult = false;
     };
     auto ctxt = std::make_shared<DelCalendarContext>();
+    ctxt->error = std::make_shared<Error>("", 0);
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         // required 1 arguments :: <Calendar>
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 1, PARAMETER_ERROR, "invalid arguments!");
@@ -101,12 +98,8 @@ napi_value CalendarManagerNapi::DeleteCalendar(napi_env env, napi_callback_info 
         auto nativeCalendar = ctxt->calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar, "calendar is nullptr");
         auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
-        auto result = Native::CalendarManager::GetInstance().DeleteCalendar(*(nativeCalendar.get()));
-        if (std::get_if<Error>(&result)) {
-            ctxt->delResult = false;
-        } else {
-            ctxt->delResult = std::get<0>(result);
-        }
+        ctxt->delResult = Native::CalendarManager::GetInstance()
+            .DeleteCalendar(*(nativeCalendar.get()), ctxt->error);
         Native::ReportHiEventManager::GetInstance().OnApiCallEnd("DeleteCalendar", ctxt->delResult, beginTime);
         CHECK_RETURN_VOID(ctxt->delResult, "DeleteCalendar failed!");
     };
@@ -148,16 +141,15 @@ napi_value CalendarManagerNapi::GetCalendar(napi_env env, napi_callback_info inf
 {
     LOG_DEBUG("GetCalendar in");
     auto ctxt = std::make_shared<GetCalendarContext>();
+    ctxt->error = std::make_shared<Error>("", 0);
     ctxt->GetCbInfo(env, info);
-    
+
     auto execute = [ctxt]() {
-        auto result = Native::CalendarManager::GetInstance().GetCalendar(ctxt->account);
-        if (auto* retErr = std::get_if<Error>(&result)) {
-            ctxt->error = *retErr;
+        auto nativteCalendar = Native::CalendarManager::GetInstance().GetCalendar(ctxt->account, ctxt->error);
+        if (ctxt->error->code != 0) {
             ctxt->status = napi_generic_failure;
             return;
         }
-        auto nativteCalendar = std::get<0>(result);
         if (ctxt->calendar != nullptr) {
             ctxt->calendar->SetNative(nativteCalendar);
         }
@@ -183,18 +175,14 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
     };
 
     auto ctxt = std::make_shared<GetAllCalendarContext>();
+    ctxt->error = std::make_shared<Error>("", 0);
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         CHECK_ARGS_RETURN_VOID(ctxt, argc == 0, PARAMETER_ERROR, "invalid arguments!");
     };
     ctxt->GetCbInfo(env, info, input);
 
     auto execute = [env, ctxt]() {
-        auto result = Native::CalendarManager::GetInstance().GetAllCalendars();
-        if (auto *retErr = std::get_if<Error>(&result)) {
-            LOG_ERROR("GetAllCalendar error, error code: %{public}d", ctxt->error.code);
-        } else {
-            ctxt->nativteCalendars = std::get<0>(result);
-        }
+        ctxt->nativteCalendars = Native::CalendarManager::GetInstance().GetAllCalendars(ctxt->error);
     };
 
     auto output = [env, ctxt](napi_value& result) {

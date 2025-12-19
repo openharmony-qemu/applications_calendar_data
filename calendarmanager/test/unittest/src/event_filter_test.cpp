@@ -30,14 +30,11 @@ class EventFilterTest : public testing::Test {
 public:
     static void SetUpTestSuite(void)
     {
-        auto result = CalendarManager::GetInstance().GetCalendar(account);
-        if (std::get_if<0>(&result)) {
-            calendar = std::get<0>(result);
+        calendar = CalendarManager::GetInstance().GetCalendar(account);
+        if (calendar != nullptr && calendar->GetAccount().name == TEST_NAME) {
             CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
         }
-        auto createRet = CalendarManager::GetInstance().CreateCalendar(account);
-        ASSERT_TRUE(std::get_if<0>(&createRet) != nullptr);
-        calendar = std::get<0>(createRet);
+        calendar = CalendarManager::GetInstance().CreateCalendar(account);
         ASSERT_TRUE(calendar != nullptr);
         LOG_INFO("SetUpTestCase SUCCESS");
     }
@@ -46,8 +43,7 @@ public:
     {
         LOG_INFO("DeleteCalendar");
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-        ASSERT_TRUE(std::get_if<0>(&ret));
-        ASSERT_TRUE(std::get<0>(ret));
+        ASSERT_TRUE(ret);
         LOG_INFO("TearDownTestSuite SUCCESS");
     }
     void SetUp() {};
@@ -67,9 +63,8 @@ HWTEST_F(EventFilterTest, FilterByTitle_test_normal, testing::ext::TestSize.Leve
     Event event;
     event.title = title;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title), {});
     ASSERT_FALSE(events.empty());
     EXPECT_EQ(events.at(0).title.value(), title);
 }
@@ -80,9 +75,8 @@ HWTEST_F(EventFilterTest, FilterByTitle_test_noexist, testing::ext::TestSize.Lev
     Event event;
     event.title = title;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterByTitle(title + "event"), {});
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle(title + "event"), {});
     ASSERT_TRUE(events.empty());
 }
 
@@ -92,9 +86,8 @@ HWTEST_F(EventFilterTest, FilterByTitle_test_partialMatch, testing::ext::TestSiz
     Event event;
     event.title = title;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterByTitle("partialMatch"), {});
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle("partialMatch"), {});
     ASSERT_FALSE(events.empty());
     EXPECT_EQ(events.at(0).title.value(), title);
 }
@@ -105,9 +98,8 @@ HWTEST_F(EventFilterTest, FilterByTitle_test_chinese, testing::ext::TestSize.Lev
     Event event;
     event.title = title;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterByTitle("中文测试"), {});
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterByTitle("中文测试"), {});
     ASSERT_FALSE(events.empty());
     EXPECT_EQ(events.at(0).title.value(), title);
 }
@@ -118,9 +110,8 @@ HWTEST_F(EventFilterTest, FilterById_test_normal, testing::ext::TestSize.Level1)
     Event event;
     event.title = title;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterById({std::get<0>(eventId)}), {});
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {});
 
     ASSERT_FALSE(events.empty());
     EXPECT_EQ(events.at(0).title.value(), title);
@@ -132,9 +123,8 @@ HWTEST_F(EventFilterTest, FilterById_test_empty, testing::ext::TestSize.Level1)
     Event event;
     event.title = title;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterById({std::get<0>(eventId)}), {});
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId}), {});
     ASSERT_FALSE(events.empty());
     EXPECT_EQ(events.at(0).title.value(), title);
 }
@@ -145,9 +135,8 @@ HWTEST_F(EventFilterTest, FilterById_test_one_not_include, testing::ext::TestSiz
     Event event;
     event.title = title;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto result = calendar->GetEvents(FilterById({std::get<0>(eventId) + 1}), {});
-    auto events = std::get<0>(result);
+    ASSERT_NE(eventId, 0);
+    auto events = calendar->GetEvents(FilterById({eventId + 1}), {});
     ASSERT_TRUE(events.empty());
 }
 
@@ -161,8 +150,7 @@ HWTEST_F(EventFilterTest, FilterById_test_all_include, testing::ext::TestSize.Le
     event1.title = title1;
     auto eventId1 = calendar->AddEvent(event);
     auto eventId2 = calendar->AddEvent(event1);
-    auto result = calendar->GetEvents(FilterById({std::get<0>(eventId1), std::get<0>(eventId2)}), {});
-    auto events = std::get<0>(result);
+    auto events = calendar->GetEvents(FilterById({eventId1, eventId2}), {});
     ASSERT_EQ(2, events.size());
     EXPECT_EQ(events.at(0).title.value(), title);
     EXPECT_EQ(events.at(1).title.value(), title1);
@@ -186,9 +174,8 @@ HWTEST_F(EventFilterTest, FilterByTime_test_001, testing::ext::TestSize.Level1)
     event.startTime = timeNow;
     event.endTime = timeNow + 100000;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_TRUE(std::get<0>(eventId) > 0);
-    auto result = calendar->GetEvents(FilterByTime(event.startTime, event.endTime), {});
-    auto events = std::get<0>(result);
+    ASSERT_TRUE(eventId > 0);
+    auto events = calendar->GetEvents(FilterByTime(event.startTime, event.endTime), {});
     ASSERT_EQ(1, events.size());
     EXPECT_EQ(events.at(0).title.value(), title);
     EXPECT_EQ(events.at(0).startTime, event.startTime);
@@ -204,12 +191,10 @@ HWTEST_F(EventFilterTest, FilterByTime_test_002, testing::ext::TestSize.Level1)
     const int64_t interval = 100;
     event.endTime = timeNow + interval;
     auto eventId = calendar->AddEvent(event);
-    ASSERT_TRUE(std::get<0>(eventId) > 0);
-    auto result = calendar->GetEvents(FilterByTime(event.startTime - interval * 2, event.startTime - interval), {});
-    auto events = std::get<0>(result);
+    ASSERT_TRUE(eventId > 0);
+    auto events = calendar->GetEvents(FilterByTime(event.startTime - interval * 2, event.startTime - interval), {});
     EXPECT_TRUE(events.empty());
-    result = calendar->GetEvents(FilterByTime(event.endTime + interval, event.endTime + interval * 2), {});
-    events = std::get<0>(result);
+    events = calendar->GetEvents(FilterByTime(event.endTime + interval, event.endTime + interval * 2), {});
     ASSERT_TRUE(events.empty());
 }
 
@@ -229,9 +214,8 @@ HWTEST_F(EventFilterTest, FilterByTime_test_003, testing::ext::TestSize.Level1)
     event2.endTime = timeNow + interval * 2;
 
     auto count = calendar->AddEvents({event1, event2});
-    ASSERT_TRUE(std::get<0>(count) == 2);
-    auto result = calendar->GetEvents(FilterByTime(timeNow, event2.endTime), {});
-    auto events = std::get<0>(result);
+    ASSERT_TRUE(count == 2);
+    auto events = calendar->GetEvents(FilterByTime(timeNow, event2.endTime), {});
     ASSERT_EQ(2, events.size());
     EXPECT_EQ(events.at(0).title.value(), title1);
     EXPECT_EQ(events.at(0).startTime, event1.startTime);
@@ -252,9 +236,8 @@ HWTEST_F(EventFilterTest, FilterById_and_eventKey_001, testing::ext::TestSize.Le
     const int64_t interval = 100;
     event.endTime = timeNow + interval;
     auto eventId = calendar->AddEvent(event);
-    auto eventResult = calendar->GetEvents
-        (FilterById({std::get<0>(eventId)}), {"type", "title", "startTime", "endTime"});
-    const auto newEvent = std::get<0>(eventResult).at(0);
+    auto eventResult = calendar->GetEvents(FilterById({eventId}), {"type", "title", "startTime", "endTime"});
+    const auto newEvent = eventResult.at(0);
     EXPECT_EQ(newEvent.type, event.type);
     EXPECT_EQ(newEvent.title.value(), title);
     EXPECT_EQ(newEvent.startTime, event.startTime);
@@ -274,11 +257,10 @@ HWTEST_F(EventFilterTest, FilterByTitle_and_eventKey_002, testing::ext::TestSize
         {"abc", "test_attendee2@abc.com", ORGANIZER, ACCEPTED, RESOURCE}};
     event.timeZone = "shanghai";
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
+    ASSERT_NE(eventId, 0);
     auto eventResult = calendar->GetEvents(FilterByTitle(title),
         {"title", "location", "isAllDay", "attendee", "timeZone"});
-    auto events = std::get<0>(eventResult);
-    const auto newEvent = events.at(0);
+    const auto newEvent = eventResult.at(0);
     EXPECT_EQ(newEvent.title.value(), title);
     EXPECT_EQ(newEvent.location.value(), event.location.value());
     EXPECT_EQ(newEvent.isAllDay.value(), event.isAllDay.value());
@@ -301,11 +283,10 @@ HWTEST_F(EventFilterTest, FilterByTime_and_eventKey_003, testing::ext::TestSize.
     EventService service = {"Meeting", "FilterByTime_and_eventKey_003 uri", description};
     event.service = std::make_optional<EventService>(service);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
+    ASSERT_NE(eventId, 0);
     auto eventResult = calendar->GetEvents(FilterByTime(timeNow, event.endTime + 100),
         {"title", "reminderTime", "description", "service"});
-    auto events = std::get<0>(eventResult);
-    const auto newEvent = events.at(0);
+    const auto newEvent = eventResult.at(0);
     EXPECT_EQ(newEvent.title.value(), title);
     ASSERT_EQ(newEvent.reminderTime.has_value(), true);
     EXPECT_EQ(newEvent.reminderTime.value(), event.reminderTime.value());
@@ -331,11 +312,10 @@ HWTEST_F(EventFilterTest, QueryEventInstances_001, testing::ext::TestSize.Level1
     EventService service = {"Meeting", "QueryEventInstances_001 uri", description};
     event.service = std::make_optional<EventService>(service);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(std::get<0>(eventId), 0);
-    auto eventResult = calendar->QueryEventInstances(event.startTime, event.endTime + 100, {std::get<0>(eventId)},
+    ASSERT_NE(eventId, 0);
+    auto eventResult = calendar->QueryEventInstances(event.startTime, event.endTime + 100, {eventId},
      {"title", "reminderTime", "description", "service"});
-    auto events = std::get<0>(eventResult);
-    const auto newEvent = events.at(0);
+    const auto newEvent = eventResult.at(0);
     EXPECT_EQ(newEvent.title.value(), title);
     ASSERT_EQ(newEvent.reminderTime.has_value(), true);
     EXPECT_EQ(newEvent.reminderTime.value(), event.reminderTime.value());
@@ -356,11 +336,9 @@ HWTEST_F(EventFilterTest, QueryEventInstances_002, testing::ext::TestSize.Level1
     event.startTime = timeNow;
     const int64_t interval = 100;
     event.endTime = timeNow + interval;
-    auto addRet = calendar->AddEvent(event);
-    auto eventId = std::get<0>(addRet);
+    auto eventId = calendar->AddEvent(event);
     auto eventResult = calendar->QueryEventInstances(event.startTime, event.endTime + 100, {eventId}, {});
-    auto queryEvents = std::get<0>(eventResult);
-    const auto newEvent = queryEvents.at(0);
+    const auto newEvent = eventResult.at(0);
     EXPECT_EQ(newEvent.title.value(), title);
     EXPECT_EQ(newEvent.startTime, event.startTime);
     EXPECT_EQ(newEvent.endTime, event.endTime);
