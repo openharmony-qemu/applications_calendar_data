@@ -150,7 +150,7 @@ Result<bool> CalendarManager::DeleteCalendar(const Calendar &calendar)
         result = DataShareHelperManager::GetInstance().Delete(*(m_calendarUri.get()), predicates);
         if (result.is_err()) {
             LOG_WARN("DeleteCalendar error, code: %{public}d", result.error().code);
-            LOG_WARN("Insert indexNum %{public}d", errNum);
+            LOG_WARN("Delete indexNum %{public}d", errNum);
             error.code = result.error().code;
             errNum++;
         } else {

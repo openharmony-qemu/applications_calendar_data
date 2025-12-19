@@ -103,7 +103,7 @@ namespace OHOS::CalendarApi::Native {
         if (result.is_err()) {
             LOG_ERROR("native error : %{public}s", errLog.c_str());
         } else {
-            LOG_INFO("%{public}s %{public}d", succeessLog.c_str(), result.value());
+            LOG_INFO("%{public}s %{public}d", successLog.c_str(), result.value());
         }
     }
 }

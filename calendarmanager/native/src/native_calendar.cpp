@@ -63,7 +63,7 @@ void Calendar::InsertReminders(int eventId, vector<int> reminders)
             if (insertRet.is_ok()) {
                 LOG_INFO("Insert reminder index %{private}d", insertRet.value());
             } else {
-                LOG_ERROR("insert reminder error %{pubulic}d", insertRet.error().code);
+                LOG_ERROR("insert reminder error %{public}d", insertRet.error().code);
             }
         }
 }
