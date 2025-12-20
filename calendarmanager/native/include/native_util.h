@@ -98,7 +98,7 @@ namespace OHOS::CalendarApi::Native {
     }
 
     inline void CheckIntRetPrintLog(Result<int> result,
-        std::string errLog, std::string succeessLog)
+        std::string errLog, std::string successLog)
     {
         if (result.is_err()) {
             LOG_ERROR("native error : %{public}s", errLog.c_str());
