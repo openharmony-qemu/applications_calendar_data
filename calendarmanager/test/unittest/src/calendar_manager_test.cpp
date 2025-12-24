@@ -41,7 +41,7 @@ public:
 HWTEST_F(CalendarManagerTest, getCalendar_with_not_account, testing::ext::TestSize.Level0)
 {
     auto result = CalendarManager::GetInstance().GetCalendar(std::nullopt);
-    auto calendar = result.value();
+    auto calendar = result.GetValue();
     ASSERT_TRUE(calendar != nullptr);
     auto account = calendar->GetAccount();
     EXPECT_TRUE(CalendarManager::IsDefaultAccount(calendar->GetAccount()));
@@ -55,8 +55,8 @@ HWTEST_F(CalendarManagerTest, getCalendar_which_no_exist, testing::ext::TestSize
         "displayName_getCalendar_which_no_exist"
     };
     auto result = CalendarManager::GetInstance().GetCalendar(test_account);
-    ASSERT_EQ(result.is_err(), true);
-    ASSERT_EQ(result.error().code, QUERY_RESULT_EMPTY);
+    ASSERT_EQ(result.IsErr(), true);
+    ASSERT_EQ(result.GetError().code, QUERY_RESULT_EMPTY);
 }
 
 HWTEST_F(CalendarManagerTest, getCalendar_test_exist, testing::ext::TestSize.Level1)
@@ -67,10 +67,10 @@ HWTEST_F(CalendarManagerTest, getCalendar_test_exist, testing::ext::TestSize.Lev
     };
     auto result = CalendarManager::GetInstance().GetCalendar(test_account);
     std::shared_ptr<Calendar> calendar;
-    ASSERT_TRUE(result.is_err());
-    if (result.is_err()) {
+    ASSERT_TRUE(result.IsErr());
+    if (result.IsErr()) {
         result = CalendarManager::GetInstance().CreateCalendar(test_account);
-        calendar = result.value();
+        calendar = result.GetValue();
         ASSERT_TRUE(calendar);
     }
     auto accountExpect = calendar->GetAccount();
@@ -85,8 +85,8 @@ HWTEST_F(CalendarManagerTest, getCalendar_test_no_exist, testing::ext::TestSize.
         "local",
     };
     auto result = CalendarManager::GetInstance().GetCalendar(test_account);;
-    ASSERT_TRUE(result.is_err());
-    EXPECT_EQ(result.error().code, QUERY_RESULT_EMPTY);
+    ASSERT_TRUE(result.IsErr());
+    EXPECT_EQ(result.GetError().code, QUERY_RESULT_EMPTY);
 }
 
 HWTEST_F(CalendarManagerTest, deleteCalendar_test_no_exist, testing::ext::TestSize.Level1)
@@ -98,8 +98,8 @@ HWTEST_F(CalendarManagerTest, deleteCalendar_test_no_exist, testing::ext::TestSi
     };
     auto calendarTest = new Calendar(test_account, 0);
     auto result = CalendarManager::GetInstance().DeleteCalendar(*calendarTest);
-    EXPECT_TRUE(result.is_ok());
-    EXPECT_EQ(result.value(), 0);
+    EXPECT_TRUE(result.IsOk());
+    EXPECT_EQ(result.GetValue(), 0);
     if (calendarTest) {
         delete calendarTest;
         calendarTest = nullptr;
@@ -115,11 +115,11 @@ HWTEST_F(CalendarManagerTest, createCalendar_which_not_exist, testing::ext::Test
     };
     std::shared_ptr<Calendar> calendar;
     auto getResult = CalendarManager::GetInstance().GetCalendar(test_account);
-    ASSERT_FALSE(getResult.is_ok());
-    ASSERT_EQ(getResult.error().code, QUERY_RESULT_EMPTY);
+    ASSERT_FALSE(getResult.IsOk());
+    ASSERT_EQ(getResult.GetError().code, QUERY_RESULT_EMPTY);
     auto createRet = CalendarManager::GetInstance().CreateCalendar(test_account);
-    ASSERT_TRUE(createRet.is_ok());
-    calendar = createRet.value();
+    ASSERT_TRUE(createRet.IsOk());
+    calendar = createRet.GetValue();
     ASSERT_TRUE(calendar);
     auto accountExpect = calendar->GetAccount();
     EXPECT_EQ(accountExpect.name, test_account.name);
@@ -135,13 +135,13 @@ HWTEST_F(CalendarManagerTest, createCalendar_which_already_exist, testing::ext::
     };
     std::shared_ptr<Calendar> calendar;
     auto result = CalendarManager::GetInstance().GetCalendar(test_account);
-    ASSERT_FALSE(result.is_ok());
+    ASSERT_FALSE(result.IsOk());
     auto createRet = CalendarManager::GetInstance().CreateCalendar(test_account);
-    ASSERT_TRUE(createRet.is_ok());
-    calendar = createRet.value();
+    ASSERT_TRUE(createRet.IsOk());
+    calendar = createRet.GetValue();
     ASSERT_TRUE(calendar);
     auto newCalendar = CalendarManager::GetInstance().CreateCalendar(test_account);
-    ASSERT_TRUE(newCalendar.is_ok()); // todo is bug!!
+    ASSERT_TRUE(newCalendar.IsOk()); // todo is bug!!
 }
 
 HWTEST_F(CalendarManagerTest, getAllCalendars_test_1, testing::ext::TestSize.Level1)
@@ -160,16 +160,16 @@ HWTEST_F(CalendarManagerTest, getAllCalendars_test_1, testing::ext::TestSize.Lev
     CalendarManager::GetInstance().CreateCalendar(test_account1);
 
     auto calendarsRet = CalendarManager::GetInstance().GetAllCalendars();
-    ASSERT_TRUE(calendarsRet.is_ok());
-    auto calendars = calendarsRet.value();
+    ASSERT_TRUE(calendarsRet.IsOk());
+    auto calendars = calendarsRet.GetValue();
     ASSERT_EQ(calendars.size(), 3); // 3 is include defalut calendar
 }
 
 HWTEST_F(CalendarManagerTest, getAllCalendars_only_default_calendar, testing::ext::TestSize.Level1)
 {
     auto calendarsRet = CalendarManager::GetInstance().GetAllCalendars();
-    ASSERT_TRUE(calendarsRet.is_ok());
-    auto calendars =calendarsRet.value();
+    ASSERT_TRUE(calendarsRet.IsOk());
+    auto calendars =calendarsRet.GetValue();
     ASSERT_EQ(calendars.size(), 1); // 1 is defalut calendar
     auto calendar = calendars.at(0);
     ASSERT_TRUE(calendar != nullptr);
@@ -186,11 +186,11 @@ HWTEST_F(CalendarManagerTest, getAccount_test_1, testing::ext::TestSize.Level1)
     };
     std::shared_ptr<Calendar> calendar;
     auto result = CalendarManager::GetInstance().GetCalendar(test_account);
-    ASSERT_TRUE(result.is_err());
-    ASSERT_EQ(result.error().code, QUERY_RESULT_EMPTY);
+    ASSERT_TRUE(result.IsErr());
+    ASSERT_EQ(result.GetError().code, QUERY_RESULT_EMPTY);
     auto createRet = CalendarManager::GetInstance().CreateCalendar(test_account);
-    ASSERT_TRUE(createRet.is_ok());
+    ASSERT_TRUE(createRet.IsOk());
     auto newCalendar = CalendarManager::GetInstance().CreateCalendar(test_account);
-    ASSERT_TRUE(newCalendar.is_ok()); // todo is bug!!
+    ASSERT_TRUE(newCalendar.IsOk()); // todo is bug!!
 }
 }

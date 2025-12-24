@@ -54,13 +54,13 @@ napi_value CalendarManagerNapi::CreateCalendar(napi_env env, napi_callback_info 
         auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         auto result = Native::CalendarManager::GetInstance().CreateCalendar(ctxt->account);
         Native::ReportHiEventManager::GetInstance()
-            .OnApiCallEnd("CreateCalendar", result.is_ok(), beginTime);
-        if (result.is_err()) {
-            ctxt->error = result.error();
+            .OnApiCallEnd("CreateCalendar", result.IsOk(), beginTime);
+        if (result.IsErr()) {
+            ctxt->error = result.GetError();
             ctxt->status = napi_generic_failure;
             CHECK_ERRCODE_RETURN_VOID(ctxt, "CreateCalendar failed!");
         }
-        auto nativteCalendar = result.value();
+        auto nativteCalendar = result.GetValue();
         ctxt->calendar->SetNative(nativteCalendar);
         ctxt->id = nativteCalendar->GetId();
     };
@@ -101,7 +101,7 @@ napi_value CalendarManagerNapi::DeleteCalendar(napi_env env, napi_callback_info 
         CHECK_RETURN_VOID(nativeCalendar, "calendar is nullptr");
         auto beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         auto result = Native::CalendarManager::GetInstance().DeleteCalendar(*(nativeCalendar.get()));
-        ctxt->delResult = (result.is_ok()) ? result.value() : false;
+        ctxt->delResult = (result.IsOk()) ? result.GetValue() : false;
         Native::ReportHiEventManager::GetInstance().OnApiCallEnd("DeleteCalendar", ctxt->delResult, beginTime);
         CHECK_RETURN_VOID(ctxt->delResult, "DeleteCalendar failed!");
     };
@@ -147,12 +147,12 @@ napi_value CalendarManagerNapi::GetCalendar(napi_env env, napi_callback_info inf
     
     auto execute = [ctxt]() {
         auto result = Native::CalendarManager::GetInstance().GetCalendar(ctxt->account);
-        if (result.is_err()) {
-            ctxt->error = result.error();
+        if (result.IsErr()) {
+            ctxt->error = result.GetError();
             ctxt->status = napi_generic_failure;
             return;
         }
-        auto nativteCalendar = result.value();
+        auto nativteCalendar = result.GetValue();
         if (ctxt->calendar != nullptr) {
             ctxt->calendar->SetNative(nativteCalendar);
         }
@@ -185,10 +185,10 @@ napi_value CalendarManagerNapi::GetAllCalendars(napi_env env, napi_callback_info
 
     auto execute = [env, ctxt]() {
         auto result = Native::CalendarManager::GetInstance().GetAllCalendars();
-        if (result.is_err()) {
+        if (result.IsErr()) {
             LOG_ERROR("GetAllCalendar error, error code: %{public}d", ctxt->error.code);
         } else {
-            ctxt->nativteCalendars = result.value();
+            ctxt->nativteCalendars = result.GetValue();
         }
     };
 

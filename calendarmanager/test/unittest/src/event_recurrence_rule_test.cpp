@@ -33,14 +33,14 @@ public:
     static void SetUpTestSuite(void)
     {
         auto result = CalendarManager::GetInstance().CreateCalendar(account);
-        calendar = result.value();
+        calendar = result.GetValue();
         ASSERT_TRUE(calendar != nullptr);
     }
 
     static void TearDownTestSuite(void)
     {
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-        ASSERT_TRUE(ret.value());
+        ASSERT_TRUE(ret.GetValue());
     }
     void SetUp() {};
     void TearDown() {};

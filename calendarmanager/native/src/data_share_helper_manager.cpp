@@ -150,18 +150,18 @@ Result<int> DataShareHelperManager::Insert(const Uri &uri, const DataShareValues
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
         LOG_ERROR("insert dataShareHelper null");
-        return Result<int>(Error{"", PERMISSION_FAILED});
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->InsertEx(const_cast<Uri &>(uri), value);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
     if (res.first == PERMISSION_ERR_CODE) {
         LOG_ERROR("insert dataShare permission error");
-        return Result<int>(Error{"", PERMISSION_FAILED});
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     if (res.first != 0) {
         LOG_ERROR("dataShare insert internal error");
-        return Result<int>(Error{"", INTERNAL_ERROR});
+        return Result<int>(Error(INTERNAL_ERROR));
     }
     return Result<int>(res.second);
 }
@@ -179,7 +179,7 @@ Result<int> DataShareHelperManager::BatchInsert
     auto res = dataShareHelper->BatchInsert(const_cast<Uri &>(uri), values);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
     if (res <= 0) {
-        return Result<int>(Error{"", INTERNAL_ERROR});
+        return Result<int>(Error(INTERNAL_ERROR));
     }
     return Result<int>(res);
 }
@@ -190,18 +190,18 @@ Result<int> DataShareHelperManager::Update(const Uri &uri, const DataSharePredic
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
         LOG_ERROR("Update dataShareHelper is nullptr");
-        return Result<int>(Error{"", PERMISSION_FAILED});
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->UpdateEx(const_cast<Uri &>(uri), predicates, value);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
     if (res.first == PERMISSION_ERR_CODE) {
         LOG_ERROR("update dataShare permission error");
-        return Result<int>(Error{"", PERMISSION_FAILED});
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     if (res.first != 0) {
         LOG_INFO("dataShare errorCode = %{public}d", res.first);
-        return Result<int>(Error{"", INTERNAL_ERROR});
+        return Result<int>(Error(INTERNAL_ERROR));
     }
     return Result<int>(res.second);
 }
@@ -211,18 +211,18 @@ Result<int> DataShareHelperManager::Delete(const Uri &uri, const DataSharePredic
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
         LOG_ERROR("Delete dataShareHelper is nullptr");
-        return Result<int>(Error{"", PERMISSION_FAILED});
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->DeleteEx(const_cast<Uri &>(uri), predicates);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
     if (res.first == PERMISSION_ERR_CODE) {
         LOG_ERROR("delete dataShare permission error");
-        return Result<int>(Error{"", PERMISSION_FAILED});
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     if (res.first != 0) {
         LOG_ERROR("dataShare errorCode = %{public}d", res.first);
-        return Result<int>(Error{"", INTERNAL_ERROR});
+        return Result<int>(Error(INTERNAL_ERROR));
     }
     return Result<int>(res.second);
 }
@@ -242,10 +242,10 @@ Result<std::shared_ptr<DataShareResultSet>> DataShareHelperManager::Query
     if (businessError.GetCode() != 0) {
         if (businessError.GetCode() == PERMISSION_ERR_CODE) {
             LOG_ERROR("query dataShare permission error");
-            return Result<std::shared_ptr<DataShareResultSet>>(Error{"", PERMISSION_FAILED});
+            return Result<std::shared_ptr<DataShareResultSet>>(Error(PERMISSION_FAILED));
         } else {
             LOG_ERROR("dataShare query error");
-            return Result<std::shared_ptr<DataShareResultSet>>(Error{"", INTERNAL_ERROR});
+            return Result<std::shared_ptr<DataShareResultSet>>(Error(INTERNAL_ERROR));
         }
     }
     return Result<std::shared_ptr<DataShareResultSet>>(res);

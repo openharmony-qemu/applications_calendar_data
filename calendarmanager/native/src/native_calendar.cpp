@@ -60,10 +60,10 @@ void Calendar::InsertReminders(int eventId, vector<int> reminders)
             valuesBucket.Put("event_id", eventId);
             valuesBucket.Put("minutes", reminder);
             auto insertRet = DataShareHelperManager::GetInstance().Insert(*(m_reminderUrl.get()), valuesBucket);
-            if (insertRet.is_ok()) {
-                LOG_INFO("Insert reminder index %{private}d", insertRet.value());
+            if (insertRet.IsOk()) {
+                LOG_INFO("Insert reminder index %{private}d", insertRet.GetValue());
             } else {
-                LOG_ERROR("insert reminder error %{public}d", insertRet.error().code);
+                LOG_ERROR("insert reminder error %{public}d", insertRet.GetError().code);
             }
         }
 }
@@ -72,15 +72,15 @@ Result<int> Calendar::AddEventInfo(const Event& event, int channelId)
 {
     const auto valueEvent = BuildValueEvent(event, m_id, channelId, false);
     auto result = DataShareHelperManager::GetInstance().Insert(*(m_eventUri.get()), valueEvent);
-    if (result.is_err()) {
+    if (result.IsErr()) {
         LOG_ERROR("AddEventInfo insert error");
-        return Result<int>(result.error());
+        return Result<int>(result.GetError());
     }
-    if (result.value() <= 0) {
+    if (result.GetValue() <= 0) {
         LOG_ERROR("eventId error");
-        return Result<int>(result.value());
+        return Result<int>(result.GetValue());
     }
-    auto eventId = result.value();
+    auto eventId = result.GetValue();
     LOG_INFO("Insert Event eventId %{private}d", eventId);
     // insert attendee
     auto valueAttendees = std::vector<DataShare::DataShareValuesBucket>();
@@ -90,10 +90,10 @@ Result<int> Calendar::AddEventInfo(const Event& event, int channelId)
     }
     if (valueAttendees.size() > 0) {
         auto batchRet = DataShareHelperManager::GetInstance().BatchInsert(*(m_attendeeUri.get()), valueAttendees);
-        if (batchRet.is_err()) {
-            LOG_ERROR("insert attendees error, code: %{public}d", batchRet.error().code);
+        if (batchRet.IsErr()) {
+            LOG_ERROR("insert attendees error, code: %{public}d", batchRet.GetError().code);
         } else {
-            LOG_INFO("batchInsert attendees count %{private}d", batchRet.value());
+            LOG_INFO("batchInsert attendees count %{private}d", batchRet.GetValue());
         }
     }
     
@@ -119,25 +119,25 @@ Result<int> Calendar::AddEvents(const std::vector<Event>& events)
         valueEvents.emplace_back(BuildValueEvent(event));
     }
     auto result = DataShareHelperManager::GetInstance().BatchInsert(*(m_eventUri.get()), valueEvents);
-    if (result.is_ok()) {
-        LOG_INFO("BatchInsert count %{private}d", result.value());
+    if (result.IsOk()) {
+        LOG_INFO("BatchInsert count %{private}d", result.GetValue());
     } else {
-        return Result<int>(result.error());
+        return Result<int>(result.GetError());
     }
-    return Result<int>(result.value());
+    return Result<int>(result.GetValue());
 }
 #else
 Result<int> Calendar::AddEvents(const std::vector<Event>& events)
 {
     int count = 0;
     int channelId = 0;
-    Error error = {"", 0};
+    Error error = {"", NO_ERROR};
     for (const auto &event : events) {
         auto result = Calendar::AddEventInfo(event, channelId);
-        if (result.is_ok()) {
+        if (result.IsOk()) {
             count++;
         } else {
-            error = result.error();
+            error = result.GetError();
         }
         channelId++;
     }
@@ -156,13 +156,13 @@ Result<bool> Calendar::DeleteEvent(int id)
     predicates.EqualTo("_id", id);
     predicates.EqualTo("calendar_id", GetId());
     auto ret = DataShareHelperManager::GetInstance().Delete(*(m_eventUri.get()), predicates);
-    if (ret.is_ok()) {
-        if (ret.value() == 0) {
+    if (ret.IsOk()) {
+        if (ret.GetValue() == 0) {
             LOG_ERROR("The deleted event does not exist!");
         }
-        return Result<bool>(ret.value() == 1);
+        return Result<bool>(ret.GetValue() == 1);
     } else {
-        return Result<bool>(ret.error());
+        return Result<bool>(ret.GetError());
     }
 }
 
@@ -179,10 +179,10 @@ Result<int> Calendar::DeleteEvents(const std::vector<int>& ids)
     int count = 0;
     for (const auto &id : ids) {
         auto result = DeleteEvent(id);
-        if (result.is_ok()) {
+        if (result.IsOk()) {
             count += 1;
         } else {
-            LOG_ERROR("native deleteEvent error, code: %{public}d", result.error().code);
+            LOG_ERROR("native deleteEvent error, code: %{public}d", result.GetError().code);
         }
     }
     LOG_INFO("DeleteEvents %{public}d", count);
@@ -200,11 +200,11 @@ Result<bool> Calendar::UpdateEvent(const Event& event)
     m_predicates.EqualTo("_id", eventId);
     const auto valueEvent = BuildValueEvent(event, m_id, 0, true);
     auto ret = DataShareHelperManager::GetInstance().Update(*(m_eventUri.get()), m_predicates, valueEvent);
-    if (ret.is_err()) {
+    if (ret.IsErr()) {
         LOG_ERROR("Update event error");
-        return Result<bool>(ret.error());
+        return Result<bool>(ret.GetError());
     }
-    if (ret.value() == 0) {
+    if (ret.GetValue() == 0) {
         LOG_ERROR("The event is not exist");
         return Result<bool>(Error{"", PARAMETER_VALUE_OUTRANGE});
     }
@@ -236,7 +236,7 @@ Result<bool> Calendar::UpdateEvent(const Event& event)
         InsertReminders(eventId, event.reminderTime.value());
     }
 
-    return Result<bool>(ret.value() == 1);
+    return Result<bool>(ret.GetValue() == 1);
 }
 
 int Calendar::UpdateEvents(const std::vector<Event>& events)
@@ -244,7 +244,7 @@ int Calendar::UpdateEvents(const std::vector<Event>& events)
     int count = 0;
     for (const auto &event : events) {
         auto result = UpdateEvent(event);
-        if (result.is_ok()) {
+        if (result.IsOk()) {
             count +=1;
         }
     }
@@ -261,11 +261,11 @@ void Calendar::GetAttendeesByEventIds(const std::vector<std::string> &ids, std::
     DataShare::DatashareBusinessError dataShareError;
     auto result = DataShareHelperManager::GetInstance()
         .Query(*(m_attendeeUri.get()), predicates, columns);
-    if (result.is_err()) {
-        LOG_ERROR("GetAttendees error, errCode: %{public}d", result.error().code);
+    if (result.IsErr()) {
+        LOG_ERROR("GetAttendees error, errCode: %{public}d", result.GetError().code);
         return;
     }
-    auto attendeesResult = result.value();
+    auto attendeesResult = result.GetValue();
     if (attendeesResult == nullptr) {
         LOG_INFO("attendees result is null");
         return;
@@ -286,11 +286,11 @@ void Calendar::GetRemindersByEventIds(const std::vector<std::string> &ids, std::
     std::vector<std::string> columns = {"event_id", "minutes"};
     auto result = DataShareHelperManager::GetInstance()
         .Query(*(m_reminderUrl.get()), predicates, columns);
-    if (result.is_err()) {
-        LOG_ERROR("GetReminder error, errCode: %{public}d", result.error().code);
+    if (result.IsErr()) {
+        LOG_ERROR("GetReminder error, errCode: %{public}d", result.GetError().code);
         return;
     }
-    auto reminderResult = result.value();
+    auto reminderResult = result.GetValue();
     if (reminderResult == nullptr) {
         LOG_ERROR("reminders result is null");
         return;
@@ -321,10 +321,12 @@ Result<std::vector<Event>> Calendar::GetEvents
     predicates->EqualTo("calendar_id", GetId());
     std::vector<string> queryField = {};
     std::set<string> resultSetField;
-    Error error = {"", 0};
+    Error error = {"", NO_ERROR};
+    std::string errMessage = "invalid arg[1], i.e. invalid keys!";
     if (eventKey.size() > 0) {
         queryField.emplace_back("_id");
         SetField(eventKey, queryField, resultSetField, error);
+        error.message = (error.code == PARAMETER_INVALID) ? errMessage : "";
         CHECK_ERRCODE_RETURN(error, "getEvents eventKeys error", Result<std::vector<Event>>(error));
     } else {
         resultSetField = {"type", "title", "startTime", "endTime", "isAllDay", "description",
@@ -332,11 +334,14 @@ Result<std::vector<Event>> Calendar::GetEvents
     }
     auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),
         *(predicates.get()), queryField);
-    if (result.is_err()) {
-        LOG_ERROR("query failed %{public}d, %{public}s", result.error().code, result.error().message.c_str());
-        return Result<std::vector<Event>>(result.error());
+    if (result.IsErr()) {
+        LOG_ERROR("query failed %{public}d, %{public}s", result.GetError().code, result.GetError().message.c_str());
+        return Result<std::vector<Event>>(result.GetError());
     }
-    auto queryRet = result.value();
+    auto queryRet = result.GetValue();
+    if (!queryRet) {
+        return Result<std::vector<Event>>(events);
+    }
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, queryRet, resultSetField);
     queryRet->Close();
@@ -370,14 +375,16 @@ Result<std::vector<Event>> Calendar::QueryEventInstances(int64_t start,
 {
     LOG_INFO("query instance start");
     std::vector<Event> events;
+    std::string errMessage = "invalid arg[3], i.e. invalid keys!";
     std::shared_ptr<DataShare::DataSharePredicates> predicates = std::make_shared<DataShare::DataSharePredicates>();
     predicates->EqualTo("calendar_id", GetId());
     std::vector<string> queryField = {};
     std::set<string> resultSetField;
-    Error error = {"", 0};
+    Error error = {"", NO_ERROR};
     if (eventKey.size() > 0) {
         queryField.emplace_back("Events._id");
         SetField(eventKey, queryField, resultSetField, error);
+        error.message = (error.code == PARAMETER_INVALID) ? errMessage : "";
         CHECK_ERRCODE_RETURN(error, "eventKeys error", Result<std::vector<Event>>(error));
     } else {
         resultSetField = {"id", "title", "startTime", "endTime", "instanceStartTime", "instanceEndTime",
@@ -395,11 +402,15 @@ Result<std::vector<Event>> Calendar::QueryEventInstances(int64_t start,
     m_instanceUrl = std::make_unique<Uri>(m_instanceUrl->ToString() + url);
     auto result = DataShareHelperManager::GetInstance()
         .Query(*(m_instanceUrl.get()), *(predicates.get()), queryField);
-    if (result.is_err()) {
-        LOG_ERROR("query failed %{public}d, %{public}s", result.error().code, result.error().message.c_str());
-        return Result<std::vector<Event>>(result.error());
+    if (result.IsErr()) {
+        LOG_ERROR("query failed %{public}d, %{public}s", result.GetError().code, result.GetError().message.c_str());
+        return Result<std::vector<Event>>(result.GetError());
     }
-    auto queryRet = result.value();
+    auto queryRet = result.GetValue();
+    if (!queryRet) {
+        LOG_ERROR("query failed");
+        return Result<std::vector<Event>>(events);
+    }
     std::vector<std::string> eventIds;
     ResultSetToEvents(eventIds, events, queryRet, resultSetField);
     queryRet->Close();
@@ -414,11 +425,13 @@ CalendarConfig Calendar::GetConfig()
     predicates.EqualTo("_id", m_id);
     std::vector<std::string> columns = {"calendar_color", "canReminder"};
     auto result = DataShareHelperManager::GetInstance().Query(*(m_calendarUri.get()), predicates, columns);
-    if (result.is_err()) {
+    if (result.IsErr()) {
         LOG_ERROR("get config error");
     } else {
-        auto queryRet = result.value();
-        ResultSetToConfig(m_config, queryRet);
+        auto queryRet = result.GetValue();
+        if (!queryRet) {
+            ResultSetToConfig(m_config, queryRet);
+        }
     }
     LOG_INFO(" query config finished");
     return m_config;
@@ -442,11 +455,11 @@ Result<bool> Calendar::SetConfig(const CalendarConfig& config)
 
     auto ret = DataShareHelperManager::GetInstance()
     .Update(*(m_calendarUri.get()), m_predicates, valuesBucket);
-    if (ret.is_err()) {
-        LOG_ERROR("native setConfig error, code: %{public}d", ret.error().code);
-        return Result<bool>(ret.error());
+    if (ret.IsErr()) {
+        LOG_ERROR("native setConfig error, code: %{public}d", ret.GetError().code);
+        return Result<bool>(ret.GetError());
     } else {
-        auto setRet = ret.value();
+        auto setRet = ret.GetValue();
         LOG_INFO("SetConfig %{public}d", setRet);
         m_config = config;
         return Result<bool>(setRet == 1);

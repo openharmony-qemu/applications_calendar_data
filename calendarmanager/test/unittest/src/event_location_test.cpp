@@ -32,14 +32,14 @@ public:
     static void SetUpTestSuite(void)
     {
         auto result = CalendarManager::GetInstance().CreateCalendar(account);
-        calendar = result.value();
+        calendar = result.GetValue();
         ASSERT_TRUE(calendar != nullptr);
     }
 
     static void TearDownTestSuite(void)
     {
         auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-        ASSERT_TRUE(ret.value());
+        ASSERT_TRUE(ret.GetValue());
     }
     void SetUp() {};
     void TearDown() {};
@@ -56,9 +56,9 @@ HWTEST_F(EventLocationTest, AddEventWithLocation, testing::ext::TestSize.Level1)
     Location testLocation {"test", 123.12, 45.45};
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId.value(), 0);
+    ASSERT_NE(eventId.GetValue(), 0);
     auto retGet = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = retGet.value();
+    auto events = retGet.GetValue();
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -81,9 +81,9 @@ HWTEST_F(EventLocationTest, AddEventWithMaxLocation, testing::ext::TestSize.Leve
     };
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId.value(), 0);
+    ASSERT_NE(eventId.GetValue(), 0);
     auto result = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = result.value();
+    auto events = result.GetValue();
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -106,9 +106,9 @@ HWTEST_F(EventLocationTest, AddEventWithMinLocation, testing::ext::TestSize.Leve
     };
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId.value(), 0);
+    ASSERT_NE(eventId.GetValue(), 0);
     auto retGet = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = retGet.value();
+    auto events = retGet.GetValue();
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -131,9 +131,9 @@ HWTEST_F(EventLocationTest, AddEventWithOutMinLocation, testing::ext::TestSize.L
     };
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId.value(), 0);
+    ASSERT_NE(eventId.GetValue(), 0);
     auto retGet = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = retGet.value();
+    auto events = retGet.GetValue();
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
@@ -156,9 +156,9 @@ HWTEST_F(EventLocationTest, AddEventWithOutMaxLocation, testing::ext::TestSize.L
     };
     event.location = std::make_optional<Location>(testLocation);
     auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId.value(), 0);
+    ASSERT_NE(eventId.GetValue(), 0);
     auto retGet = calendar->GetEvents(FilterByTitle(title), {});
-    auto events = retGet.value();
+    auto events = retGet.GetValue();
     ASSERT_EQ(events.size(), 1);
     auto resultEvent = events.at(0);
     EXPECT_EQ(resultEvent.title.value(), title);
