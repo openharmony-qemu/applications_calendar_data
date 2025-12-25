@@ -100,7 +100,7 @@ inline void SetErrorValue(Error &error, ErrorCode code, std::string message)
                 (ctxt)->status = napi_generic_failure;                              \
                 return;                                                    \
             }                                                                \
-            retValue = (result).GetValue();                                                      \
+            (retValue) = (result).GetValue();                                                      \
     } while (0)
 
 #define CHECK_ERRCODE_RETURN(error, message, retVal)                  \

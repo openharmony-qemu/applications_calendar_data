@@ -134,7 +134,7 @@ Result<std::vector<std::shared_ptr<Calendar>>> CalendarManager::GetAllCalendars(
     auto queryResult = DataShareHelperManager::GetInstance()
         .Query(*(m_calendarUri.get()), predicates, columns);
     if (queryResult.IsErr()) {
-        LOG_ERROR("query failed %{public}d, %{public}s", queryResult.GetError().code, queryResult.GetError().message.c_str());
+        LOG_ERROR("query failed, code: %{public}d", queryResult.GetError().code);
         return Result<std::vector<std::shared_ptr<Calendar>>>(queryResult.GetError());
     } else {
         auto calendarRet = queryResult.GetValue();
