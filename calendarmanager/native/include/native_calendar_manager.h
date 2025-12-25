@@ -29,10 +29,10 @@ public:
     CalendarManager();
     ~CalendarManager() {};
     static bool IsDefaultAccount(const CalendarAccount& account);
-    std::shared_ptr<Calendar> CreateCalendar(const CalendarAccount& account);
-    std::shared_ptr<Calendar> GetCalendar(const std::optional<CalendarAccount>& account = std::nullopt);
-    std::vector<std::shared_ptr<Calendar>> GetAllCalendars();
-    bool DeleteCalendar(const Calendar& calendar);
+    Result<std::shared_ptr<Calendar>> CreateCalendar(const CalendarAccount& account);
+    Result<std::shared_ptr<Calendar>> GetCalendar(const std::optional<CalendarAccount>& account);
+    Result<std::vector<std::shared_ptr<Calendar>>> GetAllCalendars();
+    Result<bool> DeleteCalendar(const Calendar& calendar);
     int DeleteAllCalendars();
 private:
     std::unique_ptr<Uri> m_calendarUri;

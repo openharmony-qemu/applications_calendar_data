@@ -14,7 +14,6 @@
  */
 #include <sstream>
 #include <iomanip>
-#include "calendar_log.h"
 #include "native_util.h"
 #include <ctime>
 #include <numeric>
@@ -1122,69 +1121,82 @@ void SetServiceFieldInfo(std::vector<string>& queryField)
     queryField.emplace_back("service_description");
 }
 
+void FillFieldDefaultInfo(const std::string &field, std::vector<string>& queryField,
+    const std::map<string, string> &eventField, std::set<string>& resultSetField, Error &error)
+{
+    try {
+        queryField.emplace_back(eventField.at(field));
+    } catch (std::exception &ex) {
+        error.code = PARAMETER_INVALID;
+        LOG_ERROR("has no this field");
+        return;
+    }
+    resultSetField.insert(field);
+}
+
 void FillFieldInfo(const std::string field, std::vector<string>& queryField, std::set<string>& resultSetField,
-    const std::map<string, string> eventField)
+    const std::map<string, string> eventField, Error &error)
 {
     if (field == "location") {
-            SetLocationFieldInfo(queryField);
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "service") {
-            SetServiceFieldInfo(queryField);
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "attendee") {
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "reminderTime") {
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "identifier") {
-            queryField.emplace_back("identifier");
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "recurrenceRule") {
-            queryField.emplace_back("rrule");
-            queryField.emplace_back("exdate");
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "isLunar") {
-            queryField.emplace_back("event_calendar_type");
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "instanceStartTime") {
-            queryField.emplace_back("begin");
-            resultSetField.insert(field);
-            return;
-        }
-        if (field == "instanceEndTime") {
-            queryField.emplace_back("end");
-            resultSetField.insert(field);
-            return;
-        }
-        queryField.emplace_back(eventField.at(field));
+        SetLocationFieldInfo(queryField);
         resultSetField.insert(field);
+        return;
+    }
+    if (field == "service") {
+        SetServiceFieldInfo(queryField);
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "attendee") {
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "reminderTime") {
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "identifier") {
+        queryField.emplace_back("identifier");
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "recurrenceRule") {
+        queryField.emplace_back("rrule");
+        queryField.emplace_back("exdate");
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "isLunar") {
+        queryField.emplace_back("event_calendar_type");
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "instanceStartTime") {
+        queryField.emplace_back("begin");
+        resultSetField.insert(field);
+        return;
+    }
+    if (field == "instanceEndTime") {
+        queryField.emplace_back("end");
+        resultSetField.insert(field);
+        return;
+    }
+    FillFieldDefaultInfo(field, queryField, eventField, resultSetField, error);
 }
 
 void SetFieldInfo(const std::vector<string>& eventKey, std::vector<string>& queryField,
-    std::set<string>& resultSetField, const std::map<string, string> eventField)
+    std::set<string>& resultSetField, const std::map<string, string> eventField, Error &error)
 {
     for (const auto& field : eventKey) {
         if (field == "id") {
             continue;
         }
-        FillFieldInfo(field, queryField, resultSetField, eventField);
+        FillFieldInfo(field, queryField, resultSetField, eventField, error);
     }
 }
 
-void SetField(const std::vector<string>& eventKey, std::vector<string>& queryField, std::set<string>& resultSetField)
+void SetField(const std::vector<string>& eventKey, std::vector<string>& queryField,
+ std::set<string>& resultSetField,  Error &error)
 {
     const std::map<string, string> eventField = { { "id", "_id" },
                                                   { "type", "important_event_type" },
@@ -1194,6 +1206,6 @@ void SetField(const std::vector<string>& eventKey, std::vector<string>& queryFie
                                                   { "isAllDay", "allDay" },
                                                   { "timeZone", "eventTimezone" },
                                                   { "description", "description" }};
-    SetFieldInfo(eventKey, queryField, resultSetField, eventField);
+    SetFieldInfo(eventKey, queryField, resultSetField, eventField, error);
 }
 }

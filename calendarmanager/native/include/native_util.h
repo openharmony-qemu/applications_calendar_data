@@ -25,6 +25,7 @@
 #include "datashare_result_set.h"
 #include "datashare_values_bucket.h"
 #include "native_calendar.h"
+#include "calendar_log.h"
 
 namespace OHOS::CalendarApi::Native {
     using DataShareResultSetPtr = std::shared_ptr<DataShare::DataShareResultSet>;
@@ -55,7 +56,7 @@ namespace OHOS::CalendarApi::Native {
     void ResultSetToAttendeeType(Attendee &attendee, DataShareResultSetPtr &resultSet);
     void ResultSetToConfig(CalendarConfig &config, DataShareResultSetPtr &resultSet);
     void SetField(const std::vector<string>& eventKey,
-        std::vector<string>& queryField, std::set<string>& resultSetField);
+        std::vector<string>& queryField, std::set<string>& resultSetField, Error &error);
     void GetEventAttendeesValue(std::vector<Event> &events, const std::map<int, std::vector<Attendee>> &attendeesMap);
 
     bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue);
@@ -94,6 +95,16 @@ namespace OHOS::CalendarApi::Native {
         }
         out = value;
         return ret;
+    }
+
+    inline void CheckIntRetPrintLog(Result<int> result,
+        const std::string &errLog, const std::string &succeessLog)
+    {
+        if (result.IsErr()) {
+            LOG_ERROR("native error : %{public}s", errLog.c_str());
+        } else {
+            LOG_INFO("%{public}s %{public}d", succeessLog.c_str(), result.GetValue());
+        }
     }
 }
  // namespace OHOS::Calendar::NativeUtils

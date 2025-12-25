@@ -47,11 +47,13 @@ static CalendarAccount account {
 
 void CalendarTest::SetUpTestSuite(void)
 {
-    calendar = CalendarManager::GetInstance().GetCalendar(account);
-    if (calendar != nullptr && calendar->GetAccount().name == TEST_NAME) {
+    auto result = CalendarManager::GetInstance().GetCalendar(account);
+    if (result.IsOk()) {
+        calendar = result.GetValue();
         CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
     }
-    calendar = CalendarManager::GetInstance().CreateCalendar(account);
+    auto createRet = CalendarManager::GetInstance().CreateCalendar(account);
+    calendar = createRet.GetValue();
     ASSERT_TRUE(calendar != nullptr);
     LOG_INFO("SetUpTestCase SUCCESS");
 }
@@ -61,7 +63,7 @@ void CalendarTest::TearDownTestSuite(void)
     // del calendar will del all event associated
     LOG_INFO("DeleteCalendar");
     auto ret = CalendarManager::GetInstance().DeleteCalendar(*calendar.get());
-    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ret.IsOk());
     LOG_INFO("TearDownTestSuite SUCCESS");
 }
 
@@ -69,9 +71,10 @@ HWTEST_F(CalendarTest, AddEvent_test_basic, testing::ext::TestSize.Level1)
 {
     Event event;
     event.title = "AddEvent_test_basic";
-    auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto result = calendar->AddEvent(event);
+    ASSERT_TRUE(result.IsOk());
+    auto getResult = calendar->GetEvents(FilterById({result.GetValue()}), {});
+    auto events =getResult.GetValue();
     ASSERT_FALSE(events.empty());
 }
 
@@ -79,9 +82,10 @@ HWTEST_F(CalendarTest, AddEvent_test_title_is_Chinese, testing::ext::TestSize.Le
 {
     Event event;
     event.title = "AddEvent_test_title_is_中文";
-    auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto result = calendar->AddEvent(event);
+    ASSERT_TRUE(result.IsOk());
+    auto getResult = calendar->GetEvents(FilterById({result.GetValue()}), {});
+    auto events =getResult.GetValue();
     ASSERT_FALSE(events.empty());
 }
 
@@ -89,14 +93,16 @@ HWTEST_F(CalendarTest, DeleteEvent_dupilcate, testing::ext::TestSize.Level1)
 {
     Event event;
     event.title = "DeleteEvent_dupilcate";
-    auto eventId = calendar->AddEvent(event);
-    ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
-    ASSERT_FALSE(events.empty());
-    auto ret = calendar->DeleteEvent(eventId);
-    EXPECT_EQ(ret, true);
-    ret = calendar->DeleteEvent(eventId);
-    EXPECT_EQ(ret, false);
+    auto result = calendar->AddEvent(event);
+    ASSERT_TRUE(result.IsOk());
+    auto getResult = calendar->GetEvents(FilterById({result.GetValue()}), {});
+    auto events =getResult.GetValue();
+    auto ret = calendar->DeleteEvent(result.GetValue());
+    auto delRet = ret.GetValue();
+    EXPECT_EQ(delRet, true);
+    ret = calendar->DeleteEvent(result.GetValue());
+    delRet = ret.GetValue();
+    EXPECT_EQ(delRet, false);
 }
 
 HWTEST_F(CalendarTest, AddEvents_test_normal, testing::ext::TestSize.Level1)
@@ -107,20 +113,22 @@ HWTEST_F(CalendarTest, AddEvents_test_normal, testing::ext::TestSize.Level1)
     event1.title = title_1;
     Event event2;
     event2.title = title_2;
-    auto count = calendar->AddEvents({event1, event2});
-    EXPECT_EQ(count, 2);
+    auto result = calendar->AddEvents({event1, event2});
+    EXPECT_EQ(result.GetValue(), 2);
     auto queryResult = calendar->GetEvents(FilterByTitle(title_1), {});
-    ASSERT_EQ(1, queryResult.size());
-    EXPECT_EQ(queryResult.at(0).title.value(), title_1);
+    auto events = queryResult.GetValue();
+    ASSERT_EQ(1, events.size());
+    EXPECT_EQ(events.at(0).title.value(), title_1);
     queryResult = calendar->GetEvents(FilterByTitle(title_2), {});
-    ASSERT_EQ(1, queryResult.size());
-    EXPECT_EQ(queryResult.at(0).title.value(), title_2);
+    events = queryResult.GetValue();
+    ASSERT_EQ(1, events.size());
+    EXPECT_EQ(events.at(0).title.value(), title_2);
 }
 
 HWTEST_F(CalendarTest, AddEvents_input_empty, testing::ext::TestSize.Level1)
 {
-    auto count = calendar->AddEvents({});
-    ASSERT_EQ(count, 0);
+    auto result = calendar->AddEvents({});
+    ASSERT_EQ(result.GetValue(), 0);
 }
 
 HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
@@ -140,9 +148,11 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     event.timeZone = "UTC";
     event.reminderTime = {0, 1, 2};
     event.description = "UpdateEvent_test_2_disp";
-    const auto eventId = calendar->AddEvent(event);
+    const auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
     ASSERT_NE(eventId, 0);
-    const auto events = calendar->GetEvents(FilterByTitle(title), {});
+    const auto result = calendar->GetEvents(FilterByTitle(title), {});
+    auto events = result.GetValue();
     ASSERT_EQ(1, events.size());
     const auto newEvent = events.at(0);
     EXPECT_EQ(newEvent.title, event.title);
@@ -161,16 +171,19 @@ HWTEST_F(CalendarTest, UpdateEvent_test_1, testing::ext::TestSize.Level1)
 {
     Event event;
     event.title = "UpdateEvent_test_1";
-    auto eventId = calendar->AddEvent(event);
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto result = calendar->GetEvents(FilterById({eventId}), {});
+    auto events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newEvent = events.at(0);
     string_view newTitle = "UpdateEvent_test_1_new";
     newEvent.title = newTitle;
     auto ret = calendar->UpdateEvent(newEvent);
-    EXPECT_EQ(ret, true);
-    events = calendar->GetEvents(FilterByTitle(newTitle), {});
+    EXPECT_EQ(ret.GetValue(), true);
+    result = calendar->GetEvents(FilterByTitle(newTitle), {});
+    events = result.GetValue();
     ASSERT_EQ(1, events.size());
     EXPECT_EQ(events.at(0).title.value(), newTitle);
 }
@@ -180,15 +193,18 @@ HWTEST_F(CalendarTest, UpdateEvent_DeleteLocation_test, testing::ext::TestSize.L
     Event event;
     event.title = "UpdateEvent_Location";
     event.location = {"test", 123.12, 45.45};
-    auto eventId = calendar->AddEvent(event);
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto result = calendar->GetEvents(FilterById({eventId}), {});
+    auto events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newEvent = events.at(0);
     newEvent.location = std::make_optional<Location>();
     auto ret = calendar->UpdateEvent(newEvent);
-    EXPECT_EQ(ret, true);
-    events = calendar->GetEvents(FilterById({eventId}), {});
+    EXPECT_EQ(ret.GetValue(), true);
+    result = calendar->GetEvents(FilterById({eventId}), {});
+    events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newLocation = events.at(0).location.value();
     EXPECT_EQ(newLocation.location.has_value(), true);
@@ -201,9 +217,11 @@ HWTEST_F(CalendarTest, UpdateEvent_AddLocation_test, testing::ext::TestSize.Leve
 {
     Event event;
     event.title = "UpdateEvent_AddLocation_test";
-    auto eventId = calendar->AddEvent(event);
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto result = calendar->GetEvents(FilterById({eventId}), {});
+    auto events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newEvent = events.at(0);
     EXPECT_EQ(newEvent.location.has_value(), true);
@@ -212,8 +230,9 @@ HWTEST_F(CalendarTest, UpdateEvent_AddLocation_test, testing::ext::TestSize.Leve
     newEvent.location = {"test", 123.12, 45.45};
     auto ret = calendar->UpdateEvent(newEvent);
     
-    EXPECT_EQ(ret, true);
-    events = calendar->GetEvents(FilterById({eventId}), {});
+    EXPECT_EQ(ret.GetValue(), true);
+    result = calendar->GetEvents(FilterById({eventId}), {});
+    events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newLocation = events.at(0).location.value();
     EXPECT_EQ(newLocation.location.value(), newEvent.location.value().location.value());
@@ -231,15 +250,18 @@ HWTEST_F(CalendarTest, UpdateEvent_DeleteRule, testing::ext::TestSize.Level1)
     recurrenceRule.weeksOfMonth = {2, 3, 4};
     recurrenceRule.monthsOfYear = {6, 7, 8};
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
-    auto eventId = calendar->AddEvent(event);
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    auto result = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    auto events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newEvent = events.at(0);
     newEvent.recurrenceRule.value().recurrenceFrequency = NORULE;
     auto ret = calendar->UpdateEvent(newEvent);
-    EXPECT_EQ(ret, true);
-    events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    EXPECT_EQ(ret.GetValue(), true);
+    result = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newRecurrenceRule = events.at(0).recurrenceRule.value();
     EXPECT_EQ(newRecurrenceRule.recurrenceFrequency, NORULE);
@@ -252,9 +274,11 @@ HWTEST_F(CalendarTest, UpdateEvent_AddRule, testing::ext::TestSize.Level1)
 {
     Event event;
     event.title = "UpdateEvent_DeleteRule";
-    auto eventId = calendar->AddEvent(event);
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    auto result = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    auto events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newEvent = events.at(0);
     EXPECT_EQ(newEvent.recurrenceRule.value().recurrenceFrequency, NORULE);
@@ -266,8 +290,9 @@ HWTEST_F(CalendarTest, UpdateEvent_AddRule, testing::ext::TestSize.Level1)
     newEvent.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
 
     auto ret = calendar->UpdateEvent(newEvent);
-    EXPECT_EQ(ret, true);
-    events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    EXPECT_EQ(ret.GetValue(), true);
+    result = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule"});
+    events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newRecurrenceRule = events.at(0).recurrenceRule.value();
     EXPECT_EQ(newRecurrenceRule.recurrenceFrequency, YEARLY);
@@ -283,14 +308,17 @@ HWTEST_F(CalendarTest, UpdateEvent_Title, testing::ext::TestSize.Level1)
 {
     Event event;
     event.title = "UpdateEvent_Title";
-    auto eventId = calendar->AddEvent(event);
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto result = calendar->GetEvents(FilterById({eventId}), {});
+    auto events = result.GetValue();
     ASSERT_EQ(1, events.size());
     auto newEvent = events.at(0);
     auto ret = calendar->UpdateEvent(newEvent);
-    EXPECT_EQ(ret, true);
-    events = calendar->GetEvents(FilterByTitle(newEvent.title.value()), {});
+    EXPECT_EQ(ret.GetValue(), true);
+    result = calendar->GetEvents(FilterByTitle(newEvent.title.value()), {});
+    events = result.GetValue();
     ASSERT_EQ(1, events.size());
     EXPECT_EQ(events.at(0).title.value(), event.title.value());
 }
@@ -299,9 +327,11 @@ HWTEST_F(CalendarTest, UpdateEvent_AddService, testing::ext::TestSize.Level1)
 {
     Event event;
     event.title = "UpdateEvent_AddService";
-    auto eventId = calendar->AddEvent(event);
+    auto result = calendar->AddEvent(event);
+    auto eventId = result.GetValue();
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto eventsRet = calendar->GetEvents(FilterById({eventId}), {});
+    auto events = eventsRet.GetValue();
     ASSERT_EQ(1, events.size());
     EXPECT_EQ(events.at(0).service.has_value(), false);
     auto newEvent = events.at(0);
@@ -312,8 +342,9 @@ HWTEST_F(CalendarTest, UpdateEvent_AddService, testing::ext::TestSize.Level1)
     };
     newEvent.service = std::make_optional<EventService>(testService);
     auto ret = calendar->UpdateEvent(newEvent);
-    EXPECT_EQ(ret, true);
-    events = calendar->GetEvents(FilterById({eventId}), {});
+    EXPECT_EQ(ret.GetValue(), true);
+    eventsRet = calendar->GetEvents(FilterById({eventId}), {});
+    events = eventsRet.GetValue();
     ASSERT_EQ(1, events.size());
     auto newService = events.at(0).service.value();
     EXPECT_EQ(newService.type, testService.type);
@@ -331,9 +362,11 @@ HWTEST_F(CalendarTest, UpdateEvent_DeleteService, testing::ext::TestSize.Level1)
         "test_discription"
     };
     event.service = std::make_optional<EventService>(testService);
-    auto eventId = calendar->AddEvent(event);
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
     ASSERT_NE(eventId, 0);
-    auto events = calendar->GetEvents(FilterById({eventId}), {});
+    auto result = calendar->GetEvents(FilterById({eventId}), {});
+    auto events = result.GetValue();
     ASSERT_EQ(1, events.size());
     EXPECT_EQ(events.at(0).service.has_value(), true);
     auto addService = events.at(0).service.value();
@@ -348,8 +381,9 @@ HWTEST_F(CalendarTest, UpdateEvent_DeleteService, testing::ext::TestSize.Level1)
     };
     newEvent.service = std::make_optional<EventService>(testNewService);
     auto ret = calendar->UpdateEvent(newEvent);
-    EXPECT_EQ(ret, true);
-    events = calendar->GetEvents(FilterById({eventId}), {});
+    EXPECT_EQ(ret.GetValue(), true);
+    result = calendar->GetEvents(FilterById({eventId}), {});
+    events = result.GetValue();
     ASSERT_EQ(1, events.size());
     ASSERT_EQ(events.at(0).service.has_value(), true);
     auto newService = events.at(0).service.value();
@@ -365,25 +399,27 @@ HWTEST_F(CalendarTest, UpdateEvents_test_1, testing::ext::TestSize.Level1)
     event1.title = "UpdateEvents_test_1";
     Event event2;
     event2.title = "UpdateEvents_test_2";
-    auto count = calendar->AddEvents({event1, event2});
-    EXPECT_EQ(count, 2);
+    auto countRet = calendar->AddEvents({event1, event2});
+    EXPECT_EQ(countRet.GetValue(), 2);
 
-    auto queryResult = calendar->GetEvents(FilterByTitle("UpdateEvents_test_1"), {});
+    auto result = calendar->GetEvents(FilterByTitle("UpdateEvents_test_1"), {});
+    auto queryResult = result.GetValue();
     ASSERT_EQ(1, queryResult.size());
 
     auto newEvent1 = queryResult.at(0);
     newEvent1.title = "title_test_update_1_new";
-    queryResult = calendar->GetEvents(FilterByTitle("UpdateEvents_test_2"), {});
+    result = calendar->GetEvents(FilterByTitle("UpdateEvents_test_2"), {});
+    queryResult = result.GetValue();
     ASSERT_EQ(1, queryResult.size());
     auto newEvent2 = queryResult.at(0);
     newEvent2.title = "title_test_update_2_new";
     std::vector<Event> newEvents;
     newEvents.emplace_back(newEvent1);
     newEvents.emplace_back(newEvent2);
-    count = calendar->UpdateEvents(newEvents);
-    EXPECT_EQ(count, newEvents.size());
+    int updatesRet = calendar->UpdateEvents(newEvents);
+    EXPECT_EQ(updatesRet, newEvents.size());
     auto delRet = calendar->DeleteEvents({newEvent1.id.value(), newEvent2.id.value()});
-    ASSERT_EQ(delRet, newEvents.size());
+    ASSERT_EQ(delRet.GetValue(), newEvents.size());
 }
 
 HWTEST_F(CalendarTest, GetConfig_default_test, testing::ext::TestSize.Level1)
@@ -397,7 +433,7 @@ HWTEST_F(CalendarTest, SetConfig_empty_param_test, testing::ext::TestSize.Level1
 {
     CalendarConfig config;
     auto ret = calendar->SetConfig(config);
-    ASSERT_TRUE(ret);
+    ASSERT_TRUE(ret.GetValue());
     auto configExpect = calendar->GetConfig();
     EXPECT_TRUE(configExpect.enableReminder.has_value());
     EXPECT_TRUE(std::get<0>(config.color).empty());
@@ -408,12 +444,12 @@ HWTEST_F(CalendarTest, SetConfig_with_color_test, testing::ext::TestSize.Level1)
     CalendarConfig config;
     config.color = 0xaabbcc;
     config.enableReminder = false;
-    ASSERT_TRUE(calendar->SetConfig(config));
+    ASSERT_TRUE(calendar->SetConfig(config).GetValue());
     auto configExpect = calendar->GetConfig();
     EXPECT_EQ(config, configExpect);
     config.color = 0xaabbccdd;
     config.enableReminder = true;
-    ASSERT_TRUE(calendar->SetConfig(config));
+    ASSERT_TRUE(calendar->SetConfig(config).GetValue());
     configExpect = calendar->GetConfig();
     EXPECT_EQ(config, configExpect);
 }
@@ -430,8 +466,10 @@ HWTEST_F(CalendarTest, UpdateEvent_test_3, testing::ext::TestSize.Level1)
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
     event.title = std::make_optional<std::string>("UpdateEvent_test_3");
     event.isLunar = std::make_optional<bool>(true);
-    auto eventId = calendar->AddEvent(event);
-    auto events = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule", "identifier", "isLunar", "id"});
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
+    auto getRet = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule", "identifier", "isLunar", "id"});
+    auto events = getRet.GetValue();
     ASSERT_NE(eventId, 0);
     ASSERT_NE(events.size(), 0);
     EXPECT_EQ(recurrenceRule.recurrenceFrequency, events[0].recurrenceRule.value().recurrenceFrequency);
@@ -447,9 +485,10 @@ HWTEST_F(CalendarTest, UpdateEvent_test_3, testing::ext::TestSize.Level1)
     updateEvent.isLunar = std::make_optional<bool>(true);
     updateEvent.title = std::make_optional<std::string>("After_UpdateEvent_test_3");
     auto isUpdate = calendar->UpdateEvent(updateEvent);
-    EXPECT_EQ(isUpdate, true);
-    auto updateEvents = calendar->GetEvents(FilterById({eventId}),
+    EXPECT_EQ(isUpdate.GetValue(), true);
+    getRet = calendar->GetEvents(FilterById({eventId}),
      {"recurrenceRule", "identifier", "isLunar", "id", "title"});
+    auto updateEvents = getRet.GetValue();
     ASSERT_NE(updateEvents.size(), 0);
     EXPECT_EQ(updateEvent.id.value(), updateEvents[0].id.value());
     EXPECT_EQ(updateEvent.isLunar.value(), updateEvents[0].isLunar.value());
@@ -469,9 +508,11 @@ HWTEST_F(CalendarTest, AddEventInfoNoID, testing::ext::TestSize.Level1)
     recurrenceRule.excludedDates = {1713672150000};
     event.recurrenceRule = std::make_optional<RecurrenceRule>(recurrenceRule);
     int channelId = 0;
-    int eventInfo = calendar->AddEventInfo(event, channelId);
+    auto result = calendar->AddEventInfo(event, channelId);
+    auto eventInfo = result.GetValue();
     ASSERT_NE(eventInfo, 0);
-    auto events = calendar->GetEvents(FilterById({eventInfo}), {"recurrenceRule"});
+    auto retGet = calendar->GetEvents(FilterById({eventInfo}), {"recurrenceRule"});
+    auto events = retGet.GetValue();
     ASSERT_NE(events.size(), 0);
     EXPECT_EQ(eventInfo, events[0].id);
     auto newRecurrenceRule = events[0].recurrenceRule.value();
@@ -483,8 +524,18 @@ HWTEST_F(CalendarTest, AddEventInfoNoID, testing::ext::TestSize.Level1)
 HWTEST_F(CalendarTest, UpdateEventNoID, testing::ext::TestSize.Level1)
 {
     Event event;
-    bool isUpdataEvent = calendar->UpdateEvent(event);
-    ASSERT_EQ(isUpdataEvent, 0);
+    auto result = calendar->UpdateEvent(event);
+    ASSERT_TRUE(result.IsErr());
+    ASSERT_EQ(result.GetError().code, PARAMETER_VALUE_OUTRANGE);
+}
+
+HWTEST_F(CalendarTest, UpdateEventNoExist, testing::ext::TestSize.Level1)
+{
+    Event event;
+    auto result = calendar->UpdateEvent(event);
+    ASSERT_FALSE(result.IsOk());
+    auto error = result.GetError();
+    ASSERT_EQ(error.code, PARAMETER_VALUE_OUTRANGE);
 }
 
 HWTEST_F(CalendarTest, BuildValueEventIsLunar, testing::ext::TestSize.Level1)

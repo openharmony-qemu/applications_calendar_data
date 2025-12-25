@@ -37,14 +37,14 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     size_t argc = ARGC_MAX;
     napi_value argv[ARGC_MAX] = { nullptr };
     status = napi_get_cb_info(env, info, &argc, argv, &self, nullptr);
-    CHECK_STATUS_RETURN_VOID(this, " napi_get_cb_info failed!");
-    CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, " too many arguments!");
-    CHECK_ARGS_RETURN_VOID(this, self != nullptr, " no JavaScript this argument!");
+    CHECK_STATUS_RETURN_VOID(this, PARAMETER_INVALID, " napi_get_cb_info failed!");
+    CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, PARAMETER_INVALID, " too many arguments!");
+    CHECK_ARGS_RETURN_VOID(this, self != nullptr, PARAMETER_INVALID, " no JavaScript this argument!");
     if (!sync) {
         napi_create_reference(env, self, 1, &selfRef);
     }
     status = napi_unwrap(env, self, &native);
-    CHECK_STATUS_RETURN_VOID(this, " self unwrap failed!");
+    CHECK_STATUS_RETURN_VOID(this, INTERNAL_ERROR, " self unwrap failed!");
 
     if (!sync && (argc > 0)) {
         // get the last arguments :: <callback>
@@ -53,7 +53,7 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
         napi_status tyst = napi_typeof(env, argv[index], &type);
         if ((tyst == napi_ok) && (type == napi_function)) {
             status = napi_create_reference(env, argv[index], 1, &callbackRef);
-            CHECK_STATUS_RETURN_VOID(this, " ref callback failed!");
+            CHECK_STATUS_RETURN_VOID(this, INTERNAL_ERROR, " ref callback failed!");
             argc = index;
             LOG_DEBUG(" async callback, no promise");
         } else {
@@ -64,7 +64,7 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     if (parse) {
         parse(argc, argv);
     } else {
-        CHECK_ARGS_RETURN_VOID(this, argc == 0, " required no arguments!");
+        CHECK_ARGS_RETURN_VOID(this, argc == 0, PARAMETER_INVALID, " required no arguments!");
     }
 }
 
@@ -133,8 +133,10 @@ void NapiQueue::GenerateOutput(AsyncContext &ctx, napi_value output)
         result[RESULT_DATA] = output;
     } else {
         napi_value message = nullptr;
-        napi_create_string_utf8(ctx.env, ctx.ctx->error.c_str(), NAPI_AUTO_LENGTH, &message);
-        napi_create_error(ctx.env, nullptr, message, &result[RESULT_ERROR]);
+        napi_value code = nullptr;
+        napi_create_string_utf8(ctx.env, ctx.ctx->error.message.c_str(), NAPI_AUTO_LENGTH, &message);
+        napi_create_int32(ctx.env, ctx.ctx->error.code, &code);
+        napi_create_error(ctx.env, code, message, &result[RESULT_ERROR]);
         napi_get_undefined(ctx.env, &result[RESULT_DATA]);
     }
     if (ctx.deferred != nullptr) {

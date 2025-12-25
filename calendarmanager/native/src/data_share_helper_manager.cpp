@@ -30,6 +30,7 @@ const std::string WRITE_PERMISSION_NAME = "ohos.permission.WRITE_WHOLE_CALENDAR"
 const int DESTROY_DATASHARE_DELAY = 2 * 60 * 1000;
 const int CHECK_INTERVAL_DIVIDER = 4;
 const uint32_t MAX_RETRY_ATTEMPTS = 3;
+const int PERMISSION_ERR_CODE = -2;
 }  // namespace
 
 using namespace OHOS::DataShare;
@@ -144,71 +145,109 @@ std::shared_ptr<DataShare::DataShareHelper> DataShareHelperManager::GetDataShare
     return CreateDataShareHelper(isRead);
 }
 
-int DataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket &value)
+Result<int> DataShareHelperManager::Insert(const Uri &uri, const DataShareValuesBucket &value)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
-        LOG_ERROR("Insert dataShareHelper is nullptr");
-        return -1;
+        LOG_ERROR("insert dataShareHelper null");
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
-    auto res = dataShareHelper->Insert(const_cast<Uri &>(uri), value);
+    auto res = dataShareHelper->InsertEx(const_cast<Uri &>(uri), value);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    return res;
+    if (res.first == PERMISSION_ERR_CODE) {
+        LOG_ERROR("insert dataShare permission error");
+        return Result<int>(Error(PERMISSION_FAILED));
+    }
+    if (res.first != 0) {
+        LOG_ERROR("dataShare insert internal error");
+        return Result<int>(Error(INTERNAL_ERROR));
+    }
+    return Result<int>(res.second);
 }
 
-int DataShareHelperManager::BatchInsert(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values)
+
+Result<int> DataShareHelperManager::BatchInsert
+(const Uri &uri, const std::vector<DataShare::DataShareValuesBucket> &values)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
         LOG_ERROR("BatchInsert dataShareHelper is nullptr");
-        return -1;
+        return Result<int>(Error{"", PERMISSION_FAILED});
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
     auto res = dataShareHelper->BatchInsert(const_cast<Uri &>(uri), values);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    return res;
+    if (res <= 0) {
+        return Result<int>(Error(INTERNAL_ERROR));
+    }
+    return Result<int>(res);
 }
 
-int DataShareHelperManager::Update(
-    const Uri &uri, const DataSharePredicates &predicates, const DataShareValuesBucket &value)
+Result<int> DataShareHelperManager::Update(const Uri &uri, const DataSharePredicates &predicates,
+    const DataShareValuesBucket &value)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
         LOG_ERROR("Update dataShareHelper is nullptr");
-        return -1;
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
-    auto res = dataShareHelper->Update(const_cast<Uri &>(uri), predicates, value);
+    auto res = dataShareHelper->UpdateEx(const_cast<Uri &>(uri), predicates, value);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    return res;
+    if (res.first == PERMISSION_ERR_CODE) {
+        LOG_ERROR("update dataShare permission error");
+        return Result<int>(Error(PERMISSION_FAILED));
+    }
+    if (res.first != 0) {
+        LOG_INFO("dataShare errorCode = %{public}d", res.first);
+        return Result<int>(Error(INTERNAL_ERROR));
+    }
+    return Result<int>(res.second);
 }
 
-int DataShareHelperManager::Delete(const Uri &uri, const DataSharePredicates &predicates)
+Result<int> DataShareHelperManager::Delete(const Uri &uri, const DataSharePredicates &predicates)
 {
     auto dataShareHelper = CreateDataShareHelper(false);
     if (!dataShareHelper) {
         LOG_ERROR("Delete dataShareHelper is nullptr");
-        return -1;
+        return Result<int>(Error(PERMISSION_FAILED));
     }
     useCount.fetch_add(1, std::memory_order_seq_cst);
-    auto res = dataShareHelper->Delete(const_cast<Uri &>(uri), predicates);
-
+    auto res = dataShareHelper->DeleteEx(const_cast<Uri &>(uri), predicates);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    return res;
+    if (res.first == PERMISSION_ERR_CODE) {
+        LOG_ERROR("delete dataShare permission error");
+        return Result<int>(Error(PERMISSION_FAILED));
+    }
+    if (res.first != 0) {
+        LOG_ERROR("dataShare errorCode = %{public}d", res.first);
+        return Result<int>(Error(INTERNAL_ERROR));
+    }
+    return Result<int>(res.second);
 }
 
-std::shared_ptr<DataShareResultSet> DataShareHelperManager::Query(const Uri &uri, const DataSharePredicates &predicates,
-    std::vector<std::string> &columns, DatashareBusinessError *businessError)
+Result<std::shared_ptr<DataShareResultSet>> DataShareHelperManager::Query
+    (const Uri &uri, const DataSharePredicates &predicates, std::vector<std::string> &columns)
 {
     auto dataShareHelper = CreateDataShareHelper(true);
     if (!dataShareHelper) {
         LOG_ERROR("Query dataShareHelper is nullptr");
-        return nullptr;
+        return Result<std::shared_ptr<DataShareResultSet>>(Error{"", PERMISSION_FAILED});
     }
+    DatashareBusinessError businessError;
     useCount.fetch_add(1, std::memory_order_seq_cst);
-    auto res = dataShareHelper->Query(const_cast<Uri &>(uri), predicates, columns, businessError);
+    auto res = dataShareHelper->Query(const_cast<Uri &>(uri), predicates, columns, &businessError);
     useCount.fetch_sub(1, std::memory_order_seq_cst);
-    return res;
+    if (businessError.GetCode() != 0) {
+        if (businessError.GetCode() == PERMISSION_ERR_CODE) {
+            LOG_ERROR("query dataShare permission error");
+            return Result<std::shared_ptr<DataShareResultSet>>(Error(PERMISSION_FAILED));
+        } else {
+            LOG_ERROR("dataShare query error");
+            return Result<std::shared_ptr<DataShareResultSet>>(Error(INTERNAL_ERROR));
+        }
+    }
+    return Result<std::shared_ptr<DataShareResultSet>>(res);
 }
 }  // namespace OHOS::CalendarApi
