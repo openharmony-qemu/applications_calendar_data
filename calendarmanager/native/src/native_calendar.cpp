@@ -321,12 +321,10 @@ Result<std::vector<Event>> Calendar::GetEvents
     predicates->EqualTo("calendar_id", GetId());
     std::vector<string> queryField = {};
     std::set<string> resultSetField;
-    Error error = {"", NO_ERROR};
-    std::string errMessage = "invalid arg[1], i.e. invalid keys!";
+    Error error = {"invalid arg[1], i.e. invalid keys!", NO_ERROR};
     if (eventKey.size() > 0) {
         queryField.emplace_back("_id");
         SetField(eventKey, queryField, resultSetField, error);
-        error.message = (error.code == PARAMETER_INVALID) ? errMessage : "";
         CHECK_ERRCODE_RETURN(error, "getEvents eventKeys error", Result<std::vector<Event>>(error));
     } else {
         resultSetField = {"type", "title", "startTime", "endTime", "isAllDay", "description",
@@ -335,7 +333,7 @@ Result<std::vector<Event>> Calendar::GetEvents
     auto result = DataShareHelperManager::GetInstance().Query(*(m_eventUri.get()),
         *(predicates.get()), queryField);
     if (result.IsErr()) {
-        LOG_ERROR("query failed %{public}d, %{public}s", result.GetError().code, result.GetError().message.c_str());
+        LOG_ERROR("query failed, code: %{public}d", result.GetError().code);
         return Result<std::vector<Event>>(result.GetError());
     }
     auto queryRet = result.GetValue();
