@@ -29,17 +29,17 @@ namespace OHOS::CalendarApi {
 napi_value CalendarNapi::Constructor(napi_env env)
 {
     const napi_property_descriptor properties[] = {
-        DECLARE_WRITABLE_NAPI_FUNCTION("addEvent", AddEvent),
-        DECLARE_WRITABLE_NAPI_FUNCTION("addEvents", AddEvents),
+        DECLARE_NAPI_FUNCTION("addEvent", AddEvent),
+        DECLARE_NAPI_FUNCTION("addEvents", AddEvents),
         DECLARE_NAPI_FUNCTION("deleteEvent", DeleteEvent),
         DECLARE_NAPI_FUNCTION("deleteEvents", DeleteEvents),
-        DECLARE_WRITABLE_NAPI_FUNCTION("updateEvent", UpdateEvent),
+        DECLARE_NAPI_FUNCTION("updateEvent", UpdateEvent),
         DECLARE_NAPI_FUNCTION("updateEvents", UpdateEvents),
-        DECLARE_WRITABLE_NAPI_FUNCTION("getEvents", GetEvents),
+        DECLARE_NAPI_FUNCTION("getEvents", GetEvents),
         DECLARE_NAPI_FUNCTION("getConfig", GetConfig),
         DECLARE_NAPI_FUNCTION("setConfig", SetConfig),
         DECLARE_NAPI_FUNCTION("getAccount", GetAccount),
-        DECLARE_WRITABLE_NAPI_FUNCTION("queryEventInstances", QueryEventInstances),
+        DECLARE_NAPI_FUNCTION("queryEventInstances", QueryEventInstances),
     };
     size_t count = sizeof(properties) / sizeof(properties[0]);
     return NapiUtil::DefineClass(env, "Calendar", properties, count, CalendarNapi::New);
