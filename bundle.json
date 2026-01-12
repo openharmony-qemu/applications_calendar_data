@@ -49,7 +49,7 @@
             "test": [
                 "//applications/standard/calendardata/calendarmanager/test:unittest"
             ],
-            "inner_api": [
+            "inner_kits": [
                 {
                     "header": {
                         "header_base": "//applications/standard/calendardata/calendarmanager/cj/include",
