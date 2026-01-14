@@ -427,7 +427,7 @@ CalendarConfig Calendar::GetConfig()
         LOG_ERROR("get config error");
     } else {
         auto queryRet = result.GetValue();
-        if (!queryRet) {
+        if (queryRet) {
             ResultSetToConfig(m_config, queryRet);
         }
     }
