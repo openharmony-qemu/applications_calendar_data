@@ -310,11 +310,12 @@ Result<std::vector<Event>> Calendar::GetEvents
     std::vector<Event> events;
     std::shared_ptr<DataShare::DataSharePredicates> predicates = nullptr;
     if (filter) {
-        predicates = filter->GetFilterPrediacates();
-        if (!predicates) {
+        auto filterPredicates = filter->GetFilterPrediacates();
+        if (!filterPredicates) {
             LOG_ERROR("predicates null");
             return Result<std::vector<Event>>(events);
         }
+        predicates = std::make_shared<DataShare::DataSharePredicates>(*filterPredicates);
     } else {
         predicates = std::make_shared<DataShare::DataSharePredicates>();
     }
