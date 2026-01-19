@@ -308,16 +308,14 @@ Result<std::vector<Event>> Calendar::GetEvents
     (std::shared_ptr<EventFilter> filter, const std::vector<string>& eventKey)
 {
     std::vector<Event> events;
-    std::shared_ptr<DataShare::DataSharePredicates> predicates = nullptr;
+    std::shared_ptr<DataShare::DataSharePredicates> predicates = std::make_shared<DataShare::DataSharePredicates>();
     if (filter) {
         auto filterPredicates = filter->GetFilterPrediacates();
         if (!filterPredicates) {
             LOG_ERROR("predicates null");
             return Result<std::vector<Event>>(events);
         }
-        predicates = std::make_shared<DataShare::DataSharePredicates>(*filterPredicates);
-    } else {
-        predicates = std::make_shared<DataShare::DataSharePredicates>();
+        *predicates = *filterPredicates;
     }
     predicates->EqualTo("calendar_id", GetId());
     std::vector<string> queryField = {};
