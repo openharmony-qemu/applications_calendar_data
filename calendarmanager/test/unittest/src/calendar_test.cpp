@@ -167,6 +167,38 @@ HWTEST_F(CalendarTest, GetEvent_test_1, testing::ext::TestSize.Level1)
     EXPECT_EQ(newEvent.description, event.description);
 }
 
+HWTEST_F(CalendarTest, GetEvent_AllCalendars_test, testing::ext::TestSize.Level1)
+{
+    Event event;
+    string title = "GetEvent_AllCalendars_test";
+    event.title = title;
+    event.startTime = 1766620800000;
+    event.endTime = 1766621000000;
+    CalendarAccount test_account {
+        "GetEvent_AllCalendars_test_calendar",
+        "local",
+    };
+
+    for (int i = 0; i < 3; i++) {
+        test_account.name = title + "_calendar"+ std::to_string(i);
+        CalendarManager::GetInstance().CreateCalendar(test_account);
+    }
+    auto calendarsRet = CalendarManager::GetInstance().GetAllCalendars();
+    std::vector<std::shared_ptr<Calendar>> calendars;
+    if (calendarsRet.IsOk()) {
+        calendars = calendarsRet.GetValue();
+    }
+    auto filterTime = FilterByTime(1766620700000, 1766631000000);
+    for (auto cal : calendars) {
+        cal->AddEvent(event);
+        auto eventRet = cal->GetEvents(filterTime, {});
+        if (eventRet.IsOk()) {
+            auto events = eventRet.GetValue();
+            ASSERT_NE(events.size(), 0);
+        }
+    }
+}
+
 HWTEST_F(CalendarTest, UpdateEvent_test_1, testing::ext::TestSize.Level1)
 {
     Event event;
