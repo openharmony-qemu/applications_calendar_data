@@ -28,7 +28,7 @@ EventFilter::~EventFilter()
 {
 }
 
-std::shared_ptr<DataShare::DataSharePredicates> EventFilter::GetFilterPrediacates() const
+std::shared_ptr<DataShare::DataSharePredicates> EventFilter::GetFilterPredicates() const
 {
     return m_predicates;
 }
