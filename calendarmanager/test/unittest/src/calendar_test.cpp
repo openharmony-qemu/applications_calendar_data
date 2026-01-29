@@ -429,6 +429,22 @@ HWTEST_F(CalendarTest, GetConfig_default_test, testing::ext::TestSize.Level1)
     EXPECT_TRUE(std::get<1>(config.color) == 0);
 }
 
+HWTEST_F(CalendarTest, GetConfig_define_test, testing::ext::TestSize.Level1)
+{
+    CalendarAccount test_account {
+        "GetEvent_GetConfig_test_calendar",
+        "local",
+    };
+    CalendarConfig config {true, 0xaabbcc};
+    auto calendarRet = CalendarManager::GetInstance().CreateCalendar(test_account);
+    calendar = calendarRet.GetValue();
+    auto ret = calendar->SetConfig(config);
+    EXPECT_TRUE(ret.GetValue());
+    auto configRet = calendar->GetConfig();
+    EXPECT_TRUE(configRet.enableReminder.has_value());
+    EXPECT_EQ(std::get<1>(configRet.color), 11189196);
+}
+
 HWTEST_F(CalendarTest, SetConfig_empty_param_test, testing::ext::TestSize.Level1)
 {
     CalendarConfig config;
