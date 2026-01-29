@@ -28,7 +28,7 @@ public:
     EventFilter() = delete;
     ~EventFilter();
     EventFilter(std::shared_ptr<DataSharePredicates>);
-    std::shared_ptr<DataSharePredicates> GetFilterPrediacates() const;
+    std::shared_ptr<DataSharePredicates> GetFilterPredicates() const;
 private:
     std::shared_ptr<DataSharePredicates> m_predicates;
 };
