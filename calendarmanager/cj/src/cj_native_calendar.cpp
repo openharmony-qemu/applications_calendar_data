@@ -254,7 +254,7 @@ std::vector<Event> CJNativeCalendar::GetEvents(std::shared_ptr<EventFilter> filt
     std::vector<Event> events;
     std::shared_ptr<DataShare::DataSharePredicates> predicates = nullptr;
     if (filter) {
-        predicates = filter->GetFilterPrediacates();
+        predicates = filter->GetFilterPredicates();
         if (!predicates) {
             LOG_ERROR("predicates null");
             return events;
