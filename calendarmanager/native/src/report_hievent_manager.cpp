@@ -102,8 +102,8 @@ public:
 
     void StopReporting()
     {
+        std::lock_guard<std::mutex> lock(m_threadControlMutex);
         {
-            std::lock_guard<std::mutex> lock(m_threadControlMutex);
             if (!m_isWorkThreadRunning.load()) {
                 return;
             }
