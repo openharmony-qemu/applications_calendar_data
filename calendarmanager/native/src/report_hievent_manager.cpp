@@ -69,8 +69,11 @@ struct ApiAggregatedStat {
 };
 
 #ifdef DEVICE_USAGE_HIAPPEVENT_ENABLE
-class ReportHiEventManager::ReportHiEventManagerImpl 
-: public std::enable_shared_from_this<ReportHiEventManagerImpl> {
+class ReportHiEventManager::ReportHiEventManagerImpl
+    : public std::enable_shared_from_this<ReportHiEventManagerImpl> {
+public:
+   HiEventManagerImpl() = default;
+    ~ReportHiEventManagerImpl() { StopReporting(); }
 public:
     ReportHiEventManagerImpl() = default;
     ~ReportHiEventManagerImpl() { StopReporting(); }
