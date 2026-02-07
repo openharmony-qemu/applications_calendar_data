@@ -169,10 +169,7 @@ private:
             {
                 std::unique_lock<std::mutex> lock(m_threadControlMutex);
                 auto sleepDuration = std::chrono::seconds(1);
-                m_reportCv.wait_for(lock, sleepDuration, [this, weak_self = weak_from_this()]() {
-                    if (!weak_self.lock()) {
-                        return true; 
-                        }
+                m_reportCv.wait_for(lock, sleepDuration, [this]() {
                     return m_stopReporting || m_thresholdReached.load();
                 });
             }
