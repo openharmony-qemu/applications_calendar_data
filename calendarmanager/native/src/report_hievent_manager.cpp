@@ -69,7 +69,8 @@ struct ApiAggregatedStat {
 };
 
 #ifdef DEVICE_USAGE_HIAPPEVENT_ENABLE
-class ReportHiEventManager::ReportHiEventManagerImpl {
+class ReportHiEventManager::ReportHiEventManagerImpl
+    : public std::enable_shared_from_this<ReportHiEventManagerImpl> {
 public:
     ReportHiEventManagerImpl() = default;
     ~ReportHiEventManagerImpl() { StopReporting(); }
@@ -143,7 +144,12 @@ private:
         //start new thread
         m_stopReporting.store(false);
         m_isWorkThreadRunning.store(true);
-        m_reportThread = std::thread([this]() { ReportingThreadFunc(); });
+        auto weak_self = weak_from_this();
+        m_reportThread = std::thread([weak_self]() {
+        if (auto self = weak_self.lock()) {
+            self->ReportingThreadFunc();
+            }
+        });
     }
 
     void CheckReportConditions()
