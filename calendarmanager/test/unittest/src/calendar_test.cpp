@@ -516,7 +516,7 @@ HWTEST_F(CalendarTest, UpdateEvent_test_3, testing::ext::TestSize.Level1)
     event.isLunar = std::make_optional<bool>(true);
     auto addRet = calendar->AddEvent(event);
     auto eventId = addRet.GetValue();
-    auto getRet = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule", "identifier", "isLunar", "id"});
+    auto getRet = calendar->GetEvents(FilterById({eventId}), {"recurrenceRule", "isLunar", "id"});
     auto events = getRet.GetValue();
     ASSERT_NE(eventId, 0);
     ASSERT_NE(events.size(), 0);
@@ -535,7 +535,7 @@ HWTEST_F(CalendarTest, UpdateEvent_test_3, testing::ext::TestSize.Level1)
     auto isUpdate = calendar->UpdateEvent(updateEvent);
     EXPECT_EQ(isUpdate.GetValue(), true);
     getRet = calendar->GetEvents(FilterById({eventId}),
-     {"recurrenceRule", "identifier", "isLunar", "id", "title"});
+     {"recurrenceRule", "isLunar", "id", "title"});
     auto updateEvents = getRet.GetValue();
     ASSERT_NE(updateEvents.size(), 0);
     EXPECT_EQ(updateEvent.id.value(), updateEvents[0].id.value());
