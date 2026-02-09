@@ -292,7 +292,7 @@ napi_value CalendarNapi::UpdateEvents(napi_env env, napi_callback_info info)
 napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
 {
     struct GetEventsContext : public ContextBase {
-        EventFilterNapi* eventFilter = nullptr;
+        EventFilterNapi* eventFilter;
         std::vector<std::string> eventKeys;
         std::vector<Event> events;
         int64_t beginTime;
