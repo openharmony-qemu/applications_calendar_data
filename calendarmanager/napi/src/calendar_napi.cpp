@@ -292,23 +292,44 @@ napi_value CalendarNapi::UpdateEvents(napi_env env, napi_callback_info info)
 napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
 {
     struct GetEventsContext : public ContextBase {
-        EventFilterNapi* eventFilter;
+        EventFilterNapi* eventFilter = nullptr;
         std::vector<std::string> eventKeys;
         std::vector<Event> events;
+        int64_t beginTime;
+        napi_ref* refHolder = nullptr;
     };
     auto ctxt = std::make_shared<GetEventsContext>();
+    ctxt->error = {"", 0};
+    ctxt->refHolder = new napi_ref(); 
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
+        ctxt->beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         CHECK_ARGS_RETURN_VOID(ctxt, argc <= 2, PARAMETER_INVALID, "invalid arguments!");
         napi_valuetype type = napi_undefined;
         if (argc >= 1) {
             napi_typeof(env, argv[0], &type);
+            if (type != napi_object) {
+                Native::ReportHiEventManager::GetInstance().OnApiCallEnd("GetEvents",
+                    false, ctxt->beginTime, PARAMETER_INVALID);
+            }
             CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, PARAMETER_INVALID, "type error!");
             ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->eventFilter);
+            napi_status status;
+            napi_ref reference;
+            status = napi_create_reference(env, argv[0], 1, &reference);
+            if (status != napi_ok) {
+                LOG_ERROR("napi_create_reference FAILED");
+                return;
+            }
+            *ctxt->refHolder = reference;
             CHECK_STATUS_RETURN_VOID(ctxt, PARAMETER_VALUE_OUTRANGE, "invalid arg[0], i.e. invalid keys!");
         }
         if (argc == 2) {
             // required atleast 2 arguments :: <eventKey>
             napi_typeof(env, argv[1], &type);
+            if (type != napi_object) {
+                Native::ReportHiEventManager::GetInstance().OnApiCallEnd("GetEvents",
+                    false, ctxt->beginTime, PARAMETER_INVALID);
+            }
             CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, PARAMETER_INVALID, "invalid arg[1], i.e. invalid keys!");
             ctxt->status = NapiUtil::GetValue(env, argv[1], ctxt->eventKeys);
             CHECK_STATUS_RETURN_VOID(ctxt, PARAMETER_VALUE_OUTRANGE, "invalid arg[1], i.e. invalid keys!");
@@ -326,10 +347,30 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
         auto result = nativeCalendar->GetEvents(nativeFilter, ctxt->eventKeys);
-        CHECK_RESULT_RETURN_VOID(ctxt, result, "GetEvents failed!", ctxt->events);
+        if (result.is_err()) {
+            Native::ReportHiEventManager::GetInstance()
+                .OnApiCallEnd("GetEvents", false, ctxt->beginTime, result.error().code);
+            if (result.error().code == PARAMETER_INVALID) {
+                ctxt->error = result.error();
+                ctxt->status = napi_generic_failure;
+                return;
+            }
+        }
+        if (result.is_ok()) {
+            ctxt->events = result.value();
+        }
+        Native::ReportHiEventManager::GetInstance()
+            .OnApiCallEnd("GetEvents", ctxt->status == napi_ok, ctxt->beginTime, ctxt->error.code);
     };
     auto output = [env, ctxt](napi_value& result) {
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->events, result);
+        if (ctxt->refHolder != nullptr && *ctxt->refHolder != nullptr) {
+            napi_status status = napi_delete_reference(ctxt->env, *ctxt->refHolder);
+            if (status != napi_ok) {
+                LOG_ERROR("napi_delete_reference FAILED");
+            }
+            *ctxt->refHolder = nullptr;
+        }
         CHECK_STATUS_RETURN_VOID(ctxt, INTERNAL_ERROR, "output failed");
     };
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
