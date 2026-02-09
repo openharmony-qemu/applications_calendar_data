@@ -300,7 +300,7 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
     };
     auto ctxt = std::make_shared<GetEventsContext>();
     ctxt->error = {"", 0};
-    ctxt->refHolder = new napi_ref(); 
+    ctxt->refHolder = new napi_ref();
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         ctxt->beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         CHECK_ARGS_RETURN_VOID(ctxt, argc <= 2, PARAMETER_INVALID, "invalid arguments!");
