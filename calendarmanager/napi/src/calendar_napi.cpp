@@ -313,11 +313,18 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
             }
             CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, PARAMETER_INVALID, "type error!");
             ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->eventFilter);
+            if (ctxt->status != napi_ok) {
+                delete ctxt->refHolder;
+                ctxt->refHolder = nullptr;
+                return;
+            }
             napi_status status;
             napi_ref reference;
             status = napi_create_reference(env, argv[0], 1, &reference);
             if (status != napi_ok) {
                 LOG_ERROR("napi_create_reference FAILED");
+                delete ctxt->refHolder;
+                ctxt->refHolder = nullptr;
                 return;
             }
             *ctxt->refHolder = reference;
@@ -370,9 +377,14 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
                 LOG_ERROR("napi_delete_reference FAILED");
             }
             *ctxt->refHolder = nullptr;
+            if (ctxt->refHolder != nullptr) {
+                delete ctxt->refHolder;
+                ctxt->refHolder = nullptr;
+            }
         }
         CHECK_STATUS_RETURN_VOID(ctxt, INTERNAL_ERROR, "output failed");
     };
+    
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
 }
 struct InstancesContext : public ContextBase {
