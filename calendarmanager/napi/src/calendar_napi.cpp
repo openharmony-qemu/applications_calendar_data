@@ -289,27 +289,21 @@ napi_value CalendarNapi::UpdateEvents(napi_env env, napi_callback_info info)
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
 }
 
+struct GetEventsContext : public ContextBase {
+    EventFilterNapi* eventFilter;
+    std::vector<std::string> eventKeys;
+    std::vector<Event> events;
+    int64_t beginTime;
+    std::shared_ptr<napi_ref> refHolder;
+};
 napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
 {
-    struct GetEventsContext : public ContextBase {
-        EventFilterNapi* eventFilter;
-        std::vector<std::string> eventKeys;
-        std::vector<Event> events;
-        int64_t beginTime;
-        std::shared_ptr<napi_ref> refHolder;
-    };
     auto ctxt = std::make_shared<GetEventsContext>();
-    ctxt->error = {"", 0};
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
-        ctxt->beginTime = Native::ReportHiEventManager::GetInstance().GetCurrentTime();
         CHECK_ARGS_RETURN_VOID(ctxt, argc <= 2, PARAMETER_INVALID, "invalid arguments!");
         napi_valuetype type = napi_undefined;
         if (argc >= 1) {
             napi_typeof(env, argv[0], &type);
-            if (type != napi_object) {
-                Native::ReportHiEventManager::GetInstance().OnApiCallEnd("GetEvents",
-                    false, ctxt->beginTime, PARAMETER_INVALID);
-            }
             CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, PARAMETER_INVALID, "type error!");
             ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->eventFilter);
             CHECK_STATUS_RETURN_VOID(ctxt, PARAMETER_VALUE_OUTRANGE, "invalid arg[0], i.e. invalid keys!");
@@ -321,10 +315,6 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
         if (argc == 2) {
             // required atleast 2 arguments :: <eventKey>
             napi_typeof(env, argv[1], &type);
-            if (type != napi_object) {
-                Native::ReportHiEventManager::GetInstance().OnApiCallEnd("GetEvents",
-                    false, ctxt->beginTime, PARAMETER_INVALID);
-            }
             CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, PARAMETER_INVALID, "invalid arg[1], i.e. invalid keys!");
             ctxt->status = NapiUtil::GetValue(env, argv[1], ctxt->eventKeys);
             CHECK_STATUS_RETURN_VOID(ctxt, PARAMETER_VALUE_OUTRANGE, "invalid arg[1], i.e. invalid keys!");
@@ -342,20 +332,7 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
         auto nativeCalendar = calendar->GetNative();
         CHECK_RETURN_VOID(nativeCalendar != nullptr, "nativeCalendar nullptr");
         auto result = nativeCalendar->GetEvents(nativeFilter, ctxt->eventKeys);
-        if (result.is_err()) {
-            Native::ReportHiEventManager::GetInstance()
-                .OnApiCallEnd("GetEvents", false, ctxt->beginTime, result.error().code);
-            if (result.error().code == PARAMETER_INVALID) {
-                ctxt->error = result.error();
-                ctxt->status = napi_generic_failure;
-                return;
-            }
-        }
-        if (result.is_ok()) {
-            ctxt->events = result.value();
-        }
-        Native::ReportHiEventManager::GetInstance()
-            .OnApiCallEnd("GetEvents", ctxt->status == napi_ok, ctxt->beginTime, ctxt->error.code);
+        CHECK_RESULT_RETURN_VOID(ctxt, result, "GetEvents failed!", ctxt->events);
     };
     auto output = [env, ctxt](napi_value& result) {
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->events, result);
