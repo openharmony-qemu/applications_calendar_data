@@ -293,9 +293,9 @@ struct GetEventsContext : public ContextBase {
     EventFilterNapi* eventFilter;
     std::vector<std::string> eventKeys;
     std::vector<Event> events;
-    int64_t beginTime;
     std::shared_ptr<napi_ref> refHolder;
 };
+
 napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
 {
     auto ctxt = std::make_shared<GetEventsContext>();
@@ -345,6 +345,7 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
     }
     return result;
 }
+
 struct InstancesContext : public ContextBase {
     int64_t start;
     int64_t end;
