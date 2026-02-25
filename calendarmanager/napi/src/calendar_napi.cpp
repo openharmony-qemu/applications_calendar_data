@@ -289,13 +289,15 @@ napi_value CalendarNapi::UpdateEvents(napi_env env, napi_callback_info info)
     return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute);
 }
 
+struct GetEventsContext : public ContextBase {
+    EventFilterNapi* eventFilter;
+    std::vector<std::string> eventKeys;
+    std::vector<Event> events;
+    std::shared_ptr<napi_ref> refHolder;
+};
+
 napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
 {
-    struct GetEventsContext : public ContextBase {
-        EventFilterNapi* eventFilter;
-        std::vector<std::string> eventKeys;
-        std::vector<Event> events;
-    };
     auto ctxt = std::make_shared<GetEventsContext>();
     auto input = [env, ctxt](size_t argc, napi_value* argv) {
         CHECK_ARGS_RETURN_VOID(ctxt, argc <= 2, PARAMETER_INVALID, "invalid arguments!");
@@ -305,6 +307,10 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
             CHECK_ARGS_RETURN_VOID(ctxt, type == napi_object, PARAMETER_INVALID, "type error!");
             ctxt->status = NapiUtil::GetValue(env, argv[0], ctxt->eventFilter);
             CHECK_STATUS_RETURN_VOID(ctxt, PARAMETER_VALUE_OUTRANGE, "invalid arg[0], i.e. invalid keys!");
+            napi_ref reference;
+            ctxt->status = napi_create_reference(env, argv[0], 1, &reference);
+            CHECK_STATUS_RETURN_VOID(ctxt, INTERNAL_ERROR, "napi_create_reference FAILED!");
+            ctxt->refHolder = std::make_shared<napi_ref>(reference);
         }
         if (argc == 2) {
             // required atleast 2 arguments :: <eventKey>
@@ -315,7 +321,7 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
         }
     };
     ctxt->GetCbInfo(env, info, input);
-
+ 
     auto execute = [ctxt]() {
         std::shared_ptr<Native::EventFilter> nativeFilter = nullptr;
         if (ctxt->eventFilter != nullptr) {
@@ -332,8 +338,14 @@ napi_value CalendarNapi::GetEvents(napi_env env, napi_callback_info info)
         ctxt->status = NapiUtil::SetValue(ctxt->env, ctxt->events, result);
         CHECK_STATUS_RETURN_VOID(ctxt, INTERNAL_ERROR, "output failed");
     };
-    return NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
+    auto result = NapiQueue::AsyncWork(env, ctxt, std::string(__FUNCTION__), execute, output);
+    if (ctxt->refHolder != nullptr && *ctxt->refHolder != nullptr) {
+        napi_delete_reference(ctxt->env, *ctxt->refHolder);
+        *ctxt->refHolder = nullptr;
+    }
+    return result;
 }
+
 struct InstancesContext : public ContextBase {
     int64_t start;
     int64_t end;
