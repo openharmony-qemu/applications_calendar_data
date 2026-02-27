@@ -586,10 +586,16 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
 
 int StringToInt(const std::string &str)
 {
-    try {
-        return std::stoi(str);
-    } catch (std::exception &ex) {
-        LOG_ERROR("StringToInt conversion fail, str: %{public}s", str.c_str());
+    int value = 0;
+    auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), value);
+
+    if (ec == std::errc{} && ptr == str.data() + str.size()) {
+        return value;
+    } else if (ec == std::errc::result_out_of_range) {
+        LOG_ERROR("StringToInt failed! Parsing failed: value out of int range.");
+        return 0;
+    } else {
+        LOG_ERROR("StringToInt failed! str = %{public}s", str.c_str());
         return 0;
     }
 }
@@ -1067,6 +1073,19 @@ bool IsValidHexString(const std::string& colorStr)
     return true;
 }
 
+bool StringToHexLong(const std::string& hexStr, int64_t& result) {
+    const char* str = hexStr.data();
+    const char* end = str + hexStr.size();
+
+    std::from_chars_result res = std::from_chars(str, end, result, 16);
+
+    if (res.ec == std::errc{} && res.ptr == end) {
+        return true;
+    }
+    LOG_ERROR("parse_hex_color failed, hexStr = %{public}s", hexStr.c_str());
+    return false;
+}
+
 bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue)
 {
     if (colorStr.empty()) {
@@ -1093,12 +1112,11 @@ bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValu
     }
 
     LOG_DEBUG("color string size is 7 or 9");
-    try {
-        colorValue.emplace<1>(std::stoll(colorStrSub, NULL, 16));  // 16 is convert hex string to number
-    } catch (std::exception &ex) {
-        LOG_ERROR("stoll fail %{public}s", ex.what());
+    int64_t hexColor = 0;
+    if (!StringToHexLong(colorStrSub, hexColor)) {
         return false;
     }
+    colorValue.emplace<1>(hexColor);
     if (std::get_if<1>(&colorValue)) {
         LOG_DEBUG("colorStrSub -> colorValue colorValue:%{public}s", std::to_string(std::get<1>(colorValue)).c_str());
         return true;
