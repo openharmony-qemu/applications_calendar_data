@@ -60,7 +60,8 @@ namespace OHOS::CalendarApi::Native {
     void GetEventAttendeesValue(std::vector<Event> &events, const std::map<int, std::vector<Attendee>> &attendeesMap);
 
     bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue);
-
+    int StringToInt(const std::string &str);
+    bool StringToHexLong(const std::string& hexStr, int64_t& result);
     std::string GetUTCTime(const int64_t &timeValue);
     std::string GetUTCTimes(const std::vector<int64_t> &timeValues);
     std::string GetRule(const Event &event);
