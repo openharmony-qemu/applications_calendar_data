@@ -239,6 +239,34 @@ HWTEST_F(EventRecurrenceRuleTest, GetUTCTime, testing::ext::TestSize.Level1)
     EXPECT_EQ(timeStr, timeUTCStr);
 }
 
+HWTEST_F(EventRecurrenceRuleTest, StringToIntTest, testing::ext::TestSize.Level1)
+{
+    std::string str = "123abc";
+    auto intValue = StringToInt(str);
+    EXPECT_EQ(intValue, 0);
+    str = "2147483648";
+    intValue = StringToInt(str);
+    EXPECT_EQ(intValue, 0);
+    str = "123456";
+    intValue = StringToInt(str);
+    EXPECT_EQ(intValue, 123456);
+}
+
+HWTEST_F(EventRecurrenceRuleTest, StringToHexLongTest, testing::ext::TestSize.Level1)
+{
+    std::string str = "abcdef";
+    int64_t hexInt = 0;
+    auto hexFlag = StringToHexLong(str, hexInt);
+    EXPECT_TRUE(hexFlag);
+    EXPECT_EQ(hexInt, 0xABCDEF);
+    str = "123ghijk";
+    hexFlag = StringToHexLong(str, hexInt);
+    ASSERT_FALSE(hexFlag);
+    str = "9223372036854775808";
+    hexFlag = StringToHexLong(str, hexInt);
+    ASSERT_FALSE(hexFlag);
+}
+
 HWTEST_F(EventRecurrenceRuleTest, GetUTCTimes, testing::ext::TestSize.Level1)
 {
     std::vector<int64_t> excludedDates;
