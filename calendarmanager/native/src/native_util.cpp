@@ -17,6 +17,7 @@
 #include "native_util.h"
 #include <ctime>
 #include <numeric>
+#include <charconv>
 
 namespace OHOS::CalendarApi::Native {
 const int MIN_DAY_OF_WEEK = 1;
