@@ -255,11 +255,15 @@ napi_status SetValue(napi_env env, const std::vector<int64_t>& in, napi_value& o
     if (!in.data()) {
         return napi_invalid_arg;
     }
-    if (memcpy_s(data, bytes, in.data(), bytes) != EOK) {
+    std::vector<double> doubleVec;
+    for (auto intIn : in) {
+        doubleVec.push_back(static_cast<double>(intIn));
+    }
+    if (memcpy_s(data, bytes, doubleVec.data(), bytes) != EOK) {
         LOG_ERROR("memcpy_s not EOK");
         return napi_invalid_arg;
     }
-    status = napi_create_typedarray(env, napi_bigint64_array, in.size(), buffer, 0, &out);
+    status = napi_create_typedarray(env, napi_float64_array, in.size(), buffer, 0, &out);
     CHECK_RETURN((status == napi_ok), "invalid buffer", status);
     return status;
 }
