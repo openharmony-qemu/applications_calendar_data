@@ -250,6 +250,9 @@ HWTEST_F(EventRecurrenceRuleTest, StringToIntTest, testing::ext::TestSize.Level1
     str = "defghi";
     intValue = StringToInt(str);
     EXPECT_EQ(intValue, 0);
+    str = "2147483647";
+    intValue = StringToInt(str);
+    EXPECT_EQ(intValue, 2147483647);
     str = "2147483648";
     intValue = StringToInt(str);
     EXPECT_EQ(intValue, 0);
@@ -268,7 +271,11 @@ HWTEST_F(EventRecurrenceRuleTest, StringToHexLongTest, testing::ext::TestSize.Le
     str = "123ghijk";
     hexFlag = StringToHexLong(str, hexInt);
     ASSERT_FALSE(hexFlag);
-    str = "9223372036854775808";
+    str = "7FFFFFFFFFFFFFFF";
+    hexFlag = StringToHexLong(str, hexInt);
+    EXPECT_TRUE(hexFlag);
+    EXPECT_EQ(hexInt, 0x7FFFFFFFFFFFFFFF);
+    str = "8FFFFFFFFFFFFFFF";
     hexFlag = StringToHexLong(str, hexInt);
     ASSERT_FALSE(hexFlag);
     str = "";
