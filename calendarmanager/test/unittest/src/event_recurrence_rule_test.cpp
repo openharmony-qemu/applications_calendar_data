@@ -259,6 +259,12 @@ HWTEST_F(EventRecurrenceRuleTest, StringToIntTest, testing::ext::TestSize.Level1
     str = "123456";
     intValue = StringToInt(str);
     EXPECT_EQ(intValue, 123456);
+    str = "  123456";
+    intValue = StringToInt(str);
+    EXPECT_EQ(intValue, 123456);
+    str = "-123456";
+    intValue = StringToInt(str);
+    EXPECT_EQ(intValue, -123456);
 }
 
 HWTEST_F(EventRecurrenceRuleTest, StringToHexLongTest, testing::ext::TestSize.Level1)
@@ -268,16 +274,25 @@ HWTEST_F(EventRecurrenceRuleTest, StringToHexLongTest, testing::ext::TestSize.Le
     auto hexFlag = StringToHexLong(str, hexInt);
     EXPECT_TRUE(hexFlag);
     EXPECT_EQ(hexInt, 0xABCDEF);
+
+    str = "  abcdef";
+    hexFlag = StringToHexLong(str, hexInt);
+    EXPECT_TRUE(hexFlag);
+    EXPECT_EQ(hexInt, 0xABCDEF);
+
     str = "123ghijk";
     hexFlag = StringToHexLong(str, hexInt);
     ASSERT_FALSE(hexFlag);
+
     str = "7FFFFFFFFFFFFFFF";
     hexFlag = StringToHexLong(str, hexInt);
     EXPECT_TRUE(hexFlag);
     EXPECT_EQ(hexInt, 0x7FFFFFFFFFFFFFFF);
+
     str = "8FFFFFFFFFFFFFFF";
     hexFlag = StringToHexLong(str, hexInt);
     ASSERT_FALSE(hexFlag);
+
     str = "";
     hexFlag = StringToHexLong(str, hexInt);
     ASSERT_FALSE(hexFlag);
