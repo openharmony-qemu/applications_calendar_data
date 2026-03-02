@@ -247,7 +247,7 @@ napi_status SetValue(napi_env env, const std::vector<int64_t>& in, napi_value& o
 {
     LOG_DEBUG("napi_value <- std::vector<int64_t> ");
     size_t bytes = in.size() * sizeof(int64_t);
-    CHECK_RETURN(bytes > 0, "invalid std::vector<uint32_t>", napi_invalid_arg);
+    CHECK_RETURN(bytes > 0, "invalid std::vector<int64_t>", napi_invalid_arg);
     void* data = nullptr;
     napi_value buffer = nullptr;
     napi_status status = napi_create_arraybuffer(env, bytes, &data, &buffer);
@@ -255,11 +255,22 @@ napi_status SetValue(napi_env env, const std::vector<int64_t>& in, napi_value& o
     if (!in.data()) {
         return napi_invalid_arg;
     }
-    if (memcpy_s(data, bytes, in.data(), bytes) != EOK) {
+
+    const int64_t safeIntMax = 9007199254740991LL;
+    const int64_t safeIntMin = -9007199254740991LL;
+    std::vector<double> doubleVec;
+    for (auto intIn : in) {
+        if (intIn > safeIntMax || intIn < safeIntMin) {
+            LOG_WARN("int64_t value %{public}lld exceeds safe integer range, precision may be lost",
+                     static_cast<long long>(intIn));
+        }
+        doubleVec.push_back(static_cast<double>(intIn));
+    }
+    if (memcpy_s(data, bytes, doubleVec.data(), bytes) != EOK) {
         LOG_ERROR("memcpy_s not EOK");
         return napi_invalid_arg;
     }
-    status = napi_create_typedarray(env, napi_bigint64_array, in.size(), buffer, 0, &out);
+    status = napi_create_typedarray(env, napi_float64_array, in.size(), buffer, 0, &out);
     CHECK_RETURN((status == napi_ok), "invalid buffer", status);
     return status;
 }
