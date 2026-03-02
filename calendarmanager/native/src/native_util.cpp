@@ -17,6 +17,7 @@
 #include "native_util.h"
 #include <ctime>
 #include <numeric>
+#include <charconv>
 
 namespace OHOS::CalendarApi::Native {
 const int MIN_DAY_OF_WEEK = 1;
@@ -586,10 +587,23 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
 
 int StringToInt(const std::string &str)
 {
-    try {
-        return std::stoi(str);
-    } catch (std::exception &ex) {
-        LOG_ERROR("StringToInt conversion fail, str: %{public}s", str.c_str());
+    int value = 0;
+    const char* start = str.data();
+    const char* end = start + str.size();
+    while (start < end && std::isspace(static_cast<unsigned char>(*start))) {
+        start++;
+    }
+    auto [ptr, ec] = std::from_chars(start, end, value);
+
+    if (ec == std::errc{} && ptr == end) {
+        return value;
+    } else if (ec == std::errc::result_out_of_range) {
+        LOG_ERROR("StringToInt failed: value out of int range, str = [%{public}s], parsed = %{public}s",
+            str.c_str(), std::string(start, ptr - start).c_str());
+        return 0;
+    } else {
+        LOG_ERROR("StringToInt failed: invalid format, str = [%{public}s], error code = %{public}d",
+            str.c_str(), static_cast<int>(ec));
         return 0;
     }
 }
@@ -1067,6 +1081,23 @@ bool IsValidHexString(const std::string& colorStr)
     return true;
 }
 
+bool StringToHexLong(const std::string& hexStr, int64_t& result) {
+    const char* start = hexStr.data();
+    const char* end = start + hexStr.size();
+    
+    while (start < end && std::isspace(static_cast<unsigned char>(*start))) {
+        start++;
+    }
+
+    std::from_chars_result res = std::from_chars(start, end, result, 16);
+
+    if (res.ec == std::errc{} && res.ptr == end) {
+        return true;
+    }
+    LOG_ERROR("parse_hex_color failed, hexStr = %{public}s", hexStr.c_str());
+    return false;
+}
+
 bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue)
 {
     if (colorStr.empty()) {
@@ -1093,12 +1124,11 @@ bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValu
     }
 
     LOG_DEBUG("color string size is 7 or 9");
-    try {
-        colorValue.emplace<1>(std::stoll(colorStrSub, NULL, 16));  // 16 is convert hex string to number
-    } catch (std::exception &ex) {
-        LOG_ERROR("stoll fail %{public}s", ex.what());
+    int64_t hexColor = 0;
+    if (!StringToHexLong(colorStrSub, hexColor)) {
         return false;
     }
+    colorValue.emplace<1>(hexColor);
     if (std::get_if<1>(&colorValue)) {
         LOG_DEBUG("colorStrSub -> colorValue colorValue:%{public}s", std::to_string(std::get<1>(colorValue)).c_str());
         return true;
