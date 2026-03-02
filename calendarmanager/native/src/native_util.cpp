@@ -588,15 +588,22 @@ std::optional<EventService> ResultSetToEventService(DataShareResultSetPtr &resul
 int StringToInt(const std::string &str)
 {
     int value = 0;
-    auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), value);
+    const char* start = str.data();
+    const char* end = start + str.size();
+    while (start < end && std::isspace(static_cast<unsigned char>(*start))) {
+        start++;
+    }
+    auto [ptr, ec] = std::from_chars(start, end, value);
 
-    if (ec == std::errc{} && ptr == str.data() + str.size()) {
+    if (ec == std::errc{} && ptr == end) {
         return value;
     } else if (ec == std::errc::result_out_of_range) {
-        LOG_ERROR("StringToInt failed! Parsing failed: value out of int range.");
+        LOG_ERROR("StringToInt failed: value out of int range, str = [%{public}s], parsed = %{public}s",
+            str.c_str(), std::string(start, ptr - start).c_str());
         return 0;
     } else {
-        LOG_ERROR("StringToInt failed! str = %{public}s", str.c_str());
+        LOG_ERROR("StringToInt failed: invalid format, str = [%{public}s], error code = %{public}d",
+            str.c_str(), static_cast<int>(ec));
         return 0;
     }
 }
@@ -1075,10 +1082,14 @@ bool IsValidHexString(const std::string& colorStr)
 }
 
 bool StringToHexLong(const std::string& hexStr, int64_t& result) {
-    const char* str = hexStr.data();
-    const char* end = str + hexStr.size();
+    const char* start = hexStr.data();
+    const char* end = start + hexStr.size();
+    
+    while (start < end && std::isspace(static_cast<unsigned char>(*start))) {
+        start++;
+    }
 
-    std::from_chars_result res = std::from_chars(str, end, result, 16);
+    std::from_chars_result res = std::from_chars(start, end, result, 16);
 
     if (res.ec == std::errc{} && res.ptr == end) {
         return true;
