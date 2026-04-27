@@ -171,7 +171,8 @@ napi_status GetValue(napi_env env, napi_value in, std::vector<uint8_t>& out)
     size_t offset = 0;
     void* data = nullptr;
     napi_status status = napi_get_typedarray_info(env, in, &type, &length, &data, &buffer, &offset);
-    LOG_DEBUG("array type=%{public}d length=%{public}d offset=%{public}d", static_cast<int>(type),static_cast<int>(length),static_cast<int>(offset);
+    LOG_DEBUG("array type=%{public}d length=%{public}d offset=%{public}d", static_cast<int>(type),
+        static_cast<int>(length), static_cast<int>(offset));
     CHECK_RETURN(status == napi_ok, "napi_get_typedarray_info failed!", napi_invalid_arg);
     CHECK_RETURN(type == napi_uint8_array, "is not Uint8Array!", napi_invalid_arg);
     CHECK_RETURN((length > 0) && (data != nullptr), "invalid data!", napi_invalid_arg);
