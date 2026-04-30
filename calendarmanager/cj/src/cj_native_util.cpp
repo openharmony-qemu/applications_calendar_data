@@ -1015,7 +1015,7 @@ bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValu
 
     LOG_DEBUG("color string size is 7 or 9");
     try {
-        colorValue.emplace<1>(std::stoll(colorStrSub, NULL, 16));  // 16 is convert hex string to number
+        colorValue.emplace<1>(std::stoll(colorStrSub, nullptr, 16));  // 16 is convert hex string to number
     } catch (std::exception &ex) {
         LOG_ERROR("stoll fail %{public}s", ex.what());
         return false;
