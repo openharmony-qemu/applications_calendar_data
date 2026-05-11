@@ -24,6 +24,7 @@ DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &accoun
 const CalendarAccount defaultAccount{"phone", "local", ""};
 const string calendarUrl = "datashare:///calendardata/Calendars";
 const int MAX_ERR_NUM = 3;
+const int64_t DEFAULT_CALENDAR_COLOR  = 0xFF0A59F7;
 
 CalendarManager::CalendarManager()
 {
@@ -59,6 +60,8 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
 Result<std::shared_ptr<Calendar>> CalendarManager::CreateCalendar(const CalendarAccount &account)
 {
     auto valueEvent = BuildValueCalendarAccount(account);
+    valueEvent.Put("calendar_color", DEFAULT_CALENDAR_COLOR);
+    valueEvent.Put("canReminder", true);
     int errNum = 0;
     Result<int> result(0);
     Error error = {"", NO_ERROR};
@@ -78,19 +81,6 @@ Result<std::shared_ptr<Calendar>> CalendarManager::CreateCalendar(const Calendar
         return Result<std::shared_ptr<Calendar>>(error);
     }
     auto calendar = std::make_shared<Calendar>(account, result.GetValue());
-    // set default calendar config
-    auto calendarId = result.value();
-    DataShare::DataSharePredicates predicates;
-    const int64_t defaultColor = 0xFF0A59F7;
-    predicates.EqualTo("_id", calendarId);
-    DataShare::DataShareValuesBucket valuesBucket;
-    valuesBucket.Put("calendar_color", defaultColor);
-    valuesBucket.Put("canReminder", true);
-    auto ret = DataShareHelperManager::GetInstance()
-    .Update(*(m_calendarUri.get()), predicates, valuesBucket);
-    if (ret.is_err()) {
-        LOG_ERROR("native set default Config error, code: %{public}d", ret.error().code);
-    }
     return Result<std::shared_ptr<Calendar>>(calendar);
 }
 
