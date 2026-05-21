@@ -458,7 +458,7 @@ HWTEST_F(CalendarTest, GetConfig_default_test, testing::ext::TestSize.Level1)
 {
     auto config = calendar->GetConfig();
     EXPECT_TRUE(config.enableReminder.has_value());
-    EXPECT_TRUE(std::get<1>(config.color) == 0);
+    EXPECT_TRUE(std::get<1>(config.color) == 0xFF0A59F7);
 }
 
 HWTEST_F(CalendarTest, GetConfig_define_test, testing::ext::TestSize.Level1)
