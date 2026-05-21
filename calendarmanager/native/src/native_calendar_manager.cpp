@@ -61,7 +61,6 @@ Result<std::shared_ptr<Calendar>> CalendarManager::CreateCalendar(const Calendar
 {
     auto valueEvent = BuildValueCalendarAccount(account);
     valueEvent.Put("calendar_color", DEFAULT_CALENDAR_COLOR);
-    valueEvent.Put("canReminder", true);
     int errNum = 0;
     Result<int> result(0);
     Error error = {"", NO_ERROR};
