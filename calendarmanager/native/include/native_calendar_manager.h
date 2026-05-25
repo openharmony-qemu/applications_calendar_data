@@ -23,6 +23,7 @@
 #include "uri.h"
 using Uri = OHOS::Uri;
 namespace OHOS::CalendarApi::Native {
+const int64_t DEFAULT_CALENDAR_COLOR  = 0xFF0A59F7;
 class CalendarManager {
 public:
     static CalendarManager &GetInstance();

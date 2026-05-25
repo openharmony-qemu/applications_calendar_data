@@ -59,6 +59,7 @@ auto BuildValueCalendarAccount(const CalendarAccount &account)
 Result<std::shared_ptr<Calendar>> CalendarManager::CreateCalendar(const CalendarAccount &account)
 {
     auto valueEvent = BuildValueCalendarAccount(account);
+    valueEvent.Put("calendar_color", DEFAULT_CALENDAR_COLOR);
     int errNum = 0;
     Result<int> result(0);
     Error error = {"", NO_ERROR};
