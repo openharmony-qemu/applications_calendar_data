@@ -39,7 +39,6 @@ public:
 
 std::shared_ptr<Calendar> CalendarTest::calendar = nullptr;
 const std::string TEST_NAME = "unit_test";
-const int64_t DEFAULT_CALENDAR_COLOR  = 0xFF0A59F7;
 static CalendarAccount account {
     TEST_NAME,
     "local",
