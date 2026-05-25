@@ -39,6 +39,7 @@ public:
 
 std::shared_ptr<Calendar> CalendarTest::calendar = nullptr;
 const std::string TEST_NAME = "unit_test";
+const int64_t DEFAULT_CALENDAR_COLOR  = 0xFF0A59F7;
 static CalendarAccount account {
     TEST_NAME,
     "local",
@@ -458,7 +459,7 @@ HWTEST_F(CalendarTest, GetConfig_default_test, testing::ext::TestSize.Level1)
 {
     auto config = calendar->GetConfig();
     EXPECT_TRUE(config.enableReminder.has_value());
-    EXPECT_TRUE(std::get<1>(config.color) == 0xFF0A59F7);
+    EXPECT_TRUE(std::get<1>(config.color) == DEFAULT_CALENDAR_COLOR);
 }
 
 HWTEST_F(CalendarTest, GetConfig_define_test, testing::ext::TestSize.Level1)
