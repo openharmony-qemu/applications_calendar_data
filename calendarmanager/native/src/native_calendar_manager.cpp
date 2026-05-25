@@ -24,7 +24,6 @@ DataShare::DataSharePredicates BuildCalendarFilter(const CalendarAccount &accoun
 const CalendarAccount defaultAccount{"phone", "local", ""};
 const string calendarUrl = "datashare:///calendardata/Calendars";
 const int MAX_ERR_NUM = 3;
-const int64_t DEFAULT_CALENDAR_COLOR  = 0xFF0A59F7;
 
 CalendarManager::CalendarManager()
 {
