@@ -325,7 +325,6 @@ Result<std::vector<Event>> Calendar::GetEvents
         std::vector<string> filteredEventKey = NormalizeEventKey(eventKey, true);
         queryField.emplace_back("_id");
         SetField(filteredEventKey, queryField, resultSetField, error);
-        SetField(eventKey, queryField, resultSetField, error);
         CHECK_ERRCODE_RETURN(error, "getEvents eventKeys error", Result<std::vector<Event>>(error));
     } else {
         resultSetField = {"type", "title", "startTime", "endTime", "isAllDay", "description",
