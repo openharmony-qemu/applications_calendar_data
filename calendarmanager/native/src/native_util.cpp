@@ -1238,4 +1238,25 @@ void SetField(const std::vector<string>& eventKey, std::vector<string>& queryFie
                                                   { "description", "description" }};
     SetFieldInfo(eventKey, queryField, resultSetField, eventField, error);
 }
+
+std::vector<string> NormalizeEventKey(const std::vector<string>& eventKey, bool filterInstance)
+{
+    std::vector<string> queryEventKey;
+    for (const auto& key : eventKey) {
+        if (filterInstance && (key == "instanceStartTime" || key == "instanceEndTime")) {
+            continue;
+        }
+        queryEventKey.emplace_back(key);
+    }
+    if (std::find(queryEventKey.begin(), queryEventKey.end(), "startTime") == queryEventKey.end()) {
+        queryEventKey.emplace_back("startTime");
+    }
+    if (std::find(queryEventKey.begin(), queryEventKey.end(), "endTime") == queryEventKey.end()) {
+        queryEventKey.emplace_back("endTime");
+    }
+    if (std::find(queryEventKey.begin(), queryEventKey.end(), "type") == queryEventKey.end()) {
+        queryEventKey.emplace_back("type");
+    }
+    return queryEventKey;
+}
 }
