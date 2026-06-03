@@ -322,21 +322,7 @@ Result<std::vector<Event>> Calendar::GetEvents
     std::set<string> resultSetField;
     Error error = {"invalid arg[1], i.e. invalid keys!", NO_ERROR};
     if (eventKey.size() > 0) {
-        std::vector<string> filteredEventKey;
-        for (const auto& key : eventKey) {
-            if (key != "instanceStartTime" && key != "instanceEndTime") {
-                filteredEventKey.emplace_back(key);
-            }
-        }
-        if (std::find(filteredEventKey.begin(), filteredEventKey.end(), "startTime") == filteredEventKey.end()) {
-            filteredEventKey.emplace_back("startTime");
-        }
-        if (std::find(filteredEventKey.begin(), filteredEventKey.end(), "endTime") == filteredEventKey.end()) {
-            filteredEventKey.emplace_back("endTime");
-        }
-        if (std::find(filteredEventKey.begin(), filteredEventKey.end(), "type") == filteredEventKey.end()) {
-            filteredEventKey.emplace_back("type");
-        }
+        std::vector<string> filteredEventKey = NormalizeEventKey(eventKey, true);
         queryField.emplace_back("_id");
         SetField(filteredEventKey, queryField, resultSetField, error);
         SetField(eventKey, queryField, resultSetField, error);
@@ -395,18 +381,9 @@ Result<std::vector<Event>> Calendar::QueryEventInstances(int64_t start,
     std::set<string> resultSetField;
     Error error = {"", NO_ERROR};
     if (eventKey.size() > 0) {
-        std::vector<string> queryEventKey = eventKey;
-        if (std::find(queryEventKey.begin(), queryEventKey.end(), "startTime") == queryEventKey.end()) {
-            queryEventKey.emplace_back("startTime");
-        }
-        if (std::find(queryEventKey.begin(), queryEventKey.end(), "endTime") == queryEventKey.end()) {
-            queryEventKey.emplace_back("endTime");
-        }
-        if (std::find(queryEventKey.begin(), queryEventKey.end(), "type") == queryEventKey.end()) {
-            queryEventKey.emplace_back("type");
-        }
+        std::vector<string> extendedEventKey = NormalizeEventKey(eventKey, false);
         queryField.emplace_back("Events._id");
-        SetField(queryEventKey, queryField, resultSetField, error);
+        SetField(extendedEventKey, queryField, resultSetField, error);
         error.message = (error.code == PARAMETER_INVALID) ? errMessage : "";
         CHECK_ERRCODE_RETURN(error, "eventKeys error", Result<std::vector<Event>>(error));
     } else {
