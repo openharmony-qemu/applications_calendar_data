@@ -390,7 +390,7 @@ HWTEST_F(EventFilterTest, QueryEventInstances_EventKeyWithOnlyTitle, testing::ex
 
 HWTEST_F(EventFilterTest, GetEvents_EventKeyWithInstance, testing::ext::TestSize.Level1)
 {
-    const string title = "GetEvents_TitleOnly";
+    const string title = "GetEvents_EventKeyWithInstance";
     Event event;
     event.title = title;
     event.type = EventType::Important;
