@@ -365,4 +365,48 @@ HWTEST_F(EventFilterTest, QueryEventInstances_002, testing::ext::TestSize.Level1
     EXPECT_EQ(newEvent.startTime, event.startTime);
     EXPECT_EQ(newEvent.endTime, event.endTime);
 }
+
+HWTEST_F(EventFilterTest, QueryEventInstances_EventKeyWithOnlyTitle, testing::ext::TestSize.Level1)
+{
+    const string title = "QueryEventInstances_TitleOnly";
+    Event event;
+    event.title = title;
+    event.type = EventType::Important;
+    auto timeNow = Now();
+    const int64_t interval = 100;
+    event.startTime = timeNow;
+    event.endTime = timeNow + interval;
+    auto addRet = calendar->AddEvent(event);
+    auto eventId = addRet.GetValue();
+    auto eventResult = calendar->QueryEventInstances(event.startTime, event.endTime + 100, {eventId}, {"title"});
+    auto queryEvents = eventResult.GetValue();
+    ASSERT_EQ(queryEvents.size(), 1);
+    const auto newEvent = queryEvents.at(0);
+    EXPECT_EQ(newEvent.title.value(), title);
+    EXPECT_EQ(newEvent.startTime, event.startTime);
+    EXPECT_EQ(newEvent.endTime, event.endTime);
+    EXPECT_EQ(newEvent.type, EventType::Important);
+}
+
+HWTEST_F(EventFilterTest, GetEvents_EventKeyWithInstance, testing::ext::TestSize.Level1)
+{
+    const string title = "GetEvents_EventKeyWithInstance";
+    Event event;
+    event.title = title;
+    event.type = EventType::Important;
+    auto timeNow = Now();
+    const int64_t interval = 100;
+    event.startTime = timeNow;
+    event.endTime = timeNow + interval;
+    auto eventId = calendar->AddEvent(event);
+    auto eventResult = calendar->GetEvents(FilterById({eventId.GetValue()}),
+    {"title", "instanceStartTime", "instanceEndTime"});
+    auto queryEvents = eventResult.GetValue();
+    ASSERT_EQ(queryEvents.size(), 1);
+    const auto newEvent = queryEvents.at(0);
+    EXPECT_EQ(newEvent.title.value(), title);
+    EXPECT_EQ(newEvent.startTime, event.startTime);
+    EXPECT_EQ(newEvent.endTime, event.endTime);
+    EXPECT_EQ(newEvent.type, EventType::Important);
+}
 }

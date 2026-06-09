@@ -58,6 +58,7 @@ namespace OHOS::CalendarApi::Native {
     void SetField(const std::vector<string>& eventKey,
         std::vector<string>& queryField, std::set<string>& resultSetField, Error &error);
     void GetEventAttendeesValue(std::vector<Event> &events, const std::map<int, std::vector<Attendee>> &attendeesMap);
+    std::vector<string> NormalizeEventKey(const std::vector<string>& eventKey, bool filterInstance);
 
     bool ColorParse(const std::string& colorStr, variant<string, int64_t>& colorValue);
     int StringToInt(const std::string &str);

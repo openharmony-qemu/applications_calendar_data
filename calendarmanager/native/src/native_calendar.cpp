@@ -322,8 +322,9 @@ Result<std::vector<Event>> Calendar::GetEvents
     std::set<string> resultSetField;
     Error error = {"invalid arg[1], i.e. invalid keys!", NO_ERROR};
     if (eventKey.size() > 0) {
+        std::vector<string> filteredEventKey = NormalizeEventKey(eventKey, true);
         queryField.emplace_back("_id");
-        SetField(eventKey, queryField, resultSetField, error);
+        SetField(filteredEventKey, queryField, resultSetField, error);
         CHECK_ERRCODE_RETURN(error, "getEvents eventKeys error", Result<std::vector<Event>>(error));
     } else {
         resultSetField = {"type", "title", "startTime", "endTime", "isAllDay", "description",
@@ -379,8 +380,9 @@ Result<std::vector<Event>> Calendar::QueryEventInstances(int64_t start,
     std::set<string> resultSetField;
     Error error = {"", NO_ERROR};
     if (eventKey.size() > 0) {
+        std::vector<string> extendedEventKey = NormalizeEventKey(eventKey, false);
         queryField.emplace_back("Events._id");
-        SetField(eventKey, queryField, resultSetField, error);
+        SetField(extendedEventKey, queryField, resultSetField, error);
         error.message = (error.code == PARAMETER_INVALID) ? errMessage : "";
         CHECK_ERRCODE_RETURN(error, "eventKeys error", Result<std::vector<Event>>(error));
     } else {
