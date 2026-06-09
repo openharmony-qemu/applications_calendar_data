@@ -377,9 +377,9 @@ HWTEST_F(EventFilterTest, QueryEventInstances_EventKeyWithOnlyTitle, testing::ex
     event.startTime = timeNow;
     event.endTime = timeNow + interval;
     auto addRet = calendar->AddEvent(event);
-    auto eventId = addRet.value();
+    auto eventId = addRet.GetValue();
     auto eventResult = calendar->QueryEventInstances(event.startTime, event.endTime + 100, {eventId}, {"title"});
-    auto queryEvents = eventResult.value();
+    auto queryEvents = eventResult.GetValue();
     ASSERT_EQ(queryEvents.size(), 1);
     const auto newEvent = queryEvents.at(0);
     EXPECT_EQ(newEvent.title.value(), title);
@@ -399,9 +399,9 @@ HWTEST_F(EventFilterTest, GetEvents_EventKeyWithInstance, testing::ext::TestSize
     event.startTime = timeNow;
     event.endTime = timeNow + interval;
     auto eventId = calendar->AddEvent(event);
-    auto eventResult = calendar->GetEvents(FilterById({eventId.value()}),
+    auto eventResult = calendar->GetEvents(FilterById({eventId.GetValue()}),
     {"title", "instanceStartTime", "instanceEndTime"});
-    auto queryEvents = eventResult.value();
+    auto queryEvents = eventResult.GetValue();
     ASSERT_EQ(queryEvents.size(), 1);
     const auto newEvent = queryEvents.at(0);
     EXPECT_EQ(newEvent.title.value(), title);
