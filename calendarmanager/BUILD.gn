@@ -95,6 +95,7 @@ ohos_shared_library("calendarmanager") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
+    "jsoncpp:jsoncpp",
   ]
   defines = []
   if (device_usage_hiappevent_enabled) {

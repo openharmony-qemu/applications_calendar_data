@@ -35,7 +35,8 @@
                 "samgr",
                 "ace_engine",
                 "os_account",
-                "hiappevent"
+                "hiappevent",
+                "jsoncpp"
             ],
             "third_party": []
         },
