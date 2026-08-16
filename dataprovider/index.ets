@@ -1,0 +1,1 @@
+export { default as DataShareOperations } from './src/main/ets/DataShareAbilityDoOperation';

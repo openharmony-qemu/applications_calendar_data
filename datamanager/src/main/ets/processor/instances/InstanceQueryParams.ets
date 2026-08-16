@@ -15,8 +15,8 @@
  */
 
 import { isEmptyStr, isUninterrupted } from '@ohos/common/src/main/ets/utils/TextUtils';
-import { getQueries } from '@ohos/common/src/main/ets/utils/UrlUtils';
-import { Log } from "@ohos/common/src/main/ets/utils/Log";
+import { getBundleNameByUri, getQueries } from '@ohos/common/src/main/ets/utils/UrlUtils';
+import { Log } from '@ohos/common/src/main/ets/utils/Log';
 
 const KEY_RANGE_BEGIN = 'begin';
 
@@ -27,6 +27,10 @@ const KEY_SEARCH_TEXT = 'searchText';
 const KEY_ORDER_BY_ASC = 'orderByAsc';
 
 const KEY_ORDER_BY_DESC = 'orderByDesc';
+
+const KEY_EVENT_IDS = 'eventIds';
+
+const KEY_CALENDAR_ID = 'calendarId';
 
 const TAG = 'InstancesQueryParams';
 
@@ -39,11 +43,14 @@ const MAX_SEARCH_LENGTH = 32;
  * @since 2022-09-02
  */
 export class InstancesQueryParams {
-  begin?: number
-  end?: number
-  searchText?: string
-  orderByAsc?: string
-  orderByDesc?: string
+  public begin?: number;
+  public end?: number;
+  public searchText?: string;
+  public orderByAsc?: string;
+  public orderByDesc?: string;
+  public eventIds?: string;
+  public calendarId?: number;
+  public callerName?: string;
 
   constructor() {
   }
@@ -60,13 +67,13 @@ export class InstancesQueryParams {
   public isValidBeginEnd(): boolean {
     const begin = this.getBegin();
     const end = this.getEnd();
-    if (begin === null || begin === undefined) {
+    if ((begin === null) || (begin === undefined)) {
       return false;
     }
-    if (end === null || end === undefined) {
+    if ((end === null) || (end === undefined)) {
       return false;
     }
-    return end >= 0 && end >= 0 && begin < end;
+    return (begin < end);
   }
 
   public getBegin(): number {
@@ -108,6 +115,22 @@ export class InstancesQueryParams {
   public setOrderByDesc(orderByDesc: string): void {
     this.orderByDesc = orderByDesc;
   }
+
+  public getEventIds(): string {
+    return this.eventIds as string;
+  }
+
+  public setEventIds(eventIds: string): void {
+    this.eventIds = eventIds;
+  }
+
+  public getCalendarId(): number {
+    return this.calendarId as number;
+  }
+
+  public setCalendarId(calendarId: number): void {
+    this.calendarId = calendarId;
+  }
 }
 
 /**
@@ -120,7 +143,7 @@ export class InstancesQueryParams {
  * @param params object of InstancesQueryParams
  */
 export function isValidQueryParams(params: InstancesQueryParams): boolean {
-  if (params === null || params === undefined) {
+  if ((params === null) || (params === undefined)) {
     return false;
   }
   const isValidSearchText = !isEmptyStr(params.getSearchText());
@@ -138,7 +161,7 @@ export function isValidQueryParams(params: InstancesQueryParams): boolean {
  */
 export function parseParamsFromUri(uri: string): InstancesQueryParams | undefined {
   const queryMap = getQueries(uri);
-  if (queryMap === null || queryMap === undefined || queryMap.size <= 0) {
+  if ((queryMap === null) || (queryMap === undefined) || (queryMap.size <= 0)) {
     Log.warn(TAG, 'parseBeginEndFromUri get invalid queryMap');
     return undefined;
   }
@@ -149,6 +172,12 @@ export function parseParamsFromUri(uri: string): InstancesQueryParams | undefine
   parseSearchTextFromQueryMap(queryMap, paramsResult);
 
   parseOrderByFromQueryMap(queryMap, paramsResult);
+
+  parseEventIdsFromQueryMap(queryMap, paramsResult);
+
+  parseCalendarIdFromQueryMap(queryMap, paramsResult);
+
+  paramsResult.callerName = getBundleNameByUri(uri);
 
   return paramsResult;
 }
@@ -192,7 +221,7 @@ function parseSearchTextFromQueryMap(queryMap: Map<string, string>, params: Inst
   // decode for chinese search
   searchText = decodeURI(searchText);
   if (isEmptyStr(searchText)) {
-    Log.warn(TAG, `the searchText is empty after decode`);
+    Log.warn(TAG, `the searchText is empty after decode`)
     return;
   }
   const originalText = searchText;
@@ -202,31 +231,11 @@ function parseSearchTextFromQueryMap(queryMap: Map<string, string>, params: Inst
     searchText = searchText.substring(0, MAX_SEARCH_LENGTH);
   }
 
-  // Replace characters to prevent SQL injection.
-  searchText = getSecuritySearchText(searchText);
-
   params.setSearchText(searchText);
 
   if (originalText != searchText) {
     Log.info(TAG, `the searchText is converted from ${originalText} to ${searchText}`);
   }
-}
-
-/**
- * To prevent SQL injection, replace sql's separator characters to double characters.
- * And you need to add the ' symbol before and after searchText when splicing SQL statements.
- *
- * @param searchText search text before replace
- */
-function getSecuritySearchText(searchText: string): string {
-  /*
-   * Separator characters of sql:
-   * MySQL -> `
-   * MS-SQL -> ]
-   * PostgreSQL -> "
-   * String separator -> '
-   */
-  return searchText.replace(RegExp("/(?<matchedText>[\`\]\"\'])/gm"), '$<matchedText>$<matchedText>');
 }
 
 /**
@@ -243,5 +252,28 @@ function parseOrderByFromQueryMap(queryMap: Map<string, string>, params: Instanc
   const orderByDesc = queryMap.get(KEY_ORDER_BY_DESC) as string;
   if (isUninterrupted(orderByDesc)) {
     params.setOrderByDesc(orderByDesc);
+  }
+}
+
+function parseEventIdsFromQueryMap(queryMap: Map<string, string>, params: InstancesQueryParams): void {
+  const eventIdsStr = queryMap.get(KEY_EVENT_IDS) as string;
+  if (isEmptyStr(eventIdsStr)) {
+    Log.warn(TAG, 'parseEventIdsFromQueryMap get invalid str');
+    return;
+  }
+  params.setEventIds(eventIdsStr);
+}
+
+function parseCalendarIdFromQueryMap(queryMap: Map<string, string>, params: InstancesQueryParams): void {
+  const calendarIdStr = queryMap.get(KEY_CALENDAR_ID) as string;
+  if (isEmptyStr(calendarIdStr)) {
+    Log.warn(TAG, 'parsCalendarIdFromUri get invalid begin end str');
+    return;
+  }
+  try {
+    const calendarId = Number.parseInt(calendarIdStr);
+    params.setCalendarId(calendarId);
+  } catch (err) {
+    Log.error(TAG, `parseCalendarIdFromUri get err ${err}`);
   }
 }

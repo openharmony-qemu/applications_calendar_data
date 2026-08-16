@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { CalendarType } from "./EventColumns";
 
 interface EventsType {
   id: number;
@@ -96,16 +97,15 @@ interface EventsType {
  */
 export class Events {
   public id: number = 0;
-  // 邮箱账户的有值 9FTElLYEtUOcwfc25Ut5DgAAAAABDfRUxJS2BLVDnMH3NuVLeQ4AAj21rqg1
   public syncId: string = '';
   public dirty: number = 0;
   public mutators: string = '';
-  // 日程是否是农历日程 1 true
   public calendarType: number = 0;
   public uuid: string = '';
   public imageType: string = '';
   public lastSynced: number = 0;
   public calendarId: number = 0;
+  public calendarUuid: string = '';
   public title: string = '';
   public eventLocation: string = '';
   public longitude: string = '';
@@ -156,13 +156,9 @@ export class Events {
   public serviceCpMngUri: string = '';
   public serviceDescription: string = '';
   public serviceSupportMinVersion: number = 0;
-  // birthdayKind 日程如果是属于联系人生日账户,该值表示日程的类型 10 太阳历, 11 农历
   public syncData1: string = '';
-  // SYNC_DATA2 表示联系人id
   public syncData2: string = '';
-  // 联系人日程有值,代码没搜到相关含义
   public syncData3: string = '';
-  // 联系人日程有值,com.android.huawei.phone 联系人应用的包名
   public syncData4: string = '';
   public syncData5: string = '';
   public syncData6: string = '';
@@ -189,5 +185,13 @@ export class Events {
    */
   public isAllDay(): boolean {
     return this.allDay === 1;
+  }
+  /**
+   * 是否农历日程
+   *
+   * @returns true 农历 false 阳历
+   */
+  public isLunarEvent(): boolean {
+    return this.calendarType === CalendarType.LUNAR;
   }
 }

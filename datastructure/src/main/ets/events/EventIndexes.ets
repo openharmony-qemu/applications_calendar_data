@@ -106,6 +106,7 @@ export class EventIndexes implements EventIndexesType {
   imageTypeIndex = 0;
   lastSyncedIndex = 0;
   calendarIdIndex = 0;
+  calendarUuidIndex = 0;
   titleIndex = 0;
   eventLocationIndex = 0;
   longitudeIndex = 0;
@@ -168,6 +169,7 @@ export class EventIndexes implements EventIndexesType {
   kvSyncedIndex = 0;
   kvSyncTimeIndex = 0;
   creatorIndex = 0;
+  identifierIndex = 0;
 }
 
 /**
@@ -185,9 +187,11 @@ export function parseIndexes(resultSet: data_rdb.ResultSet): EventIndexes | unde
   indexes.dirtyIndex = resultSet.getColumnIndex(EventColumns.DIRTY);
   indexes.mutatorsIndex = resultSet.getColumnIndex(EventColumns.MUTATORS);
   indexes.calendarTypeIndex = resultSet.getColumnIndex(EventColumns.EVENT_CALENDAR_TYPE);
+  indexes.uuidIndex = resultSet.getColumnIndex(EventColumns.UUID);
   indexes.imageTypeIndex = resultSet.getColumnIndex(EventColumns.EVENT_IMAGE_TYPE);
   indexes.lastSyncedIndex = resultSet.getColumnIndex(EventColumns.LAST_SYNCED);
   indexes.calendarIdIndex = resultSet.getColumnIndex(EventColumns.CALENDAR_ID);
+  indexes.calendarUuidIndex = resultSet.getColumnIndex(EventColumns.CALENDAR_UUID);
   indexes.titleIndex = resultSet.getColumnIndex(EventColumns.TITLE);
   indexes.eventLocationIndex = resultSet.getColumnIndex(EventColumns.EVENT_LOCATION);
   indexes.longitudeIndex = resultSet.getColumnIndex(EventColumns.LOCATION_LONGITUDE);
@@ -250,5 +254,6 @@ export function parseIndexes(resultSet: data_rdb.ResultSet): EventIndexes | unde
   indexes.kvSyncedIndex = resultSet.getColumnIndex(EventColumns.KV_SYNC);
   indexes.kvSyncTimeIndex = resultSet.getColumnIndex(EventColumns.KV_SYNC_TIME);
   indexes.creatorIndex = resultSet.getColumnIndex(EventColumns.CREATOR);
+  indexes.identifierIndex = resultSet.getColumnIndex(EventColumns.IDENTIFIER);
   return indexes;
 }

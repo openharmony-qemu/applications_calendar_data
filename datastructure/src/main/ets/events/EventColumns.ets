@@ -41,6 +41,7 @@ export class EventColumns {
   public static EVENT_IMAGE_TYPE = 'event_image_type';
   public static LAST_SYNCED = 'lastSynced';
   public static CALENDAR_ID = 'calendar_id';
+  public static CALENDAR_UUID = 'calendar_uuid';
   public static TITLE = 'title';
   public static EVENT_LOCATION = 'eventLocation';
   public static LOCATION_LONGITUDE = 'location_longitude';
@@ -108,10 +109,40 @@ export class EventColumns {
   }
 }
 
+
+export enum CalendarType {
+  SOLAR = 0,
+
+  LUNAR = 1
+}
+
 /**
  * searchable Columns in Events table
  */
 export const SEARCH_COLUMNS = [EventColumns.TITLE, EventColumns.DESCRIPTION, EventColumns.EVENT_LOCATION];
 
 export const UPDATE_INSTANCES_COLUMNS = [EventColumns.DTSTART, EventColumns.DTEND, EventColumns.DURATION,
-EventColumns.EVENT_TIMEZONE, EventColumns.RRULE, EventColumns.RDATE, EventColumns.EXRULE, EventColumns.EXDATE];
+  EventColumns.EVENT_TIMEZONE, EventColumns.RRULE, EventColumns.RDATE, EventColumns.EXRULE, EventColumns.EXDATE];
+
+export const EXPAND_COLUMNS: string[] = [
+  EventColumns.ID,
+  EventColumns.SYNC_ID,
+  EventColumns.EVENT_STATUS,
+  EventColumns.DTSTART,
+  EventColumns.DTEND,
+  EventColumns.EVENT_TIMEZONE,
+  EventColumns.RRULE,
+  EventColumns.RDATE,
+  EventColumns.EXRULE,
+  EventColumns.EXDATE,
+  EventColumns.DURATION,
+  EventColumns.ALLDAY,
+  EventColumns.ORIGINAL_SYNC_ID,
+  EventColumns.ORIGINAL_INSTANCE_TIME,
+  EventColumns.CALENDAR_ID,
+  EventColumns.DELETED,
+  EventColumns.UUID,
+  EventColumns.SYNC_DATA1,
+  EventColumns.EVENT_CALENDAR_TYPE,
+  EventColumns.CREATOR
+];

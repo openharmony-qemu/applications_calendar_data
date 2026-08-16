@@ -38,75 +38,83 @@ import { CalendarMetaDataColumns } from '@ohos/datastructure/src/main/ets/calend
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { GlobalThis } from '@ohos/common/src/main/ets/utils/GlobalThis';
 
-/**
- * the create Events table sql. OS has a limit of 1024 bytes for each sql string, and this sql string is beyond
- * 1024 bytes, so we don't use this sql directly now.
- */
-let CREATE_EVENTS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${EventColumns.TABLE_NAME} (`
-  + `${EventColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, `
-  + `${EventColumns.SYNC_ID} TEXT, `
-  + `${EventColumns.DIRTY} INTEGER, `
-  + `${EventColumns.MUTATORS} TEXT, `
-  + `${EventColumns.EVENT_CALENDAR_TYPE} INTEGER NOT NULL DEFAULT 0), `
-  + `${EventColumns.EVENT_IMAGE_TYPE} TEXT, `
-  + `${EventColumns.LAST_SYNCED} INTEGER DEFAULT 0, `
-  + `${EventColumns.CALENDAR_ID} INTEGER NOT NULL, `
-  + `${EventColumns.TITLE} TEXT, `
-  + `${EventColumns.EVENT_LOCATION} TEXT, `
-  + `${EventColumns.LOCATION_LONGITUDE} TEXT, `
-  + `${EventColumns.LOCATION_LATITUDE} TEXT, `
-  + `${EventColumns.DESCRIPTION} TEXT, `
-  + `${EventColumns.EVENT_COLOR} INTEGER, `
-  + `${EventColumns.EVENT_COLOR_INDEX} TEXT, `
-  + `${EventColumns.EVENT_STATUS} INTEGER, `
-  + `${EventColumns.SELF_ATTENDEE_STATUS} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.DTSTART} INTEGER, `
-  + `${EventColumns.DTEND} INTEGER, `
-  + `${EventColumns.EVENT_TIMEZONE} TEXT, `
-  + `${EventColumns.DURATION} TEXT, `
-  + `${EventColumns.ALLDAY} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.ACCESS_LEVEL} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.AVAILABILITY} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.HAS_ALARM} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.HAS_EXTENDED_PROPERTIES} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.RRULE} TEXT, `
-  + `${EventColumns.RDATE} TEXT, `
-  + `${EventColumns.EXRULE} TEXT, `
-  + `${EventColumns.EXDATE} TEXT, `
-  + `${EventColumns.ORIGINAL_ID} INTEGER, `
-  + `${EventColumns.ORIGINAL_SYNC_ID} TEXT, `
-  + `${EventColumns.ORIGINAL_INSTANCE_TIME} INTEGER, `
-  + `${EventColumns.ORIGINAL_ALL_DAY} INTEGER, `
-  + `${EventColumns.LAST_DATE} INTEGER, `
-  + `${EventColumns.EVENT_TIME_STAMP} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.HAS_ATTENDEE_DATE} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.GUESTS_CAN_MODIFY} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.GUESTS_CAN_INVITE_OTHERS} INTEGER NOT NULL DEFAULT 1, `
-  + `${EventColumns.GUESTS_CAN_SEE_GUESTS} INTEGER NOT NULL DEFAULT 1, `
-  + `${EventColumns.ORGANIZER} TEXT, ` //STRING
-  + `${EventColumns.IS_ORGANIZER} INTEGER, `
-  + `${EventColumns.DELETED} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.EVENT_END_TIMEZONE} TEXT, `
-  + `${EventColumns.CUSTOM_APP_PACKAGE} TEXT, `
-  + `${EventColumns.CUSTOM_APP_URI} TEXT, `
-  + `${EventColumns.UID2445} TEXT, `
-  + `${EventColumns.VERSION} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.EVENT_UUID} TEXT, `
-  + `${EventColumns.HWEXT_ALERT_TYPE} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.IMPORTANT_EVENT_TYPE} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.SYNC_DATA1} TEXT, `
-  + `${EventColumns.SYNC_DATA2} TEXT, `
-  + `${EventColumns.SYNC_DATA3} TEXT, `
-  + `${EventColumns.SYNC_DATA4} TEXT, `
-  + `${EventColumns.SYNC_DATA5} TEXT, `
-  + `${EventColumns.SYNC_DATA6} TEXT, `
-  + `${EventColumns.SYNC_DATA7} TEXT, `
-  + `${EventColumns.SYNC_DATA8} TEXT, `
-  + `${EventColumns.SYNC_DATA9} TEXT, `
-  + `${EventColumns.SYNC_DATA10} TEXT, `
-  + `${EventColumns.KV_SYNC} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.KV_SYNC_TIME} INTEGER NOT NULL DEFAULT 0, `
-  + `${EventColumns.CREATOR} TEXT NOT NULL)`;
+const CREATE_EVENTS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${EventColumns.TABLE_NAME} (
+    ${EventColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+    ${EventColumns.UUID} TEXT UNIQUE ON CONFLICT IGNORE,
+    ${EventColumns.SYNC_ID} TEXT,
+    ${EventColumns.DIRTY} INTEGER,
+    ${EventColumns.MUTATORS} TEXT,
+    ${EventColumns.EVENT_CALENDAR_TYPE} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.EVENT_IMAGE_TYPE} TEXT,
+    ${EventColumns.LAST_SYNCED} INTEGER DEFAULT 0,
+    ${EventColumns.CALENDAR_ID} INTEGER NOT NULL,
+    ${EventColumns.TITLE} TEXT,
+    ${EventColumns.EVENT_LOCATION} TEXT,
+    ${EventColumns.LOCATION_LONGITUDE} TEXT,
+    ${EventColumns.LOCATION_LATITUDE} TEXT,
+    ${EventColumns.DESCRIPTION} TEXT,
+    ${EventColumns.EVENT_COLOR} INTEGER,
+    ${EventColumns.EVENT_COLOR_INDEX} TEXT,
+    ${EventColumns.EVENT_STATUS} INTEGER,
+    ${EventColumns.SELF_ATTENDEE_STATUS} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.DTSTART} INTEGER,
+    ${EventColumns.DTEND} INTEGER,
+    ${EventColumns.EVENT_TIMEZONE} TEXT,
+    ${EventColumns.DURATION} TEXT,
+    ${EventColumns.ALLDAY} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.ACCESS_LEVEL} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.AVAILABILITY} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.HAS_ALARM} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.HAS_EXTENDED_PROPERTIES} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.RRULE} TEXT,
+    ${EventColumns.RDATE} TEXT,
+    ${EventColumns.EXRULE} TEXT,
+    ${EventColumns.EXDATE} TEXT,
+    ${EventColumns.ORIGINAL_ID} INTEGER,
+    ${EventColumns.ORIGINAL_SYNC_ID} TEXT,
+    ${EventColumns.ORIGINAL_INSTANCE_TIME} INTEGER,
+    ${EventColumns.ORIGINAL_ALL_DAY} INTEGER,
+    ${EventColumns.LAST_DATE} INTEGER,
+    ${EventColumns.EVENT_TIME_STAMP} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.HAS_ATTENDEE_DATE} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.GUESTS_CAN_MODIFY} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.GUESTS_CAN_INVITE_OTHERS} INTEGER NOT NULL DEFAULT 1,
+    ${EventColumns.GUESTS_CAN_SEE_GUESTS} INTEGER NOT NULL DEFAULT 1,
+    ${EventColumns.ORGANIZER} STRING,
+    ${EventColumns.IS_ORGANIZER} INTEGER,
+    ${EventColumns.DELETED} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.EVENT_END_TIMEZONE} TEXT,
+    ${EventColumns.CUSTOM_APP_PACKAGE} TEXT,
+    ${EventColumns.CUSTOM_APP_URI} TEXT,
+    ${EventColumns.UID2445} TEXT,
+    ${EventColumns.VERSION} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.EVENT_UUID} TEXT,
+    ${EventColumns.HWEXT_ALERT_TYPE} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.IMPORTANT_EVENT_TYPE} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.SERVICE.SERVICE_VERIFIED} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.SERVICE.SERVICE_TYPE} TEXT,
+    ${EventColumns.SERVICE.SERVICE_CP_BZ_URI} TEXT,
+    ${EventColumns.SERVICE.SERVICE_CP_MNG_URI} TEXT,
+    ${EventColumns.SERVICE.SERVICE_DESCRIPTION} TEXT,
+    ${EventColumns.SERVICE.SERVICE_MIN_VERSION} INTEGER,
+    ${EventColumns.SYNC_DATA1} TEXT,
+    ${EventColumns.SYNC_DATA2} TEXT,
+    ${EventColumns.SYNC_DATA3} TEXT,
+    ${EventColumns.SYNC_DATA4} TEXT,
+    ${EventColumns.SYNC_DATA5} TEXT,
+    ${EventColumns.SYNC_DATA6} TEXT,
+    ${EventColumns.SYNC_DATA7} TEXT,
+    ${EventColumns.SYNC_DATA8} TEXT,
+    ${EventColumns.SYNC_DATA9} TEXT,
+    ${EventColumns.SYNC_DATA10} TEXT,
+    ${EventColumns.KV_SYNC} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.KV_SYNC_TIME} INTEGER NOT NULL DEFAULT 0,
+    ${EventColumns.CREATOR} TEXT NOT NULL,
+    ${EventColumns.IDENTIFIER} TEXT,
+    ${EventColumns.CALENDAR_UUID} TEXT
+);`;
+
+const EVENT_UUID_INDEX = `CREATE INDEX IF NOT EXISTS events_uuid_index ON ${EventColumns.TABLE_NAME} (${EventColumns.UUID})`;
 
 /**
  * the create Calendars table sql
@@ -149,23 +157,27 @@ let CREATE_CALENDARS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${CalendarsColumns.
   + `${CalendarsColumns.CAL_SYNC9} TEXT, `
   + `${CalendarsColumns.CAL_SYNC10} TEXT, `
   + `${CalendarsColumns.CAN_REMINDER} INTEGER NOT NULL DEFAULT 1, `
-  + `${CalendarsColumns.CREATOR} TEXT NOT NULL)`;
+  + `${CalendarsColumns.CREATOR} TEXT NOT NULL, `
+  + `${CalendarsColumns.UUID} TEXT NOT NULL UNIQUE)`;
 
 /**
  * the create Reminders table sql
  */
 let CREATE_REMINDERS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${RemindersColumns.TABLE_NAME} (`
-  + `${RemindersColumns.ID} INTEGER PRIMARY KEY, `
+  + `${RemindersColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, `
   + `${RemindersColumns.EVENT_ID} INTEGER, `
   + `${RemindersColumns.MINUTES} INTEGER, `
   + `${RemindersColumns.METHOD} INTEGER NOT NULL DEFAULT 0, `
-  + `${RemindersColumns.CREATOR} TEXT NOT NULL)`;
+  + `${RemindersColumns.CREATOR} TEXT NOT NULL, `
+  + `${RemindersColumns.REMINDER_UUID} TEXT, `
+  + `${RemindersColumns.EVENT_UUID} TEXT, `
+  + `UNIQUE (${RemindersColumns.REMINDER_UUID}))`;
 
 /**
  * the create Instances table sql
  */
 let CREATE_INSTANCES_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${InstancesColumns.TABLE_NAME} (`
-  + `${InstancesColumns.ID} INTEGER PRIMARY KEY, `
+  + `${InstancesColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, `
   + `${InstancesColumns.EVENT_ID} INTEGER, `
   + `${InstancesColumns.BEGIN} INTEGER, `
   + `${InstancesColumns.END} INTEGER, `
@@ -173,9 +185,10 @@ let CREATE_INSTANCES_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${InstancesColumns.
   + `${InstancesColumns.END_DAY} INTEGER, `
   + `${InstancesColumns.START_MINUTE} INTEGER, `
   + `${InstancesColumns.END_MINUTE} INTEGER, `
-  + `${InstancesColumns.CREATOR} TEXT NOT NULL,`
-  + `UNIQUE (${InstancesColumns.EVENT_ID},${InstancesColumns.BEGIN},`
-  + `${InstancesColumns.END}))`;
+  + `${InstancesColumns.CREATOR} TEXT NOT NULL, `
+  + `${InstancesColumns.UUID} TEXT, `
+  + `${InstancesColumns.EVENT_UUID} TEXT, `
+  + `UNIQUE (${InstancesColumns.UUID}) ON CONFLICT REPLACE)`;
 
 /**
  * the create Colors table sql
@@ -206,20 +219,39 @@ let CREATE_ATTENDEES_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${AttendeesColumns.
 /**
  * the create CalendarAlerts table sql
  */
-let CREATE_CALENDAR_ALERTS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${CalendarAlertsColumns.TABLE_NAME} (`
-  + `${CalendarAlertsColumns.ID} INTEGER PRIMARY KEY, `
-  + `${CalendarAlertsColumns.EVENT_ID} INTEGER, `
-  + `${CalendarAlertsColumns.BEGIN} INTEGER NOT NULL, `
-  + `${CalendarAlertsColumns.END} INTEGER NOT NULL, `
-  + `${CalendarAlertsColumns.ALARM_TIME} INTEGER NOT NULL, `
-  + `${CalendarAlertsColumns.CREATION_TIME} INTEGER NOT NULL DEFAULT 0, `
-  + `${CalendarAlertsColumns.RECEIVED_TIME} INTEGER NOT NULL DEFAULT 0, `
-  + `${CalendarAlertsColumns.NOTIFY_TIME} INTEGER NOT NULL DEFAULT 0, `
-  + `${CalendarAlertsColumns.STATE} INTEGER NOT NULL, `
-  + `${CalendarAlertsColumns.MINUTES} INTEGER, `
-  + `${CalendarAlertsColumns.CREATOR} TEXT NOT NULL,`
-  + `UNIQUE (${CalendarAlertsColumns.ALARM_TIME},${CalendarAlertsColumns.BEGIN},`
-  + `${CalendarAlertsColumns.EVENT_ID}))`;
+const CREATE_CALENDAR_ALERTS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${CalendarAlertsColumns.TABLE_NAME} (` +
+  `${CalendarAlertsColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, ` +
+  `${CalendarAlertsColumns.EVENT_ID} INTEGER, ` +
+  `${CalendarAlertsColumns.EVENT_UUID} TEXT, ` +
+  `${CalendarAlertsColumns.BEGIN} INTEGER NOT NULL, ` +
+  `${CalendarAlertsColumns.END} INTEGER NOT NULL, ` +
+  `${CalendarAlertsColumns.ALARM_TIME} INTEGER NOT NULL, ` +
+  `${CalendarAlertsColumns.CREATION_TIME} INTEGER NOT NULL DEFAULT 0, ` +
+  `${CalendarAlertsColumns.RECEIVED_TIME} INTEGER NOT NULL DEFAULT 0, ` +
+  `${CalendarAlertsColumns.NOTIFY_TIME} INTEGER NOT NULL DEFAULT 0, ` +
+  `${CalendarAlertsColumns.STATE} INTEGER NOT NULL, ` +
+  `${CalendarAlertsColumns.MINUTES} INTEGER, ` +
+  `${CalendarAlertsColumns.CREATOR} TEXT NOT NULL,` +
+  `${CalendarAlertsColumns.TITLE} TEXT,` +
+  `${CalendarAlertsColumns.CONTENT} TEXT,` +
+  `${CalendarAlertsColumns.WANT_AGENT} TEXT,` +
+  `${CalendarAlertsColumns.BUTTONS} TEXT,` +
+  `${CalendarAlertsColumns.SLOT_TYPE} INTEGER,` +
+  `${CalendarAlertsColumns.KEEP_HEADSUP} INTEGER,` +
+  `${CalendarAlertsColumns.TYPE} INTEGER NOT NULL DEFAULT 0,` +
+  `${CalendarAlertsColumns.IDENTIFIER} TEXT NOT NULL,` +
+  `${CalendarAlertsColumns.RING_DURATION} INTEGER,` +
+  `${CalendarAlertsColumns.CUSTOM_RING_URI} TEXT,` +
+  `${CalendarAlertsColumns.TIME_INTERVAL} INTEGER,` +
+  `${CalendarAlertsColumns.SNOOZE_TIMES} INTEGER,` +
+  `${CalendarAlertsColumns.SNOOZE_SLOT_TYPE} INTEGER,` +
+  `${CalendarAlertsColumns.SNOOZE_CONTENT} TEXT,` +
+  `${CalendarAlertsColumns.EXPIRED_CONTENT} TEXT,` +
+  `${CalendarAlertsColumns.MAX_SCREEN_WANT_AGENT} TEXT,` +
+  `${CalendarAlertsColumns.NEED_AGENT} INTEGER DEFAULT 1,` +
+  `${CalendarAlertsColumns.UUID} TEXT,` +
+  `UNIQUE (${CalendarAlertsColumns.ALARM_TIME},${CalendarAlertsColumns.BEGIN},` +
+  `${CalendarAlertsColumns.EVENT_ID}))`;
 
 /**
  * the create CalendarCache table sql
@@ -347,7 +379,7 @@ class CalendarDataHelper {
 
   private async initRdbStore() {
     Log.log(TAG, 'call initRdbStore start');
-    this.rdbStore = await ohosDataRdb.getRdbStore(GlobalThis.getExtensionContext(), {
+    this.rdbStore = await ohosDataRdb.getRdbStore(GlobalThis.getInstance().getBasicContext(), {
       name: Constants.DB_NAME,
       securityLevel: ohosDataRdb.SecurityLevel.S1,
     }).then(); //IDE识别接口有问题，暂时改成这样，待后续更新IDE改回
@@ -407,144 +439,10 @@ class CalendarDataHelper {
   }
 
   private async createEventsTable() {
-    // the database has a limit of 1024 byte for sql strings, so we create some fields in the create sql,
-    // other fields are added later.
-    Log.log(TAG, 'call createEventsTable start');
-    let CREATE_EVENTS_TABLE_SQL = `CREATE TABLE IF NOT EXISTS ${EventColumns.TABLE_NAME} (`
-      + `${EventColumns.ID} INTEGER PRIMARY KEY AUTOINCREMENT, `
-      + `${EventColumns.SYNC_ID} TEXT, `
-      + `${EventColumns.DIRTY} INTEGER, `
-      + `${EventColumns.MUTATORS} TEXT, `
-      + `${EventColumns.EVENT_CALENDAR_TYPE} INTEGER NOT NULL DEFAULT 0)`;
-
     try {
+      Log.log(TAG, 'call createEventsTable start');
       await this.rdbStore?.executeSql(CREATE_EVENTS_TABLE_SQL, []);
-      Log.log(TAG, 'call createEventsTable add column start');
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_IMAGE_TYPE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.LAST_SYNCED} INTEGER DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.CALENDAR_ID} INTEGER NOT NULL`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.TITLE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_LOCATION} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.LOCATION_LONGITUDE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.LOCATION_LATITUDE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.DESCRIPTION} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_COLOR} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_COLOR_INDEX} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_STATUS} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SELF_ATTENDEE_STATUS} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.DTSTART} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.DTEND} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_TIMEZONE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.DURATION} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.ALLDAY} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.ACCESS_LEVEL} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.AVAILABILITY} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.HAS_ALARM} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.HAS_EXTENDED_PROPERTIES} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.RRULE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.RDATE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.EXRULE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.EXDATE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.ORIGINAL_ID} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.ORIGINAL_SYNC_ID} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.ORIGINAL_INSTANCE_TIME} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.ORIGINAL_ALL_DAY} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.LAST_DATE} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_TIME_STAMP} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.HAS_ATTENDEE_DATE} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.GUESTS_CAN_MODIFY} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.GUESTS_CAN_INVITE_OTHERS} INTEGER NOT NULL DEFAULT 1`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.GUESTS_CAN_SEE_GUESTS} INTEGER NOT NULL DEFAULT 1`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.ORGANIZER} STRING`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.IS_ORGANIZER} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.DELETED} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_END_TIMEZONE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.CUSTOM_APP_PACKAGE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.CUSTOM_APP_URI} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ${EventColumns.UID2445} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.VERSION} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.EVENT_UUID} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.HWEXT_ALERT_TYPE} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.IMPORTANT_EVENT_TYPE} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
-        `${EventColumns.SERVICE.SERVICE_VERIFIED} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
-        `${EventColumns.SERVICE.SERVICE_TYPE} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
-        `${EventColumns.SERVICE.SERVICE_CP_BZ_URI} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
-        `${EventColumns.SERVICE.SERVICE_CP_MNG_URI} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
-        `${EventColumns.SERVICE.SERVICE_DESCRIPTION} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE EVENTS ADD COLUMN ` +
-        `${EventColumns.SERVICE.SERVICE_MIN_VERSION} INTEGER`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA1} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA2} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA3} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA4} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA5} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA6} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA7} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA8} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA9} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.SYNC_DATA10} TEXT`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.KV_SYNC} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.KV_SYNC_TIME} INTEGER NOT NULL DEFAULT 0`, []);
-      await this.rdbStore?.executeSql(`ALTER TABLE Events ADD COLUMN ` +
-        `${EventColumns.CREATOR} TEXT NOT NULL`, []);
+      await this.rdbStore?.executeSql(EVENT_UUID_INDEX, []);
       Log.log(TAG, 'call createEventsTable end');
     } catch (err) {
       Log.error(TAG, `createEventsTable err:${err.message}`);

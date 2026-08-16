@@ -14,49 +14,7 @@
  * limitations under the License.
  */
 
-import { Constants } from '../Constants';
-
-interface CalendarsColumnsType {
-  TABLE_NAME: string;
-  ID: string;
-  ACCOUNT_NAME: string;
-  ACCOUNT_TYPE: string;
-  SYNC_ID: string;
-  DIRTY: string;
-  MUTATORS: string;
-  NAME: string;
-  CALENDAR_DISPLAY_NAME: string;
-  CALENDAR_COLOR: string;
-  CALENDAR_COLOR_INDEX: string;
-  CALENDAR_ACCESS_LEVEL: string;
-  VISIBLE: string;
-  SYNC_EVENTS: string;
-  CALENDAR_LOCATION: string;
-  CALENDAR_TIMEZONE: string;
-  OWNER_ACCOUNT: string;
-  IS_PRIMARY: string;
-  CAN_ORGANIZER_RESPOND: string;
-  CAN_MODIFY_TIMEZONE: string;
-  CAN_PARTIALLY_UPDATE: string;
-  MAX_REMINDERS: string;
-  ALLOWED_REMINDERS: string;
-  ALLOWED_AVAILABILITY: string;
-  ALLOWED_ATTENDEE_TYPES: string;
-  DELETED: string;
-  CALENDAR_TIME_STAMP: string;
-  CAL_SYNC1: string;
-  CAL_SYNC2: string;
-  CAL_SYNC3: string;
-  CAL_SYNC4: string;
-  CAL_SYNC5: string;
-  CAL_SYNC6: string;
-  CAL_SYNC7: string;
-  CAL_SYNC8: string;
-  CAL_SYNC9: string;
-  CAL_SYNC10: string;
-  CAN_REMINDER: string;
-  CREATOR: string;
-}
+import { GlobalPackageName } from '@ohos/common';
 
 /**
  * the const of table Calendars
@@ -67,6 +25,8 @@ export enum CalendarsColumns {
   TABLE_NAME = 'Calendars',
 
   ID = '_id',
+
+  UUID = 'uuid',
 
   ACCOUNT_NAME = 'account_name',
 
@@ -145,13 +105,13 @@ export enum CalendarsColumns {
   CREATOR = 'creator',
 }
 
-export enum AppName {
-  CALENDARDATA = 'com.huawei.hmos.calendardata',
-}
-
 export const DEFAULT_CALENDAR_VALUE: Record<string, number | string> = {
   '_id': 1,
+  'uuid': '1',
   'account_name': 'phone',
   'account_type': 'local',
-  'creator': AppName.CALENDARDATA,
+  'calendar_displayName': 'Phone',
+  'calendar_color': -3059398,
+  'calendar_access_level': 700,
+  'creator': GlobalPackageName.CALENDAR_DATA
 }

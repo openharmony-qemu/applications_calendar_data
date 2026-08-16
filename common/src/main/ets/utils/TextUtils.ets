@@ -1,3 +1,4 @@
+
 /**
  * @file Describe the file
  * Copyright (c) 2023 Huawei Device Co., Ltd.
@@ -13,6 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+ 
+import { Log } from './Log';
+
+const TAG = 'TextUtils';
 
 export function isEmptyStr(str: string): boolean {
   if (str === null || str === undefined) {
@@ -31,4 +36,29 @@ export function isUninterrupted(str: string): boolean {
     return false;
   }
   return new RegExp("/^[a-zA-z][a-zA-Z0-9]*$/").test(str);
+}
+
+
+/**
+ * 解析字符串为数字
+ *
+ * @param value 待解析的字符串
+ * @param defaultValue 默认值，解析失败时返回该值
+ * @returns 解析后的数字值
+ */
+export function parseNumber(value: string, defaultValue : number = 0): number {
+  let num: number = defaultValue;
+  if (isEmptyStr(value)) {
+    return num;
+  }
+  try {
+    num = Number.parseInt(value);
+  } catch (e) {
+    Log.error(TAG, `parseNumber get Err: ${e?.message}`);
+    return defaultValue;
+  }
+  if (Number.isNaN(num)) {
+    return defaultValue;
+  }
+  return num;
 }

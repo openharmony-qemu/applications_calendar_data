@@ -38,5 +38,9 @@ export enum InstancesColumns {
 
   END_MINUTE = 'endMinute',
 
-  CREATOR = 'creator'
+  CREATOR = 'creator',
+
+  UUID = 'instanceUuid',
+
+  EVENT_UUID = 'event_uuid',
 }

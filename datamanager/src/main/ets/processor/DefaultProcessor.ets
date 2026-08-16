@@ -31,7 +31,7 @@ import {
 } from '../commonevents/notify/ProviderChangeNotifier';
 import { DatabaseProcessor } from './DatabaseProcessor';
 import getTableByUri from '../utils/CalendarUriHelper';
-import { AlertsMessage } from './alerts/AlertsMessage';
+import { AlertsObserverManager } from './alerts/observer/AlertsObserverManager';
 import { BusinessError } from '@ohos.base';
 
 export const INSERT_OPERATION_NAME = 'insert';
@@ -130,7 +130,7 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
         Log.log(this.logTag, `insert ${table} after callback: rowId = ` + rowId);
         if (!this.isFromMigrate) {
           notifyProviderChange(table, OPERATION_INSERT);
-          this.notifyAlertsChanges(INSERT_OPERATION_NAME, table, values);
+          AlertsObserverManager.getInstance().notifyAlertsChanges(INSERT_OPERATION_NAME, table, values);
         }
       } else {
         Log.warn(this.logTag, `insert get err:${err?.code}, ${err?.message}`);
@@ -155,7 +155,7 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
         Log.log(this.logTag, `insert ${table} after callback: rowId = ` + rowId);
         if (!this.isFromMigrate) {
           notifyProviderChange(table, OPERATION_INSERT);
-          this.notifyAlertsChanges(INSERT_OPERATION_NAME, table, values);
+          AlertsObserverManager.getInstance().notifyAlertsChanges(INSERT_OPERATION_NAME, table, values);
         }
       } else {
         Log.warn(this.logTag, `insert get err:${err?.code}, ${err?.message}`);
@@ -180,11 +180,7 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
       if (hasNoError(err)) {
         Log.log(this.logTag, `delete ${table} after callback: count = ` + count);
         notifyProviderChange(table, OPERATION_DELETE);
-        const deleteValue: data_rdb.ValuesBucket = {
-          'deleteCounts': count
-        };
-        Log.log(this.logTag, `deleteValue: [deleteCounts]: ${deleteValue['deleteCounts']}`);
-        this.notifyAlertsChanges(DELETE_OPERATION_NAME, table, deleteValue);
+        AlertsObserverManager.getInstance().notifyAlertsChanges(DELETE_OPERATION_NAME, table);
       } else {
         Log.error(this.logTag, `delete get err:${err?.code}, ${err?.message}`);
       }
@@ -209,7 +205,7 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
       if (hasNoError(err)) {
         Log.log(this.logTag, `update ${table} after callback: count = ` + count);
         notifyProviderChange(table, OPERATION_UPDATE);
-        this.notifyAlertsChanges(UPDATE_OPERATION_NAME, table, values);
+        AlertsObserverManager.getInstance().notifyAlertsChanges(UPDATE_OPERATION_NAME, table, values);
       } else {
         Log.warn(this.logTag, `update get err:${err?.code}, ${err?.message}`);
       }
@@ -263,16 +259,5 @@ export class DefaultProcessor implements DatabaseProcessor, Observable {
     this.mObserverList.forEach((observer) => {
       observer.onChange(message);
     });
-  }
-
-  notifyAlertsChanges(operationName: string, table: string,
-                      values?: data_rdb.ValuesBucket | data_rdb.ValuesBucket[]) {
-    let message = new AlertsMessage();
-    message.setOperationName(operationName);
-    message.setTableName(table);
-    if (values) {
-      message.setValues(values);
-    }
-    this.notifyChanges(message);
   }
 }

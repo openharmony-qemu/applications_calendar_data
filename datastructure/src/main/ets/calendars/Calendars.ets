@@ -14,89 +14,50 @@
  * limitations under the License.
  */
 
-interface CalendarsType {
-  id: number
-  accountName: string
-  accountType: string
-  syncId: string
-  dirty: number
-  mutators: string
-  name: string
-  calendarDisplayName: string
-  calendarColor: number
-  calendarColorIndex: string
-  calendarAccessLevel: number
-  visible: number
-  syncEvents: number
-  calendarLocation: string
-  calendarTimezone: string
-  ownerAccount: string
-  isPrimary: number
-  canOrganizerRespond: number
-  canModifyTimeZone: number
-  canPartiallyUpdate: number
-  maxReminders: number
-  allowedReminders: string
-  allowedAvailability: string;
-  allowedAttendeeTypes: string;
-  deleted: number;
-  calendarTimeStamp: number;
-  calSync1: string;
-  calSync2: string;
-  calSync3: string;
-  calSync4: string;
-  calSync5: string;
-  calSync6: string;
-  calSync7: string;
-  calSync8: string;
-  calSync9: string;
-  calSync10: string;
-  canReminder: number;
-  creator: string;
-}
 
 /**
  * the structure of table Calendars
  *
  * @since 2022-10-18
  */
-export class Calendars implements CalendarsType {
-  id = 0;
-  accountName = '';
-  accountType = '';
-  syncId = '';
-  dirty = 0;
-  mutators = '';
-  name = '';
-  calendarDisplayName = '';
-  calendarColor = 0;
-  calendarColorIndex = '';
-  calendarAccessLevel = 0;
-  visible = 0;
-  syncEvents = 0;
-  calendarLocation = '';
-  calendarTimezone = '';
-  ownerAccount = '';
-  isPrimary = 0;
-  canOrganizerRespond = 0;
-  canModifyTimeZone = 0;
-  canPartiallyUpdate = 0;
-  maxReminders = 0;
-  allowedReminders = '';
-  allowedAvailability = '';
-  allowedAttendeeTypes = '';
-  deleted = 0;
-  calendarTimeStamp = 0;
-  calSync1 = '';
-  calSync2 = '';
-  calSync3 = '';
-  calSync4 = '';
-  calSync5 = '';
-  calSync6 = '';
-  calSync7 = '';
-  calSync8 = '';
-  calSync9 = '';
-  calSync10 = '';
-  canReminder = 0;
-  creator = '';
+export class Calendars {
+  public id: number = 0;
+  public uuid: string = '';
+  public accountName: string = '';
+  public accountType: string = '';
+  public syncId: string = '';
+  public dirty: number = 0;
+  public mutators: string = '';
+  public name: string = '';
+  public calendarDisplayName: string = '';
+  public calendarColor: number = 0;
+  public calendarColorIndex: string = '';
+  public calendarAccessLevel: number = 0;
+  public visible: number = 0;
+  public syncEvents: number = 0;
+  public calendarLocation: string = '';
+  public calendarTimezone: string = '';
+  public ownerAccount: string = '';
+  public isPrimary: number = 0;
+  public canOrganizerRespond: number = 0;
+  public canModifyTimeZone: number = 0;
+  public canPartiallyUpdate: number = 0;
+  public maxReminders: number = 0;
+  public allowedReminders: string = '';
+  public allowedAvailability: string = '';
+  public allowedAttendeeTypes: string = '';
+  public deleted: number = 0;
+  public calendarTimeStamp: number = 0;
+  public calSync1: string = '';
+  public calSync2: string = '';
+  public calSync3: string = '';
+  public calSync4: string = '';
+  public calSync5: string = '';
+  public calSync6: string = '';
+  public calSync7: string = '';
+  public calSync8: string = '';
+  public calSync9: string = '';
+  public calSync10: string = '';
+  public canReminder: number = 1;
+  public creator: string = '';
 }

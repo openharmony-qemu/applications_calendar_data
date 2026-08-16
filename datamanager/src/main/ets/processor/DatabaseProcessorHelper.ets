@@ -15,11 +15,13 @@
  */
 
 import data_rdb from '@ohos.data.relationalStore';
+import util from '@ohos.util';
 import { Constants } from '@ohos/datastructure/src/main/ets/Constants';
 import {
   CalendarsColumns,
   DEFAULT_CALENDAR_VALUE
 } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
+import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
 import { ValueType } from '@ohos.data.ValuesBucket';
 
@@ -41,6 +43,18 @@ export function initValueCreator(values: data_rdb.ValuesBucket, creator: ValueTy
  */
 export function initPredicateCreator(predicates: dataSharePredicates.DataSharePredicates, creator: ValueType) {
   predicates.equalTo(Constants.CREATOR, creator);
+}
+
+/**
+ * 初始化数据中的 uuid。uuid 字段无法被应用自定义插入
+ *
+ * @param values 插入的数据
+ */
+export function initValueUuid(values: data_rdb.ValuesBucket) {
+  if (!values[EventColumns.UUID]) {
+    const uuid = util.generateRandomUUID();
+    values[EventColumns.UUID] = uuid;
+  }
 }
 
 /**

@@ -42,6 +42,10 @@ export class Log {
     console.error(TAG + "--" + classTag + ":" + msg);
   }
 
+  public static logErrorMsg(logTag: string, methodName: string, error?: ESObject): void {
+    Log.error(logTag, `${methodName} error msg ${error?.message} code ${error?.code}`);
+  }
+
   public static stringify(data: object): string {
     return JSON.stringify(data, null, 4);
   }

@@ -18,12 +18,14 @@ import UIAbility from '@ohos.app.ability.UIAbility';
 import { Log } from '@ohos/common/src/main/ets/utils/Log'
 import Want from '@ohos.app.ability.Want';
 import window from '@ohos.window';
+import { GlobalThis } from '@ohos/common';
 
 const TAG = 'Application';
 
 export default class Application extends UIAbility {
   onCreate(want: Want) {
     Log.log(TAG, "MainAbility onCreate");
+    GlobalThis.setAppContext(this.context);
   }
 
   onDestroy() {
