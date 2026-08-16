@@ -32,6 +32,9 @@ export function parseCalendars(resultSet: data_rdb.ResultSet,
   if (indexes.idIndex >= 0) {
     calendars.id = resultSet.getLong(indexes.idIndex);
   }
+  if (indexes.uuidIndex >= 0) {
+    calendars.uuid = resultSet.getString(indexes.uuidIndex);
+  }
   if (indexes.accountNameIndex >= 0) {
     calendars.accountName = resultSet.getString(indexes.accountNameIndex);
   }
