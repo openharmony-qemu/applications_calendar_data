@@ -71,7 +71,8 @@ export function parseEvents(resultSet: data_rdb.ResultSet): Events | undefined {
   event.eventTimeStamp = dataResult[EventColumns.EVENT_TIME_STAMP] as number ?? event.eventTimeStamp;
   event.hasAttendeeData = dataResult[EventColumns.HAS_ATTENDEE_DATE] as number ?? event.hasAttendeeData;
   event.guestsCanModify = dataResult[EventColumns.GUESTS_CAN_MODIFY] as number ?? event.guestsCanModify;
-  event.guestsCanInviteOthers = dataResult[EventColumns.GUESTS_CAN_INVITE_OTHERS] as number ?? event.guestsCanInviteOthers;
+  event.guestsCanInviteOthers =
+    dataResult[EventColumns.GUESTS_CAN_INVITE_OTHERS] as number ?? event.guestsCanInviteOthers;
   event.guestsCanSeeGuests = dataResult[EventColumns.GUESTS_CAN_SEE_GUESTS] as number ?? event.guestsCanSeeGuests;
   event.organizer = dataResult[EventColumns.ORGANIZER] as string ?? event.organizer;
   event.isOrganizer = dataResult[EventColumns.IS_ORGANIZER] as number ?? event.isOrganizer;

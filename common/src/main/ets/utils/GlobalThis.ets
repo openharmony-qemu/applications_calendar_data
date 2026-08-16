@@ -46,8 +46,8 @@ export class GlobalThis {
     return GlobalThis.getInstance().appContext;
   }
 
-  public static setAppContext(UiAbilityContext: common.UIAbilityContext): void {
-    GlobalThis.getInstance().appContext = UiAbilityContext;
+  public static setAppContext(uiAbilityContext: common.UIAbilityContext): void {
+    GlobalThis.getInstance().appContext = uiAbilityContext;
   }
 
   public static getExtensionContext(): common.ExtensionContext | null {
