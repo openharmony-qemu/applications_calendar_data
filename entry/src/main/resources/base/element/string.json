@@ -11,6 +11,34 @@
     {
       "name": "app_name",
       "value": "CalendarData"
+    },
+    {
+      "name": "no_title_label",
+      "value": "Untitled Event"
+    },
+    {
+      "name": "event_all_day",
+      "value": "All Day"
+    },
+    {
+      "name": "event_important",
+      "value": "Important Event"
+    },
+    {
+      "name": "snooze",
+      "value": "Snooze"
+    },
+    {
+      "name": "close",
+      "value": "Close"
+    },
+    {
+      "name": "today",
+      "value": "Today"
+    },
+    {
+      "name": "description_apply_for_calendar_permission",
+      "value": "This is used to manage your calendar."
     }
   ]
 }

@@ -26,6 +26,8 @@ export enum CalendarAlertsColumns {
 
   EVENT_ID = 'event_id',
 
+  EVENT_UUID = 'event_uuid',
+
   BEGIN = 'begin',
 
   END = 'end',
@@ -42,5 +44,45 @@ export enum CalendarAlertsColumns {
 
   MINUTES = 'minutes',
 
-  CREATOR = 'creator'
+  CREATOR = 'creator',
+
+  TITLE = 'title',
+
+  CONTENT = 'content',
+
+  WANT_AGENT = 'wantAgent',
+
+  BUTTONS = 'buttons',
+
+  SLOT_TYPE = 'slotType',
+
+  KEEP_HEADSUP = 'keepHeadsUp',
+
+  TYPE = 'type',
+
+  IDENTIFIER = 'identifier',
+
+  RING_DURATION = 'ringDuration',
+
+  CUSTOM_RING_URI = 'customRingUri',
+
+  TIME_INTERVAL = 'timeInterval',
+
+  SNOOZE_TIMES = 'snoozeTimes',
+
+  SNOOZE_SLOT_TYPE = 'snoozeSlotType',
+
+  SNOOZE_CONTENT = 'snoozeContent',
+
+  EXPIRED_CONTENT = 'expiredContent',
+
+  MAX_SCREEN_WANT_AGENT = 'maxScreenWantAgent',
+
+  ACCOUNT_TYPE = 'account_type',
+
+  ALL_DAY = 'allDay',
+
+  NEED_AGENT = 'needAgent',
+
+  UUID = 'uuid',
 }

@@ -3,6 +3,30 @@
     {
       "name": "app_name",
       "value": "日历存储"
+    },
+    {
+      "name": "no_title_label",
+      "value": "无标题事件"
+    },
+    {
+      "name": "event_all_day",
+      "value": "全天"
+    },
+    {
+      "name": "event_important",
+      "value": "重要事件"
+    },
+    {
+      "name": "snooze",
+      "value": "稍后提醒"
+    },
+    {
+      "name": "close",
+      "value": "不再提醒"
+    },
+    {
+      "name": "today",
+      "value": "今天"
     }
   ]
 }

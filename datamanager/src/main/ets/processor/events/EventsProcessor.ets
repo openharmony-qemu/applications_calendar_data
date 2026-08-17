@@ -24,20 +24,21 @@ import { hasNoError } from '@ohos/common/src/main/ets/utils/ErrorUtils';
 import { getBundleNameByUri } from '@ohos/common/src/main/ets/utils/UrlUtils';
 
 import { Calendars } from '@ohos/datastructure/src/main/ets/calendars/Calendars';
-import { AppName } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
 import { CalendarsIndexes, parseCalendarsIndexes } from '@ohos/datastructure/src/main/ets/calendars/CalendarsIndexes';
 import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
-import { EventColumns, UPDATE_INSTANCES_COLUMNS } from '@ohos/datastructure/src/main/ets/events/EventColumns';
+import { EventColumns, EXPAND_COLUMNS } from '@ohos/datastructure/src/main/ets/events/EventColumns';
 import { Events } from '@ohos/datastructure/src/main/ets/events/Events';
 import { EventIndexes, parseIndexes } from '@ohos/datastructure/src/main/ets/events/EventIndexes';
 import { parseCalendars } from '@ohos/datastructure/src/main/ets/calendars/CalendarsParser';
-import { parseEvents } from '@ohos/datastructure/src/main/ets/events/EventParser';
 
 import { ErrorCode } from '../../constants/ErrorCode';
 import { DefaultProcessor } from './../DefaultProcessor';
-import { initValueCreator, initPredicateCreator, deleteValueCreator } from '../DatabaseProcessorHelper';
+import { initValueCreator, initPredicateCreator, deleteValueCreator, initValueUuid } from '../DatabaseProcessorHelper';
 import { acquireExpandOne, isNeedRefreshInstances, acquireUpdateOne } from '../instances/InstancesProcessor';
 import { filterValuesBucket } from '@ohos/common/src/main/ets/utils/ValuesUtils';
+import { isEmptyStr } from '@ohos/common/src/main/ets/utils/TextUtils';
+import { parseEventByIndex } from '@ohos/datastructure';
+import { GlobalPackageName } from '@ohos/common';
 
 const TAG: string = 'EventsProcessor';
 const CHANNEL_ID: string = 'channel_id';
@@ -51,10 +52,14 @@ export class EventsProcessor extends DefaultProcessor {
   async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
                               value: data_rdb.ValuesBucket, callback: Function) {
     let values = filterValuesBucket(value, CHANNEL_ID);
-    const callerName = getBundleNameByUri(uri);
-    initValueCreator(values, callerName);
+    if (!this.isFromMigrate) {
+      const callerName = getBundleNameByUri(uri);
+      initValueCreator(values, callerName);
+      this.initEventUuid(values, callerName);
+    }
     const isCalendarExist = await isCalendarContainSameId(rdbStore, values);
     if (isCalendarExist) {
+      await this.initCalendarUuid(values, rdbStore);
       this.insertEventWithInstanceExpand(rdbStore, uri, values, callback);
     } else {
       Log.warn(TAG, 'not support insert operation');
@@ -70,10 +75,14 @@ export class EventsProcessor extends DefaultProcessor {
   async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
                              value: data_rdb.ValuesBucket, callback: Function) {
     let values = filterValuesBucket(value, CHANNEL_ID);
-    const callerName = getBundleNameByUri(uri);
-    initValueCreator(values, callerName);
+    if (!this.isFromMigrate) {
+      const callerName = getBundleNameByUri(uri);
+      initValueCreator(values, callerName);
+      this.initEventUuid(values, callerName);
+    }
     const isCalendarCreatorExist = await isCalendarContainSameCreator(rdbStore, values);
     if (isCalendarCreatorExist) {
+      await this.initCalendarUuid(values, rdbStore);
       this.insertEventWithInstanceExpand(rdbStore, uri, values, callback);
     } else {
       Log.warn(TAG, 'not support insert operation');
@@ -83,6 +92,27 @@ export class EventsProcessor extends DefaultProcessor {
         message: 'The calling application cannot insert an event with different creator from calendar'
       };
       callback(err, -1);
+    }
+  }
+
+  private initEventUuid(values: data_rdb.ValuesBucket, callerName: string) {
+    const identifier = values[EventColumns.IDENTIFIER] as string;
+    if (values[EventColumns.IDENTIFIER] && !isEmptyStr(identifier)) {
+      if (!values[EventColumns.UUID]) {
+        values[EventColumns.UUID] = identifier + callerName;
+      }
+    } else {
+      initValueUuid(values);
+    }
+  }
+
+  private async initCalendarUuid(values: data_rdb.ValuesBucket, rdbStore: data_rdb.RdbStore) {
+    const calendarId = values[EventColumns.CALENDAR_ID] as number;
+    if (!values[EventColumns.CALENDAR_UUID]) {
+      const calendar: Calendars | undefined = await queryCalendarById(rdbStore, calendarId);
+      if (calendar) {
+        values[EventColumns.CALENDAR_UUID] = calendar.uuid;
+      }
     }
   }
 
@@ -183,7 +213,7 @@ async function isCalendarContainSameCreator(rdbStore: data_rdb.RdbStore,
     if (calendars === null || calendars === undefined) {
       return false;
     }
-    if (calendars.creator === eventCreator || calendars.creator === AppName.CALENDARDATA) {
+    if (calendars.creator === eventCreator || calendars.creator === GlobalPackageName.CALENDAR_DATA) {
       return true;
     }
   }
@@ -300,11 +330,8 @@ async function queryEventsByIds(rdbStore: data_rdb.RdbStore,
   const resultMap: Map<number, Events> = new Map();
   const predicate = new dataSharePredicates.DataSharePredicates();
   predicate.in(EventColumns.ID, eventIds);
-  const columns = UPDATE_INSTANCES_COLUMNS;
-  columns.push(EventColumns.ID);
-  columns.push(EventColumns.CREATOR);
   try {
-    const resultSet = await rdbStore.query(EventColumns.TABLE_NAME, predicate, columns);
+    const resultSet = await rdbStore.query(EventColumns.TABLE_NAME, predicate, EXPAND_COLUMNS);
     if (resultSet === null || resultSet === undefined) {
       Log.error(TAG, 'queryEventsByIds get invalid resultSet');
       return resultMap;
@@ -315,7 +342,7 @@ async function queryEventsByIds(rdbStore: data_rdb.RdbStore,
     }
     const indexes: EventIndexes | undefined = parseIndexes(resultSet);
     do {
-      const event: Events | undefined = parseEvents(resultSet, indexes);
+      const event: Events | undefined = parseEventByIndex(resultSet, indexes);
       if (event != undefined) {
         resultMap.set(event.id, event);
       }
@@ -324,4 +351,62 @@ async function queryEventsByIds(rdbStore: data_rdb.RdbStore,
     Log.error(TAG, `queryEventsByIds get err ${err?.message}`);
   }
   return resultMap;
+}
+
+/**
+ * 根据eventId查询日程
+ *
+ * @param rdbStore rdb数据库
+ * @param eventId 参数
+ * @returns 结果
+ */
+export async function queryEventsById(rdbStore: data_rdb.RdbStore, eventId: number): Promise<Events | undefined> {
+  const predicate = new dataSharePredicates.DataSharePredicates();
+  predicate.equalTo(EventColumns.ID, eventId);
+  let resultSet: data_rdb.ResultSet | null = null;
+  try {
+    resultSet = await rdbStore.query(EventColumns.TABLE_NAME, predicate);
+    if (!resultSet || !(resultSet?.rowCount > 0)) {
+      return undefined;
+    }
+    resultSet.goToFirstRow();
+    const indexes: EventIndexes | undefined = parseIndexes(resultSet);
+    return parseEventByIndex(resultSet, indexes);
+  } catch (err) {
+    Log.error(TAG, `queryEventsById get err ${err?.message}`);
+  } finally {
+    if (resultSet) {
+      resultSet.close();
+    }
+  }
+  return undefined;
+}
+
+/**
+ * 根据calendarId查询calendar
+ *
+ * @param rdbStore rdb数据库
+ * @param calendarId 参数
+ * @returns 结果
+ */
+async function queryCalendarById(rdbStore: data_rdb.RdbStore, calendarId: number): Promise<Calendars | undefined> {
+  const predicate = new dataSharePredicates.DataSharePredicates();
+  predicate.equalTo(CalendarsColumns.ID, calendarId);
+  let resultSet: data_rdb.ResultSet | null = null;
+  try {
+    resultSet = await rdbStore.query(CalendarsColumns.TABLE_NAME, predicate);
+    if (!resultSet || !(resultSet?.rowCount > 0)) {
+      return undefined;
+    }
+    resultSet.goToFirstRow();
+    const calendarsIndexes: CalendarsIndexes | undefined = parseCalendarsIndexes(resultSet);
+    return parseCalendars(resultSet, calendarsIndexes);
+  } catch (err) {
+    Log.error(TAG, `queryCalendarById get err ${err?.message}`);
+  } finally {
+    if (resultSet) {
+      resultSet.close();
+    }
+  }
+  return undefined;
 }

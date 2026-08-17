@@ -14,15 +14,27 @@
  * limitations under the License.
  */
 
-import { Log } from "@ohos/common/src/main/ets/utils/Log"
+import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { isEmptyStr } from '@ohos/common/src/main/ets/utils/TextUtils';
 
 import { EventColumns, SEARCH_COLUMNS } from '@ohos/datastructure/src/main/ets/events/EventColumns';
 import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns';
+import { parseNumber } from '@ohos/common/src/main/ets/utils/TextUtils';
 
 import { InstancesQueryParams } from './InstanceQueryParams';
+import { ValueType } from '@kit.ArkData';
 
 const TAG = 'InstancesQuerySqlGenerator';
+
+export class QuerySqlResult {
+  public sql: string | undefined;
+  public args: ValueType[];
+
+  constructor(sql: string | undefined, args: ValueType[]) {
+    this.sql = sql;
+    this.args = args;
+  }
+}
 
 /**
  * generate instances associated query SQL from columns and query params(begin&end、searchText)
@@ -30,11 +42,14 @@ const TAG = 'InstancesQuerySqlGenerator';
  * @param columns Columns to be queried
  * @param params Parameter object containing begin&end or searchText
  */
-export function generateInstancesQuerySql(columns: Array<string>, params: InstancesQueryParams, callerName: string): string | undefined {
-  if (params === null || params === undefined) {
+export function generateInstancesQuerySql(columns: string[],
+                                          params: InstancesQueryParams, callerName: string): QuerySqlResult {
+  if ((params === null) || (params === undefined)) {
     Log.error(TAG, `generateInstancesQuerySql get invalid params`);
-    return undefined;
+    return new QuerySqlResult(undefined, []);
   }
+
+  const sqlArgs: ValueType[] = [];
 
   // 1.generate main body
   let sql = getSelectMainBody(columns);
@@ -42,47 +57,70 @@ export function generateInstancesQuerySql(columns: Array<string>, params: Instan
   // 2.process begin&end fragment
   const hasBeginEnd = params.isValidBeginEnd();
   if (hasBeginEnd) {
-    sql += getBeginEndSqlFragment(params.getBegin(), params.getEnd());
+    sql += getBeginEndSqlFragment(sqlArgs, params.getBegin(), params.getEnd());
   }
 
   // 3.if by low authority, process creator fragment use callerName
-  let hasCaller: boolean;
-  if (hasCaller = !isEmptyStr(callerName)) {
+  if (!isEmptyStr(callerName)) {
     if (hasBeginEnd) {
       sql += ` AND`;
     }
-    sql += getCreatorSqlFragment(callerName);
+    sql += getCreatorSqlFragment(sqlArgs, callerName);
   }
 
   // 4.process searchText fragment
   const searchText = params.getSearchText();
   const hasSearch = !isEmptyStr(searchText);
   if (hasSearch) {
-    if (hasBeginEnd || hasCaller) {
+    if (hasBeginEnd || !isEmptyStr(callerName)) {
       sql += ` AND`;
     }
-    sql += getSearchSqlFragment(searchText);
+    sql += getSearchSqlFragment(sqlArgs, searchText);
+
   }
 
-  // 5.process orderBy fragment
+  // 5.process eventIdStr fragment
+  const eventIdStr = params.getEventIds();
+  if (!isEmptyStr(eventIdStr)) {
+    if (hasBeginEnd) {
+      sql += ` AND`;
+    }
+    sql += getEventIdsSqlFragment(sqlArgs, eventIdStr);
+
+  }
+
+  // 6.process calendarId fragment
+  const calendarId = params.getCalendarId();
+  if ((calendarId && calendarId > 0)) {
+    if (hasBeginEnd) {
+      sql += ` AND`;
+    }
+    sql += getCalendarIdSqlFragment(sqlArgs, calendarId);
+
+  }
+
+  // 7.process orderBy fragment
   const orderByFragment: string = getOrderByFragment(params) as string;
   if (!isEmptyStr(orderByFragment)) {
     sql += orderByFragment;
   }
 
-  // 6.return the full sql
-  return sql;
+  // 8.return the full sql and args
+  return new QuerySqlResult(sql, sqlArgs);
 }
 
-function getSelectMainBody(columns: Array<string>): string {
+function getSelectMainBody(columns: string[]): string {
   let sql = 'SELECT ';
 
   // set select columns
-  if (columns === null || columns === undefined || columns.length === 0) {
+  if ((columns === null) || (columns === undefined) || (columns.length === 0)) {
     sql += '*';
   } else {
     for (let index = 0; index < columns.length; index++) {
-      const element = columns[index];
+      let element = columns[index];
+      if (columns[index] === '_id') {
+        element = 'Events._id';
+      }
       if (index !== 0) {
         sql += ',';
       }
@@ -94,32 +132,32 @@ function getSelectMainBody(columns: Array<string>): string {
   const events = EventColumns.TABLE_NAME;
   const instances = InstancesColumns.TABLE_NAME;
   sql += ` FROM ${instances} INNER JOIN ${events}`;
-  sql += ` ON (${instances}.${InstancesColumns.EVENT_ID}=${events}.${EventColumns.ID}) WHERE`;
+  sql += ` ON (${instances}.${InstancesColumns.EVENT_UUID}=${events}.${EventColumns.UUID}) WHERE`;
   return sql;
 }
 
-function getCreatorSqlFragment(creator: string): string {
-  const fragment = ` (${InstancesColumns.TABLE_NAME}.${InstancesColumns.CREATOR} = '${creator}')`;
+function getCreatorSqlFragment(sqlArgs: ValueType[], creator: string): string {
+  sqlArgs.push(creator);
+  const fragment = ` (${InstancesColumns.TABLE_NAME}.${InstancesColumns.CREATOR} = ?)`;
   return fragment;
 }
 
-function getBeginEndSqlFragment(begin: number, end: number): string {
-  const beginRangeFragment = ` (${InstancesColumns.BEGIN} BETWEEN ${begin} AND ${end})`;
-  const endRangeFragment = `(${InstancesColumns.END} BETWEEN ${begin} AND ${end})`;
-  const unionRangeFragment = `(${InstancesColumns.BEGIN} <= ${begin} AND ${InstancesColumns.END} >= ${end})`;
-  let fragment = `(${beginRangeFragment} OR ${endRangeFragment} OR ${unionRangeFragment})`;
-  return fragment;
+function getBeginEndSqlFragment(sqlArgs: ValueType[], begin: number, end: number): string {
+  const beginRangeFragment = ` (${InstancesColumns.BEGIN} BETWEEN ? AND ?)`;
+  const endRangeFragment = `(${InstancesColumns.END} BETWEEN ? AND ?)`;
+  const unionRangeFragment = `(${InstancesColumns.BEGIN} <= ? AND ${InstancesColumns.END} >= ?)`;
+  sqlArgs.push(begin, end, begin, end, begin, end);
+  return `(${beginRangeFragment} OR ${endRangeFragment} OR ${unionRangeFragment})`;
 }
 
-function getSearchSqlFragment(searchText: string): string {
+function getSearchSqlFragment(sqlArgs: ValueType[], searchText: string): string {
   let fragment = ` (`;
   for (let i = 0, len = SEARCH_COLUMNS.length; i < len; i++) {
     if (i != 0) {
       fragment += ` OR `;
     }
-
-    // add ' character to avoid SQL injection
-    fragment += `(${SEARCH_COLUMNS[i]} like '%${searchText}%')`;
+    sqlArgs.push(`%${searchText}%`);
+    fragment += `(${SEARCH_COLUMNS[i]} like ?)`;
   }
   fragment += `)`;
   return fragment;
@@ -144,4 +182,27 @@ function getOrderByFragment(params: InstancesQueryParams): string | undefined {
     fragment += `${orderByDesc} DESC`;
   }
   return fragment;
+}
+
+function getEventIdsSqlFragment(sqlArgs: ValueType[], eventIdsStr: string): string {
+  let fragment = ` (`;
+  const eventIds = eventIdsStr.split(',');
+  const size = eventIds.length;
+  for (let i = 0; i < size; i++) {
+    const id = parseNumber(eventIds[i]);
+    if (id !== 0) {
+      sqlArgs.push(id);
+      fragment += `${EventColumns.TABLE_NAME}.${EventColumns.ID}=?`;
+      if (i !== size - 1) {
+        fragment += ' OR ';
+      }
+    }
+  }
+  fragment += `)`;
+  return fragment;
+}
+
+function getCalendarIdSqlFragment(sqlArgs: ValueType[], calendarId: number): string {
+  sqlArgs.push(calendarId);
+  return ` (${EventColumns.TABLE_NAME}.${EventColumns.CALENDAR_ID} = ?)`;
 }

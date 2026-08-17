@@ -25,6 +25,7 @@ import {
 import { DefaultProcessor } from '../DefaultProcessor';
 import {
   initValueCreator,
+  initValueUuid,
   initPredicateCreator,
   deleteValueCreator,
   initPredicateDefaultAndOwnCreator,
@@ -41,6 +42,7 @@ const TAG = 'CalendarsProcessor';
 export class CalendarsProcessor extends DefaultProcessor {
   async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     const callerName = getBundleNameByUri(uri);
+    initValueUuid(values);
     initValueCreator(values, callerName);
     this.doInsert(rdbStore, uri, values, callback);
   }
@@ -48,6 +50,7 @@ export class CalendarsProcessor extends DefaultProcessor {
   async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
     if (!this.isFromMigrate) {
       const callerName = getBundleNameByUri(uri);
+      initValueUuid(values);
       initValueCreator(values, callerName);
     }
     this.doInsert(rdbStore, uri, values, callback);
@@ -116,7 +119,7 @@ export async function insertDefaultCalendar(rdbStore: data_rdb.RdbStore | null):
 }
 
 /**
- * 检查日历存储的默认账户是否已经存在,account_name is phone, CREATOR is com.huawei.hmos.calendardata
+ * 检查日历存储的默认账户是否已经存在,account_name is phone, CREATOR is com.ohos.calendardata
  *
  * @param rdbStore rdb数据库
  * @return true 存在 false 不存在

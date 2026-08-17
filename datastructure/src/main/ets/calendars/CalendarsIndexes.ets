@@ -19,6 +19,7 @@ import { CalendarsColumns } from './CalendarsColumns';
 
 interface CalendarIndexesType {
   idIndex: number;
+  uuidIndex: number;
   accountNameIndex: number;
   accountTypeIndex: number;
   syncIdIndex: number;
@@ -65,6 +66,7 @@ interface CalendarIndexesType {
  */
 export class CalendarsIndexes implements CalendarIndexesType {
   idIndex = 0;
+  uuidIndex = 0;
   accountNameIndex = 0;
   accountTypeIndex = 0;
   syncIdIndex = 0;
@@ -115,6 +117,7 @@ export function parseCalendarsIndexes(resultSet: data_rdb.ResultSet): CalendarsI
   }
   let indexes: CalendarsIndexes = new CalendarsIndexes();
   indexes.idIndex = resultSet.getColumnIndex(CalendarsColumns.ID);
+  indexes.uuidIndex = resultSet.getColumnIndex(CalendarsColumns.UUID);
   indexes.accountNameIndex = resultSet.getColumnIndex(CalendarsColumns.ACCOUNT_NAME);
   indexes.accountTypeIndex = resultSet.getColumnIndex(CalendarsColumns.ACCOUNT_TYPE);
   indexes.syncIdIndex = resultSet.getColumnIndex(CalendarsColumns.SYNC_ID);

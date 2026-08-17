@@ -16,6 +16,7 @@
 
 import data_rdb from '@ohos.data.relationalStore';
 import { Events } from './Events';
+import { EventColumns } from './EventColumns';
 import { EventIndexes } from './EventIndexes';
 
 /**
@@ -23,220 +24,180 @@ import { EventIndexes } from './EventIndexes';
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseEvents(resultSet: data_rdb.ResultSet, indexes: EventIndexes | undefined): Events | undefined {
-  if (resultSet === null || resultSet === undefined || indexes === null || indexes === undefined) {
+export function parseEvents(resultSet: data_rdb.ResultSet): Events | undefined {
+  if ((resultSet === null) || (resultSet === undefined)) {
     return undefined;
   }
   let event: Events = new Events();
-  if (indexes.idIndex >= 0) {
-    event.id = resultSet.getLong(indexes.idIndex);
-  }
-  if (indexes.syncIdIndex >= 0) {
-    event.syncId = resultSet.getString(indexes.syncIdIndex);
-  }
-  if (indexes.dirtyIndex >= 0) {
-    event.dirty = resultSet.getLong(indexes.dirtyIndex);
-  }
-  if (indexes.mutatorsIndex >= 0) {
-    event.mutators = resultSet.getString(indexes.mutatorsIndex);
-  }
-  if (indexes.calendarTypeIndex >= 0) {
-    event.calendarType = resultSet.getLong(indexes.calendarTypeIndex);
-  }
-  if (indexes.imageTypeIndex >= 0) {
-    event.imageType = resultSet.getString(indexes.imageTypeIndex);
-  }
-  if (indexes.lastSyncedIndex >= 0) {
-    event.lastSynced = resultSet.getLong(indexes.lastSyncedIndex);
-  }
-  if (indexes.calendarIdIndex >= 0) {
-    event.calendarId = resultSet.getLong(indexes.calendarIdIndex);
-  }
-  if (indexes.titleIndex >= 0) {
-    event.title = resultSet.getString(indexes.titleIndex);
-  }
-  if (indexes.eventLocationIndex >= 0) {
-    event.eventLocation = resultSet.getString(indexes.eventLocationIndex);
-  }
-  if (indexes.longitudeIndex >= 0) {
-    event.longitude = resultSet.getString(indexes.longitudeIndex);
-  }
-  if (indexes.latitudeIndex >= 0) {
-    event.latitude = resultSet.getString(indexes.latitudeIndex);
-  }
-  if (indexes.descriptionIndex >= 0) {
-    event.description = resultSet.getString(indexes.descriptionIndex);
-  }
-  if (indexes.eventColorIndex >= 0) {
-    event.eventColor = resultSet.getLong(indexes.eventColorIndex);
-  }
-  if (indexes.eventColorIndexIndex >= 0) {
-    event.eventColorIndex = resultSet.getString(indexes.eventColorIndexIndex);
-  }
-  if (indexes.eventStatusIndex >= 0) {
-    event.eventStatus = resultSet.getLong(indexes.eventStatusIndex);
-  }
-  if (indexes.selfAttendeeStatusIndex >= 0) {
-    event.selfAttendeeStatus = resultSet.getLong(indexes.selfAttendeeStatusIndex);
-  }
-  if (indexes.dtStartIndex >= 0) {
-    event.dtStart = resultSet.getLong(indexes.dtStartIndex);
-  }
-  if (indexes.dtEndIndex >= 0) {
-    event.dtEnd = resultSet.getLong(indexes.dtEndIndex);
-  }
-  if (indexes.eventTimeZoneIndex >= 0) {
-    event.eventTimeZone = resultSet.getString(indexes.eventTimeZoneIndex);
-  }
-  if (indexes.durationIndex >= 0) {
-    event.duration = resultSet.getString(indexes.durationIndex);
-  }
-  if (indexes.allDayIndex >= 0) {
-    event.allDay = resultSet.getLong(indexes.allDayIndex);
-  }
-  if (indexes.accessLevelIndex >= 0) {
-    event.accessLevel = resultSet.getLong(indexes.accessLevelIndex);
-  }
-  if (indexes.availabilityIndex >= 0) {
-    event.availability = resultSet.getLong(indexes.availabilityIndex);
-  }
-  if (indexes.hasAlarmIndex >= 0) {
-    event.hasAlarm = resultSet.getLong(indexes.hasAlarmIndex);
-  }
-  if (indexes.hasExtendedPropertiesIndex >= 0) {
-    event.hasExtendedProperties = resultSet.getLong(indexes.hasExtendedPropertiesIndex);
-  }
-  if (indexes.rRuleIndex >= 0) {
-    event.rRule = resultSet.getString(indexes.rRuleIndex);
-  }
-  if (indexes.rDateIndex >= 0) {
-    event.rDate = resultSet.getString(indexes.rDateIndex);
-  }
-  if (indexes.exRuleIndex >= 0) {
-    event.exRule = resultSet.getString(indexes.exRuleIndex);
-  }
-  if (indexes.exDateIndex >= 0) {
-    event.exDate = resultSet.getString(indexes.exDateIndex);
-  }
-  if (indexes.originalIdIndex >= 0) {
-    event.originalId = resultSet.getLong(indexes.originalIdIndex);
-  }
-  if (indexes.originalSyncIdIndex >= 0) {
-    event.originalSyncId = resultSet.getString(indexes.originalSyncIdIndex);
-  }
-  if (indexes.originalInstanceTimeIndex >= 0) {
-    event.originalInstanceTime = resultSet.getLong(indexes.originalInstanceTimeIndex);
-  }
-  if (indexes.originalAllDayIndex >= 0) {
-    event.originalAllDay = resultSet.getLong(indexes.originalAllDayIndex);
-  }
-  if (indexes.lastDateIndex >= 0) {
-    event.lastDate = resultSet.getLong(indexes.lastDateIndex);
-  }
-  if (indexes.eventTimeStampIndex >= 0) {
-    event.eventTimeStamp = resultSet.getLong(indexes.eventTimeStampIndex);
-  }
-  if (indexes.hasAttendeeDataIndex >= 0) {
-    event.hasAttendeeData = resultSet.getLong(indexes.hasAttendeeDataIndex);
-  }
-  if (indexes.guestsCanModifyIndex >= 0) {
-    event.guestsCanModify = resultSet.getLong(indexes.guestsCanModifyIndex);
-  }
-  if (indexes.guestsCanInviteOthersIndex >= 0) {
-    event.guestsCanInviteOthers = resultSet.getLong(indexes.guestsCanInviteOthersIndex);
-  }
-  if (indexes.guestsCanSeeGuestsIndex >= 0) {
-    event.guestsCanSeeGuests = resultSet.getLong(indexes.guestsCanSeeGuestsIndex);
-  }
-  if (indexes.organizerIndex >= 0) {
-    event.organizer = resultSet.getString(indexes.organizerIndex);
-  }
-  if (indexes.isOrganizerIndex >= 0) {
-    event.isOrganizer = resultSet.getLong(indexes.isOrganizerIndex);
-  }
-  if (indexes.deletedIndex >= 0) {
-    event.deleted = resultSet.getLong(indexes.deletedIndex);
-  }
-  if (indexes.eventEndTimezoneIndex >= 0) {
-    event.eventEndTimezone = resultSet.getString(indexes.eventEndTimezoneIndex);
-  }
-  if (indexes.customAppPackageIndex >= 0) {
-    event.customAppPackage = resultSet.getString(indexes.customAppPackageIndex);
-  }
-  if (indexes.customAppUriIndex >= 0) {
-    event.customAppUri = resultSet.getString(indexes.customAppUriIndex);
-  }
-  if (indexes.uid2445Index >= 0) {
-    event.uid2445 = resultSet.getString(indexes.uid2445Index);
-  }
-  if (indexes.versionIndex >= 0) {
-    event.version = resultSet.getLong(indexes.versionIndex);
-  }
-  if (indexes.eventUuidIndex >= 0) {
-    event.eventUuid = resultSet.getString(indexes.eventUuidIndex);
-  }
-  if (indexes.hwExtAlertTypeIndex >= 0) {
-    event.hwExtAlertType = resultSet.getLong(indexes.hwExtAlertTypeIndex);
-  }
-  if (indexes.importantEventTypeIndex >= 0) {
-    event.importantEventType = resultSet.getLong(indexes.importantEventTypeIndex);
-  }
-  if (indexes.serviceVerifiedIndex >= 0) {
-    event.serviceVerified = resultSet.getLong(indexes.serviceVerifiedIndex);
-  }
-  if (indexes.serviceTypeIndex >= 0) {
-    event.serviceType = resultSet.getString(indexes.serviceTypeIndex);
-  }
-  if (indexes.serviceCpBzUriIndex >= 0) {
-    event.serviceCpBzUri = resultSet.getString(indexes.serviceCpBzUriIndex);
-  }
-  if (indexes.serviceCpMngUriIndex >= 0) {
-    event.serviceCpMngUri = resultSet.getString(indexes.serviceCpMngUriIndex);
-  }
-  if (indexes.serviceDescriptionIndex >= 0) {
-    event.serviceDescription = resultSet.getString(indexes.serviceDescriptionIndex);
-  }
-  if (indexes.serviceSupportMinVersionIndex >= 0) {
-    event.serviceSupportMinVersion = resultSet.getLong(indexes.serviceSupportMinVersionIndex);
-  }
-  if (indexes.syncData1Index >= 0) {
-    event.syncData1 = resultSet.getString(indexes.syncData1Index);
-  }
-  if (indexes.syncData2Index >= 0) {
-    event.syncData1 = resultSet.getString(indexes.syncData2Index);
-  }
-  if (indexes.syncData3Index >= 0) {
-    event.syncData3 = resultSet.getString(indexes.syncData3Index);
-  }
-  if (indexes.syncData4Index >= 0) {
-    event.syncData4 = resultSet.getString(indexes.syncData4Index);
-  }
-  if (indexes.syncData5Index >= 0) {
-    event.syncData5 = resultSet.getString(indexes.syncData5Index);
-  }
-  if (indexes.syncData6Index >= 0) {
-    event.syncData6 = resultSet.getString(indexes.syncData6Index);
-  }
-  if (indexes.syncData7Index >= 0) {
-    event.syncData7 = resultSet.getString(indexes.syncData7Index);
-  }
-  if (indexes.syncData8Index >= 0) {
-    event.syncData8 = resultSet.getString(indexes.syncData8Index);
-  }
-  if (indexes.syncData9Index >= 0) {
-    event.syncData9 = resultSet.getString(indexes.syncData9Index);
-  }
-  if (indexes.syncData10Index >= 0) {
-    event.syncData10 = resultSet.getString(indexes.syncData10Index);
-  }
-  if (indexes.kvSyncedIndex >= 0) {
-    event.kvSynced = resultSet.getLong(indexes.kvSyncedIndex);
-  }
-  if (indexes.kvSyncTimeIndex >= 0) {
-    event.kvSyncTime = resultSet.getLong(indexes.kvSyncTimeIndex);
-  }
-  if (indexes.creatorIndex >= 0) {
-    event.creator = resultSet.getString(indexes.creatorIndex);
-  }
+  let dataResult: data_rdb.ValuesBucket = resultSet.getRow();
+  event.creator = dataResult[EventColumns.CREATOR] as string ?? event.creator;
+  event.title = dataResult[EventColumns.TITLE] as string ?? event.title;
+  event.id = dataResult[EventColumns.ID] as number ?? event.id;
+  event.syncId = dataResult[EventColumns.ID] as string ?? event.syncId;
+  event.dirty = dataResult[EventColumns.DIRTY] as number ?? event.dirty;
+  event.mutators = dataResult[EventColumns.MUTATORS] as string ?? event.mutators;
+  event.calendarType = dataResult[EventColumns.EVENT_CALENDAR_TYPE] as number ?? event.calendarType;
+  event.uuid = dataResult[EventColumns.UUID] as string ?? event.uuid;
+  event.imageType = dataResult[EventColumns.EVENT_IMAGE_TYPE] as string ?? event.imageType;
+  event.lastSynced = dataResult[EventColumns.LAST_SYNCED] as number ?? event.lastSynced;
+  event.calendarId = dataResult[EventColumns.CALENDAR_ID] as number ?? event.calendarId;
+  event.eventLocation = dataResult[EventColumns.EVENT_LOCATION] as string ?? event.eventLocation;
+  event.longitude = dataResult[EventColumns.LOCATION_LONGITUDE] as string ?? event.longitude;
+  event.latitude = dataResult[EventColumns.LOCATION_LATITUDE] as string ?? event.latitude;
+  event.description = dataResult[EventColumns.DESCRIPTION] as string ?? event.description;
+  event.eventColor = dataResult[EventColumns.EVENT_COLOR] as number ?? event.eventColor;
+  event.eventColorIndex = dataResult[EventColumns.EVENT_COLOR_INDEX] as string ?? event.eventColorIndex;
+  event.eventStatus = dataResult[EventColumns.EVENT_STATUS] as number ?? event.eventStatus;
+  event.selfAttendeeStatus = dataResult[EventColumns.SELF_ATTENDEE_STATUS] as number ?? event.selfAttendeeStatus;
+  event.dtStart = dataResult[EventColumns.DTSTART] as number ?? event.dtStart;
+  event.dtEnd = dataResult[EventColumns.DTEND] as number ?? event.dtEnd;
+  event.eventTimeZone = dataResult[EventColumns.EVENT_TIMEZONE] as string ?? event.eventTimeZone;
+  event.duration = dataResult[EventColumns.DURATION] as string ?? event.duration;
+  event.allDay = dataResult[EventColumns.ALLDAY] as number ?? event.allDay;
+  event.accessLevel = dataResult[EventColumns.ACCESS_LEVEL] as number ?? event.accessLevel;
+  event.availability = dataResult[EventColumns.AVAILABILITY] as number ?? event.availability;
+  event.hasAlarm = dataResult[EventColumns.HAS_ALARM] as number ?? event.hasAlarm;
+  event.hasExtendedProperties =
+    dataResult[EventColumns.HAS_EXTENDED_PROPERTIES] as number ?? event.hasExtendedProperties;
+  event.rRule = dataResult[EventColumns.RRULE] as string ?? event.rRule;
+  event.rDate = dataResult[EventColumns.RDATE] as string ?? event.rDate;
+  event.exRule = dataResult[EventColumns.EXRULE] as string ?? event.exRule;
+  event.exDate = dataResult[EventColumns.EXDATE] as string ?? event.exDate;
+  event.originalId = dataResult[EventColumns.ORIGINAL_ID] as number ?? event.originalId;
+  event.originalSyncId = dataResult[EventColumns.ORIGINAL_SYNC_ID] as string ?? event.originalSyncId;
+  event.originalInstanceTime = dataResult[EventColumns.ORIGINAL_INSTANCE_TIME] as number ?? event.originalInstanceTime;
+  event.originalAllDay = dataResult[EventColumns.ORIGINAL_ALL_DAY] as number ?? event.originalAllDay;
+  event.lastDate = dataResult[EventColumns.LAST_DATE] as number ?? event.lastDate;
+  event.eventTimeStamp = dataResult[EventColumns.EVENT_TIME_STAMP] as number ?? event.eventTimeStamp;
+  event.hasAttendeeData = dataResult[EventColumns.HAS_ATTENDEE_DATE] as number ?? event.hasAttendeeData;
+  event.guestsCanModify = dataResult[EventColumns.GUESTS_CAN_MODIFY] as number ?? event.guestsCanModify;
+  event.guestsCanInviteOthers =
+    dataResult[EventColumns.GUESTS_CAN_INVITE_OTHERS] as number ?? event.guestsCanInviteOthers;
+  event.guestsCanSeeGuests = dataResult[EventColumns.GUESTS_CAN_SEE_GUESTS] as number ?? event.guestsCanSeeGuests;
+  event.organizer = dataResult[EventColumns.ORGANIZER] as string ?? event.organizer;
+  event.isOrganizer = dataResult[EventColumns.IS_ORGANIZER] as number ?? event.isOrganizer;
+  event.deleted = dataResult[EventColumns.DELETED] as number ?? event.deleted;
+  event.eventEndTimezone = dataResult[EventColumns.EVENT_END_TIMEZONE] as string ?? event.eventEndTimezone;
+  event.customAppPackage = dataResult[EventColumns.CUSTOM_APP_PACKAGE] as string ?? event.customAppPackage;
+  event.customAppUri = dataResult[EventColumns.CUSTOM_APP_URI] as string ?? event.customAppUri;
+  event.uid2445 = dataResult[EventColumns.UID2445] as string ?? event.uid2445;
+  event.version = dataResult[EventColumns.VERSION] as number ?? event.version;
+  event.eventUuid = dataResult[EventColumns.EVENT_UUID] as string ?? event.eventUuid;
+  event.hwExtAlertType = dataResult[EventColumns.HWEXT_ALERT_TYPE] as number ?? event.hwExtAlertType;
+  event.importantEventType = dataResult[EventColumns.IMPORTANT_EVENT_TYPE] as number ?? event.importantEventType;
+  event.serviceVerified = dataResult[EventColumns.SERVICE.SERVICE_VERIFIED] as number ?? event.serviceVerified;
+  event.serviceType = dataResult[EventColumns.SERVICE.SERVICE_TYPE] as string ?? event.serviceType;
+  event.serviceCpBzUri = dataResult[EventColumns.SERVICE.SERVICE_CP_BZ_URI] as string ?? event.serviceCpBzUri;
+  event.serviceCpMngUri = dataResult[EventColumns.SERVICE.SERVICE_CP_MNG_URI] as string ?? event.serviceCpMngUri;
+  event.serviceDescription = dataResult[EventColumns.SERVICE.SERVICE_DESCRIPTION] as string ?? event.serviceDescription;
+  event.serviceSupportMinVersion =
+    dataResult[EventColumns.SERVICE.SERVICE_MIN_VERSION] as number ?? event.serviceSupportMinVersion;
+
+  event.syncData1 = dataResult[EventColumns.SYNC_DATA1] as string ?? event.syncData1;
+  event.syncData2 = dataResult[EventColumns.SYNC_DATA2] as string ?? event.syncData2;
+  event.syncData3 = dataResult[EventColumns.SYNC_DATA3] as string ?? event.syncData3;
+  event.syncData4 = dataResult[EventColumns.SYNC_DATA4] as string ?? event.syncData4;
+  event.syncData5 = dataResult[EventColumns.SYNC_DATA5] as string ?? event.syncData5;
+  event.syncData6 = dataResult[EventColumns.SYNC_DATA6] as string ?? event.syncData6;
+  event.syncData7 = dataResult[EventColumns.SYNC_DATA7] as string ?? event.syncData7;
+  event.syncData8 = dataResult[EventColumns.SYNC_DATA8] as string ?? event.syncData8;
+  event.syncData9 = dataResult[EventColumns.SYNC_DATA9] as string ?? event.syncData9;
+  event.syncData10 = dataResult[EventColumns.SYNC_DATA10] as string ?? event.syncData10;
+  event.kvSynced = dataResult[EventColumns.KV_SYNC] as number ?? event.kvSynced;
+  event.kvSyncTime = dataResult[EventColumns.KV_SYNC_TIME] as number ?? event.kvSyncTime;
+  event.identifier = dataResult[EventColumns.IDENTIFIER] as string ?? event.identifier;
+  event.calendarUuid = dataResult[EventColumns.CALENDAR_UUID] as string ?? event.calendarUuid;
   return event;
+}
+
+export function parseEventByIndex(resultSet: data_rdb.ResultSet, indexes: EventIndexes | undefined):
+  Events | undefined {
+  if (!resultSet || !indexes) {
+    return undefined;
+  }
+  let event: Events = new Events();
+  event.id = parseLong(resultSet, indexes.idIndex, event.id);
+  event.syncId = parseString(resultSet, indexes.syncIdIndex, event.syncId);
+  event.dirty = parseLong(resultSet, indexes.dirtyIndex, event.dirty);
+  event.mutators = parseString(resultSet, indexes.mutatorsIndex, event.mutators);
+  event.calendarType = parseLong(resultSet, indexes.calendarTypeIndex, event.calendarType);
+  event.uuid = parseString(resultSet, indexes.uuidIndex, event.uuid);
+  event.imageType = parseString(resultSet, indexes.imageTypeIndex, event.imageType);
+  event.lastSynced = parseLong(resultSet, indexes.lastSyncedIndex, event.lastSynced);
+  event.calendarId = parseLong(resultSet, indexes.calendarIdIndex, event.calendarId);
+  event.calendarUuid = parseString(resultSet, indexes.calendarUuidIndex, event.calendarUuid);
+  event.title = parseString(resultSet, indexes.titleIndex, event.title);
+  event.eventLocation = parseString(resultSet, indexes.eventLocationIndex, event.eventLocation);
+  event.longitude = parseString(resultSet, indexes.longitudeIndex, event.longitude);
+  event.latitude = parseString(resultSet, indexes.latitudeIndex, event.latitude);
+  event.description = parseString(resultSet, indexes.descriptionIndex, event.description);
+  event.eventColor = parseLong(resultSet, indexes.eventColorIndex, event.eventColor);
+  event.eventColorIndex = parseString(resultSet, indexes.eventColorIndexIndex, event.eventColorIndex);
+  event.eventStatus = parseLong(resultSet, indexes.eventStatusIndex, event.eventStatus);
+  event.selfAttendeeStatus = parseLong(resultSet, indexes.selfAttendeeStatusIndex, event.selfAttendeeStatus);
+  event.dtStart = parseLong(resultSet, indexes.dtStartIndex, event.dtStart);
+  event.dtEnd = parseLong(resultSet, indexes.dtEndIndex, event.dtEnd);
+  event.eventTimeZone = parseString(resultSet, indexes.eventTimeZoneIndex, event.eventTimeZone);
+  event.duration = parseString(resultSet, indexes.durationIndex, event.duration);
+  event.allDay = parseLong(resultSet, indexes.allDayIndex, event.allDay);
+  event.accessLevel = parseLong(resultSet, indexes.accessLevelIndex, event.accessLevel);
+  event.availability = parseLong(resultSet, indexes.availabilityIndex, event.availability);
+  event.hasAlarm = parseLong(resultSet, indexes.hasAlarmIndex, event.hasAlarm);
+  event.hasExtendedProperties = parseLong(resultSet, indexes.hasExtendedPropertiesIndex, event.hasExtendedProperties);
+  event.rRule = parseString(resultSet, indexes.rRuleIndex, event.rRule);
+  event.rDate = parseString(resultSet, indexes.rDateIndex, event.rDate);
+  event.exRule = parseString(resultSet, indexes.exRuleIndex, event.exRule);
+  event.exDate = parseString(resultSet, indexes.exDateIndex, event.exDate);
+  event.originalId = parseLong(resultSet, indexes.originalIdIndex, event.originalId);
+  event.originalSyncId = parseString(resultSet, indexes.originalSyncIdIndex, event.originalSyncId);
+  event.originalInstanceTime = parseLong(resultSet, indexes.originalInstanceTimeIndex, event.originalInstanceTime);
+  event.originalAllDay = parseLong(resultSet, indexes.originalAllDayIndex, event.originalAllDay);
+  event.lastDate = parseLong(resultSet, indexes.lastDateIndex, event.lastDate);
+  event.eventTimeStamp = parseLong(resultSet, indexes.eventTimeStampIndex, event.eventTimeStamp);
+  event.hasAttendeeData = parseLong(resultSet, indexes.hasAttendeeDataIndex, event.hasAttendeeData);
+  event.guestsCanModify = parseLong(resultSet, indexes.guestsCanModifyIndex, event.guestsCanModify);
+  event.guestsCanInviteOthers = parseLong(resultSet, indexes.guestsCanInviteOthersIndex, event.guestsCanInviteOthers);
+  event.guestsCanSeeGuests = parseLong(resultSet, indexes.guestsCanSeeGuestsIndex, event.guestsCanSeeGuests);
+  event.organizer = parseString(resultSet, indexes.organizerIndex, event.organizer);
+  event.isOrganizer = parseLong(resultSet, indexes.isOrganizerIndex, event.isOrganizer);
+  event.deleted = parseLong(resultSet, indexes.deletedIndex, event.deleted);
+  event.eventEndTimezone = parseString(resultSet, indexes.eventEndTimezoneIndex, event.eventEndTimezone);
+  event.customAppPackage = parseString(resultSet, indexes.customAppPackageIndex, event.customAppPackage);
+  event.customAppUri = parseString(resultSet, indexes.customAppUriIndex, event.customAppUri);
+  event.uid2445 = parseString(resultSet, indexes.uid2445Index, event.uid2445);
+  event.version = parseLong(resultSet, indexes.versionIndex, event.version);
+  event.eventUuid = parseString(resultSet, indexes.eventUuidIndex, event.eventUuid);
+  event.hwExtAlertType = parseLong(resultSet, indexes.hwExtAlertTypeIndex, event.hwExtAlertType);
+  event.importantEventType = parseLong(resultSet, indexes.importantEventTypeIndex, event.importantEventType);
+  parseSyncDataByIndex(event, resultSet, indexes);
+  parseEventByIndexSub(event, resultSet, indexes);
+  return event;
+}
+
+function parseSyncDataByIndex(event: Events, resultSet: data_rdb.ResultSet, indexes: EventIndexes) {
+  event.syncData1 = parseString(resultSet, indexes.syncData1Index, event.syncData1);
+  event.syncData2 = parseString(resultSet, indexes.syncData2Index, event.syncData2);
+  event.syncData3 = parseString(resultSet, indexes.syncData3Index, event.syncData3);
+  event.syncData4 = parseString(resultSet, indexes.syncData4Index, event.syncData4);
+  event.syncData5 = parseString(resultSet, indexes.syncData5Index, event.syncData5);
+  event.syncData6 = parseString(resultSet, indexes.syncData6Index, event.syncData6);
+  event.syncData7 = parseString(resultSet, indexes.syncData7Index, event.syncData7);
+  event.syncData8 = parseString(resultSet, indexes.syncData8Index, event.syncData8);
+  event.syncData9 = parseString(resultSet, indexes.syncData9Index, event.syncData9);
+  event.syncData10 = parseString(resultSet, indexes.syncData10Index, event.syncData10);
+}
+
+function parseEventByIndexSub(event: Events, resultSet: data_rdb.ResultSet, indexes: EventIndexes) {
+  event.kvSynced = parseLong(resultSet, indexes.kvSyncedIndex, event.kvSynced);
+  event.kvSyncTime = parseLong(resultSet, indexes.kvSyncTimeIndex, event.kvSyncTime);
+  event.creator = parseString(resultSet, indexes.creatorIndex, event.creator);
+  event.identifier = parseString(resultSet, indexes.identifierIndex, event.identifier);
+}
+
+function parseLong(resultSet: data_rdb.ResultSet, index: number, defaultValue: number): number {
+  return (index >= 0) ? resultSet.getLong(index) : defaultValue;
+}
+
+function parseString(resultSet: data_rdb.ResultSet, index: number, defaultValue: string): string {
+  return (index >= 0) ? resultSet.getString(index) : defaultValue;
 }

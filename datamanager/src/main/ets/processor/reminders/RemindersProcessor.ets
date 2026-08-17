@@ -16,20 +16,46 @@
 
 import data_rdb from '@ohos.data.relationalStore';
 import dataSharePredicates from '@ohos.data.dataSharePredicates';
+
 import { Log } from '@ohos/common/src/main/ets/utils/Log';
 import { getBundleNameByUri } from '@ohos/common/src/main/ets/utils/UrlUtils';
 import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns';
-import { Events } from '@ohos/datastructure/src/main/ets/events/Events';
 import { RemindersColumns } from '@ohos/datastructure/src/main/ets/reminders/RemindersColumns';
-import { parseIndexes, EventIndexes } from '@ohos/datastructure/src/main/ets/events/EventIndexes';
-import { parseEvents } from '@ohos/datastructure/src/main/ets/events/EventParser';
-import { initValueCreator, initPredicateCreator, deleteValueCreator } from '../DatabaseProcessorHelper';
-import { DefaultProcessor } from '../DefaultProcessor';
+
+import { deleteValueCreator, initPredicateCreator, initValueCreator } from '../DatabaseProcessorHelper';
+import {
+  notifyProviderChange,
+  OPERATION_DELETE,
+  OPERATION_INSERT,
+  OPERATION_UPDATE
+} from '../../commonevents/notify/ProviderChangeNotifier';
+import {
+  DefaultProcessor,
+  DELETE_OPERATION_NAME,
+  INSERT_OPERATION_NAME,
+  UPDATE_OPERATION_NAME
+} from '../DefaultProcessor';
 import { ErrorCode } from '../../constants/ErrorCode';
+import getTableByUri from '../../utils/CalendarUriHelper';
 import { BusinessError } from '@ohos.base';
+import { Reminders } from '@ohos/datastructure/src/main/ets/reminders/Reminders';
 import { ValueType } from '@ohos.data.ValuesBucket';
+import { RdbStoreHelper } from '../../utils/RdbStoreHelper';
+import { AlertsObserverManager } from '../alerts/observer/AlertsObserverManager';
+import { queryEventsById } from '../events/EventsProcessor';
+import { util } from '@kit.ArkTS';
+import { hasNoError } from '@ohos/common';
+import { EventIndexes, Events, parseEventByIndex, parseEvents, parseIndexes } from '@ohos/datastructure';
+import { queryReminders } from '../../commonevents/TablesManager/RemindersManager';
 
 const TAG = 'RemindersProcessor';
+
+const REMIND_QUERY_SQL = `SELECT ${EventColumns.TABLE_NAME}.${EventColumns.ID},` +
+  `${RemindersColumns.TABLE_NAME}.${RemindersColumns.REMINDER_UUID},` +
+  `${RemindersColumns.TABLE_NAME}.${RemindersColumns.EVENT_UUID} FROM ${EventColumns.TABLE_NAME}
+  INNER JOIN ${RemindersColumns.TABLE_NAME} ON (${EventColumns.TABLE_NAME}.${EventColumns.UUID}=` +
+  `${RemindersColumns.TABLE_NAME}.${RemindersColumns.EVENT_UUID}) ` +
+  `WHERE ${RemindersColumns.EVENT_UUID} is not null`;
 
 /**
  * the RemindersProcessor table processor
@@ -49,6 +75,7 @@ export class RemindersProcessor extends DefaultProcessor {
     }
     const isEventExist = await isEventSameWithReminderId(rdbStore, values);
     if (isEventExist) {
+      await fillReminderUuid(values, rdbStore);
       this.doInsert(rdbStore, uri, values, callback);
     } else {
       Log.warn(TAG, 'not support insert operation');
@@ -69,6 +96,7 @@ export class RemindersProcessor extends DefaultProcessor {
     }
     const isEventCreatorExist = await isEventSameWithReminderCreator(rdbStore, values);
     if (isEventCreatorExist) {
+      await fillReminderUuid(values, rdbStore);
       this.doInsert(rdbStore, uri, values, callback);
     } else {
       Log.warn(TAG, 'not support insert operation');
@@ -79,6 +107,11 @@ export class RemindersProcessor extends DefaultProcessor {
       };
       callback(err, -1);
     }
+  }
+
+  async deleteByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    this.doDelete(rdbStore, uri, predicates, callback);
   }
 
   async deleteByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
@@ -102,11 +135,158 @@ export class RemindersProcessor extends DefaultProcessor {
     this.doUpdate(rdbStore, uri, values, predicates, callback)
   }
 
-  async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,
-                            predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
-    const callerName = getBundleNameByUri(uri);
-    initPredicateCreator(predicates, callerName);
-    this.doQuery(rdbStore, uri, columns, predicates, callback);
+  batchInsertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                             values: data_rdb.ValuesBucket[], callback: Function): void {
+    this.doBatchInsert(rdbStore, uri, values, callback);
+  }
+
+  batchInsertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
+                            values: data_rdb.ValuesBucket[], callback: Function): void {
+    this.doBatchInsert(rdbStore, uri, values, callback);
+  }
+
+  /**
+   * 后续提醒代理设置逻辑中，需要插入后的id，用于设置提醒后回填代理提醒id，因此不能使用rdb的batchInsert直接插入。
+   * 使用for循环逐个插入，并复用单个插入。
+   *
+   * @param rdbStore rdb数据库，透传
+   * @param uri uri，透传
+   * @param values 待插入的提醒数据数组，将对齐遍历逐个插入
+   * @param callback 外部callback回调，全部插入完成后调用
+   * @returns void，无返回值
+   */
+  async doBatchInsert(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket[], callback: Function):
+    Promise<void> {
+    if (!values || values.length === 0) {
+      Log.warn(TAG, `doBatchInsert get invalid params`);
+      if (callback) {
+        callback();
+      }
+      return;
+    }
+    let resultErr: BusinessError | undefined = undefined;
+    let count: number = 0;
+    try {
+      for (let index: number = 0, size = values.length; index < size; index++) {
+        await fillReminderUuid(values[index], rdbStore);
+        let rowId = await this.doInsertSync(rdbStore, uri, values[index]);
+        if (rowId > 0) {
+          count++;
+        }
+      }
+    } catch (err) {
+      Log.error(TAG, `doBatchInsert getErr: ${err.code}, ${err.message}`);
+      resultErr = err;
+    }
+    Log.info(TAG, `doBatchInsert end count=${count}`);
+    callback(resultErr, count);
+  }
+
+  /**
+   * 将异步 callback 的 doInsert 转换为 Promise 的同步阻塞式实现
+   *
+   * @param rdbStore rdb数据库，透传
+   * @param uri uri，透传
+   * @param values 待插入的数据，透传
+   * @returns 插入结果，promise返回
+   */
+  async doInsertSync(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      this.doInsert(rdbStore, uri, values, (err: BusinessError, rowId: number) => {
+        if (hasNoError(err)) {
+          resolve(rowId);
+        } else {
+          reject(err);
+        }
+      });
+    });
+  }
+
+  /**
+   * 插入reminder并且发送通知
+   *
+   * @param rdbStore rdb数据库
+   * @param uri DataShare的uri
+   * @param values 插入的数据
+   * @param callback 回调方法
+   */
+  doInsert(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket, callback: Function) {
+    const table = getTableByUri(uri);
+    Log.warn(TAG, `insert ${table} start`);
+    RdbStoreHelper.insertCallBack(rdbStore, table, values, async (err, rowId) => {
+      Log.warn(TAG, `insert ${table} before callback rowId=${rowId}`);
+      const reminder: Reminders = generateReminderFromValues(values, rowId);
+      callback(err, rowId);
+      Log.log(TAG, `insert ${table} after callback: rowId = ${rowId}`);
+      if (hasNoError(err)) {
+        Log.warn(TAG, `insertReminder success id=${rowId} minutes=${values[RemindersColumns.MINUTES]}`);
+        if (!this.isFromMigrate) {
+          notifyProviderChange(table, OPERATION_INSERT);
+          AlertsObserverManager.getInstance().notifyAlertsChanges(INSERT_OPERATION_NAME, table, values);
+        }
+      } else {
+        Log.warn(TAG, `insert get err:${err?.code}, ${err?.message}`);
+      }
+    });
+  }
+
+  /**
+   * 删除reminder并且取消通知
+   *
+   * @param rdbStore rdb数据库
+   * @param uri DataShare的uri
+   * @param predicates 删除条件
+   * @param callback 回调方法
+   */
+  async doDelete(rdbStore: data_rdb.RdbStore, uri: string, predicates: dataSharePredicates.DataSharePredicates,
+                 callback: Function) {
+    const table = getTableByUri(uri);
+    const reminders = await queryReminders(rdbStore, predicates);
+    if (!reminders) {
+      callback();
+      Log.warn(TAG, 'doDelete: the reminders is null');
+      return;
+    }
+    Log.warn(TAG, `delete ${table} start`);
+    RdbStoreHelper.deleteCallBack(rdbStore, table, predicates, async (err, count) => {
+      Log.warn(TAG, `delete ${table} before callback count=${count}`);
+      callback(err, count);
+      Log.log(TAG, `delete ${table} after callback: count = ` + count);
+
+      if (hasNoError(err)) {
+        Log.warn(TAG, `deleteReminder success count=${count}`);
+        notifyProviderChange(table, OPERATION_DELETE);
+        AlertsObserverManager.getInstance().notifyAlertsChanges(DELETE_OPERATION_NAME, table);
+      } else {
+        Log.warn(TAG, `delete get err:${err?.code}, ${err?.message}`);
+      }
+    });
+  }
+
+  /**
+   * 更新reminder并且更新通知
+   *
+   * @param rdbStore rdb数据库
+   * @param uri DataShare的uri
+   * @param values 更新的数据
+   * @param predicates 更新条件
+   * @param callback 回调方法
+   */
+  async doUpdate(rdbStore: data_rdb.RdbStore, uri: string, values: data_rdb.ValuesBucket,
+                 predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
+    const table = getTableByUri(uri);
+    Log.warn(TAG, `update ${table} start`);
+    RdbStoreHelper.updateCallBack(rdbStore, table, values, predicates, async (err: BusinessError, count) => {
+      Log.warn(TAG, `update ${table} before callback count=${count}`);
+      callback(err, count);
+      if (hasNoError(err)) {
+        Log.warn(TAG, `updateReminder success count=${count}`);
+        notifyProviderChange(table, OPERATION_UPDATE);
+        AlertsObserverManager.getInstance().notifyAlertsChanges(UPDATE_OPERATION_NAME, table, values);
+      } else {
+        Log.warn(TAG, `update get err:${err?.code}, ${err?.message}`);
+      }
+    });
   }
 }
 /**
@@ -126,7 +306,7 @@ async function isEventSameWithReminderCreator(rdbStore: data_rdb.RdbStore,
   try {
     const eventIndexes: EventIndexes = parseIndexes(resultSet) as EventIndexes;
     if (resultSet.goToFirstRow()) {
-      let events: Events | undefined = parseEvents(resultSet, eventIndexes);
+      let events: Events | undefined = parseEventByIndex(resultSet, eventIndexes);
       if (events === null || events === undefined) {
         return false;
       }
@@ -190,4 +370,105 @@ async function queryEventIdAndCreatorByReminder(rdbStore: data_rdb.RdbStore,
     Log.error(TAG, 'Event query data error');
   }
   return resultSet;
+}
+
+export function generateReminderFromValues(values: data_rdb.ValuesBucket, reminderId: number): Reminders {
+  const reminder: Reminders = new Reminders();
+  try {
+    reminder.id = reminderId;
+    reminder.eventId = values[RemindersColumns.EVENT_ID] as number;
+    reminder.minutes = values[RemindersColumns.MINUTES] as number;
+    reminder.method = values[RemindersColumns.METHOD] as number;
+    reminder.creator = values[RemindersColumns.CREATOR] as string;
+  } catch (e) {
+    Log.error(TAG, `generateReminderFromValues get some err: ${e?.message}`);
+  }
+  return reminder;
+}
+
+export async function fillReminderUuid(values: data_rdb.ValuesBucket, rdbStore: data_rdb.RdbStore) {
+  let eventUuid = values[RemindersColumns.EVENT_UUID];
+  if (!values[RemindersColumns.EVENT_UUID]) {
+    const eventId = values[RemindersColumns.EVENT_ID] as number;
+    const eventInfo = await queryEventsById(rdbStore, eventId);
+    if (eventInfo) {
+      values[RemindersColumns.EVENT_UUID] = eventInfo.uuid;
+      eventUuid = eventInfo.uuid;
+    } else {
+      eventUuid = util.generateRandomUUID();
+      Log.warn(TAG, 'queryEventsById get undefined.');
+    }
+  }
+
+  if (!values[RemindersColumns.REMINDER_UUID]) {
+    values[RemindersColumns.REMINDER_UUID] =
+      `${eventUuid}${values[RemindersColumns.MINUTES]}${values[RemindersColumns.METHOD]}`;
+  }
+}
+
+export async function fillReminderEventUuids(rdbStore: data_rdb.RdbStore, reminders: Reminders[]): Promise<void> {
+  if (!rdbStore) {
+    Log.warn(TAG, 'fillReminderEventUuids get invalid rdb');
+    return;
+  }
+  if (!reminders || reminders.length === 0) {
+    Log.warn(TAG, 'fillReminderEventUuids get invalid reminders');
+    return;
+  }
+
+  // 根据eventId查询eventUuid
+  const eventIds: number[] = [];
+  reminders.forEach((reminder: Reminders) => {
+    if (!reminder) {
+      return;
+    }
+    if (!eventIds.includes(reminder.eventId)) {
+      eventIds.push(reminder.eventId);
+    }
+  });
+  const eventUuidMap: Map<number, string> = await getEventUuidByIds(rdbStore, eventIds);
+
+  // 将对应的eventUuid填充给Reminders对象
+  reminders.forEach((reminder: Reminders) => {
+    if (!reminder) {
+      return;
+    }
+    const eventUuid = eventUuidMap.get(reminder.eventId);
+    if (eventUuid && eventUuid.length > 0) {
+      reminder.eventUuid = eventUuid;
+    }
+  });
+}
+
+async function getEventUuidByIds(rdbStore: data_rdb.RdbStore, ids: number[]): Promise<Map<number, string>> {
+  const map: Map<number, string> = new Map<number, string>();
+  let resultSet: data_rdb.ResultSet | null = null;
+  try {
+    const predicate: data_rdb.RdbPredicates = new data_rdb.RdbPredicates(EventColumns.TABLE_NAME);
+    predicate.in(EventColumns.ID, ids);
+    resultSet = await rdbStore.query(predicate, [EventColumns.ID, EventColumns.UUID]);
+    if (!resultSet) {
+      Log.warn(TAG, 'getEventUuidByIds get invalid resultSet');
+      return map;
+    }
+    if (!resultSet.goToFirstRow()) {
+      Log.warn(TAG, 'getEventUuidByIds goToFirstRow failed');
+      return map;
+    }
+    do {
+      const row = resultSet.getRow();
+      const eventId: number = row[EventColumns.ID] as number;
+      const uuid: string = row[EventColumns.UUID] as string;
+      if (eventId && uuid) {
+        map.set(eventId, uuid);
+      }
+    } while (resultSet.goToNextRow());
+  } catch (err) {
+    Log.logErrorMsg(TAG, 'getEventUuidByIds', err);
+  } finally {
+    if (resultSet) {
+      resultSet.close();
+    }
+  }
+  return map;
 }

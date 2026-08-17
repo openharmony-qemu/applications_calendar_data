@@ -14,35 +14,45 @@
  * limitations under the License.
  */
 
-interface CalendarAlertsType {
-  id: number;
-  eventId: number
-  begin: number
-  end: number
-  alarmTime: number
-  creationTime: number
-  receivedTime: number
-  notifyTime: number
-  state: number
-  minutes: number
-  creator: string
-}
+import { util } from '@kit.ArkTS';
+import { NeedAgent } from './CalendarAlertsConstants';
 
 /**
  * the structure of table CalendarAlerts
  *
  * @since 2022-09-19
  */
-export class CalendarAlerts implements CalendarAlertsType {
-  id = 0;
-  eventId = 0;
-  begin = 0;
-  end = 0;
-  alarmTime = 0;
-  creationTime = 0;
-  receivedTime = 0;
-  notifyTime = 0;
-  state = 0;
-  minutes = 0;
-  creator = '';
+export class CalendarAlerts {
+  public id: number = 0;
+  public eventId: number = 0;
+  public eventUuid: string = '';
+  public begin: number = 0;
+  public end: number = 0;
+  public alarmTime: number = 0;
+  public creationTime: number = 0;
+  public receivedTime: number = 0;
+  public notifyTime: number = 0;
+  public state: number = 0;
+  public minutes: number = 0;
+  public creator: string = '';
+  public title: string = '';
+  public content: string = '';
+  public wantAgent: string = '';
+  public buttons: string = '';
+  public slotType: number = 0;
+  public keepHeadsUp: number = 0;
+  public type: number = 0;
+  public identifier: string = '';
+  public ringDuration: number = 0;
+  public customRingUri: string = '';
+  public timeInterval: number = 0;
+  public snoozeTimes: number = 0;
+  public snoozeSlotType: number = 0;
+  public snoozeContent: string = '';
+  public expiredContent: string = '';
+  public maxScreenWantAgent: string = '';
+  public accountType: string = '';
+  public allDay: number = 0;
+  public needAgent: NeedAgent = NeedAgent.YES;
+  public uuid: string = util.generateRandomUUID();
 }

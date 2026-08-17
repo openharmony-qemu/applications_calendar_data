@@ -23,7 +23,8 @@ interface RemindersColumnsType {
   MINUTES: string;
   METHOD: string;
   CREATOR: string;
-  NOTIFICATION_REMINDER_ID: string;
+  REMINDER_UUID: string;
+  EVENT_UUID: string;
 }
 
 /**
@@ -31,14 +32,22 @@ interface RemindersColumnsType {
  *
  * @since 2022-09-08
  */
-export const RemindersColumns: RemindersColumnsType = {
-  TABLE_NAME: 'Reminders',
-  ID: '_id',
-  EVENT_ID: 'event_id',
-  MINUTES: 'minutes',
-  METHOD: 'method',
-  CREATOR: Constants.CREATOR,
-  NOTIFICATION_REMINDER_ID: 'notification_reminder_id'
+export enum RemindersColumns {
+  TABLE_NAME = 'Reminders',
+
+  ID = '_id',
+
+  EVENT_ID = 'event_id',
+
+  MINUTES = 'minutes',
+
+  METHOD = 'method',
+
+  CREATOR = 'creator',
+
+  REMINDER_UUID = 'reminderUuid',
+
+  EVENT_UUID = 'eventUuid'
 }
 
 export enum MethodType {

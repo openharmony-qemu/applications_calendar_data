@@ -16,51 +16,40 @@
 
 import data_rdb from '@ohos.data.relationalStore';
 import { CalendarAlerts } from './CalendarAlerts';
-import { CalendarAlertsIndexes } from './CalendarAlertsIndexes';
+import { CalendarAlertsColumns } from './CalendarAlertsColumns';
 
 /**
  * parse all columns for table CalendarAlerts
  *
  * @param resultSet the result from somewhere rdb.query
  */
-export function parseCalendarAlerts(resultSet: data_rdb.ResultSet,
-                                    indexes: CalendarAlertsIndexes): CalendarAlerts | undefined {
+export function parseCalendarAlerts(resultSet: data_rdb.ResultSet): CalendarAlerts | undefined {
   if (resultSet === null || resultSet === undefined) {
     return undefined;
   }
   let calendarAlerts: CalendarAlerts = new CalendarAlerts();
-  if (indexes.idIndex >= 0) {
-    calendarAlerts.id = resultSet.getLong(indexes.idIndex);
-  }
-  if (indexes.eventIdIndex >= 0) {
-    calendarAlerts.eventId = resultSet.getLong(indexes.eventIdIndex);
-  }
-  if (indexes.beginIndex >= 0) {
-    calendarAlerts.begin = resultSet.getLong(indexes.beginIndex);
-  }
-  if (indexes.endIndex >= 0) {
-    calendarAlerts.end = resultSet.getLong(indexes.endIndex);
-  }
-  if (indexes.alarmTimeIndex >= 0) {
-    calendarAlerts.alarmTime = resultSet.getLong(indexes.alarmTimeIndex);
-  }
-  if (indexes.creationTimeIndex >= 0) {
-    calendarAlerts.creationTime = resultSet.getLong(indexes.creationTimeIndex);
-  }
-  if (indexes.receivedTimeIndex >= 0) {
-    calendarAlerts.receivedTime = resultSet.getLong(indexes.receivedTimeIndex);
-  }
-  if (indexes.notifyTimeIndex >= 0) {
-    calendarAlerts.notifyTime = resultSet.getLong(indexes.notifyTimeIndex);
-  }
-  if (indexes.stateIndex >= 0) {
-    calendarAlerts.state = resultSet.getLong(indexes.stateIndex);
-  }
-  if (indexes.minutesIndex >= 0) {
-    calendarAlerts.minutes = resultSet.getLong(indexes.minutesIndex);
-  }
-  if (indexes.creatorIndex >= 0) {
-    calendarAlerts.creator = resultSet.getString(indexes.creatorIndex);
-  }
+  calendarAlerts.id = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.ID));
+  calendarAlerts.eventId = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.EVENT_ID));
+  calendarAlerts.eventUuid = resultSet.getString(resultSet.getColumnIndex(CalendarAlertsColumns.EVENT_UUID));
+  calendarAlerts.begin = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.BEGIN));
+  calendarAlerts.end = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.END));
+  calendarAlerts.alarmTime = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.ALARM_TIME));
+  calendarAlerts.creationTime = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.CREATION_TIME));
+  calendarAlerts.receivedTime = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.RECEIVED_TIME));
+  calendarAlerts.notifyTime = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.NOTIFY_TIME));
+  calendarAlerts.state = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.STATE));
+  calendarAlerts.minutes = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.MINUTES));
+  calendarAlerts.creator = resultSet.getString(resultSet.getColumnIndex(CalendarAlertsColumns.CREATOR));
+  calendarAlerts.title = resultSet.getString(resultSet.getColumnIndex(CalendarAlertsColumns.TITLE));
+  calendarAlerts.content = resultSet.getString(resultSet.getColumnIndex(CalendarAlertsColumns.CONTENT));
+  calendarAlerts.wantAgent = resultSet.getString(resultSet.getColumnIndex(CalendarAlertsColumns.WANT_AGENT));
+  calendarAlerts.buttons = resultSet.getString(resultSet.getColumnIndex(CalendarAlertsColumns.BUTTONS));
+  calendarAlerts.slotType = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.SLOT_TYPE));
+  calendarAlerts.keepHeadsUp = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.KEEP_HEADSUP));
+  calendarAlerts.type = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.TYPE));
+  calendarAlerts.identifier = resultSet.getString(resultSet.getColumnIndex(CalendarAlertsColumns.IDENTIFIER));
+  calendarAlerts.needAgent = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.NEED_AGENT));
+  calendarAlerts.snoozeTimes = resultSet.getLong(resultSet.getColumnIndex(CalendarAlertsColumns.SNOOZE_TIMES));
+  calendarAlerts.uuid = resultSet.getString(resultSet.getColumnIndex(CalendarAlertsColumns.UUID));
   return calendarAlerts;
 }

@@ -54,10 +54,9 @@ class CalendarMetaData {
  * @param begin 开始时间
  * @param end 结束时间
  */
-export async function isInExpandedRange(begin: number, end: number): Promise<boolean> {
-  const expandedBegin = await getExpandedBegin();
-  const expandedEnd = await getExpandedEnd();
-  return begin >= expandedBegin && end <= expandedEnd;
+export async function isInExpandedRange(acquireBegin: number, acquireEnd: number, expandedBegin: number,
+                                        expandedEnd: number): Promise<boolean> {
+  return (acquireBegin >= expandedBegin) && (acquireEnd <= expandedEnd);
 }
 
 /**
@@ -110,9 +109,9 @@ export function resetExpandedRange() {
 /**
  * 获取已扩展的开始时间
  */
-export async function getExpandedBegin(): Promise<number> {
+export async function getExpandedBegin(useMemoryCache: boolean = false): Promise<number> {
   const metaData = CalendarMetaData.getInstance();
-  if (metaData.isOnceRead) {
+  if (useMemoryCache && metaData.isOnceRead) {
     return metaData.expandedBegin;
   }
   await readFromDb();
@@ -122,9 +121,9 @@ export async function getExpandedBegin(): Promise<number> {
 /**
  * 获取已扩展的结束时间
  */
-export async function getExpandedEnd(): Promise<number> {
+export async function getExpandedEnd(useMemoryCache: boolean = false): Promise<number> {
   const metaData = CalendarMetaData.getInstance();
-  if (metaData.isOnceRead) {
+  if (useMemoryCache && metaData.isOnceRead) {
     return metaData.expandedEnd;
   }
   await readFromDb();

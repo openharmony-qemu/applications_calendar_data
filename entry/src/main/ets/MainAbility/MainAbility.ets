@@ -19,7 +19,6 @@ import { Log } from '@ohos/common/src/main/ets/utils/Log'
 import Want from '@ohos.app.ability.Want';
 import window from '@ohos.window';
 import { BusinessError } from '@ohos.base';
-import { GlobalThis } from '@ohos/common/src/main/ets/utils/GlobalThis';
 
 const TAG = 'MainAbility';
 
@@ -43,7 +42,6 @@ export default class MainAbility extends UIAbility {
       }
       Log.info(TAG, 'Success in loading the content. Data: ' + JSON.stringify(data) ?? '');
     });
-    GlobalThis.setUiAbilityContext(this.context);
   }
 
   onWindowStageDestroy() {

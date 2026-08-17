@@ -4,13 +4,13 @@
       {
         "name": "release",
         "material": {
-          "storePassword": "0000001B7EEB31E05C0AF01676E16503462AB81E5E5634D1780D30B08FBEB1F5A17449A39CD9BF2D4907F4",
-          "certpath": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.cer",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B3A34608C8599A7114F2FFEFE280096858B0D2769B84AC380A8A143756AA725935CD33A91414D87",
-          "profile": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.p7b",
+          "storeFile": "signature/OpenHarmony.p12",
+          "storePassword": "000000161984B01A662A0B882DFE94646316C51BF3980231F1756AD397116A206243D01D0B64",
+          "keyAlias": "OpenHarmony Application Release",
+          "keyPassword": "000000160BDBF0B3543D9412B658C0F7BA5EBD1B74382D21FADE6C0762CFE7C06D8A22D7FCBD",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "./signature/auto_ohos_release_applications_calendar_data_com.ohos.calendardata.p12"
+          "profile": "signature/Calendardata.p7b",
+          "certpath": "signature/OpenHarmony.cer"
         }
       }
     ],

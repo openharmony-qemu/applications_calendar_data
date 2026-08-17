@@ -34,9 +34,10 @@
                 "safwk",
                 "samgr",
                 "ace_engine",
-                "os_account",
                 "hiappevent",
-                "jsoncpp"
+                "jsoncpp",
+                "ets_frontend",
+                "os_account"
             ],
             "third_party": []
         },
@@ -50,7 +51,7 @@
             "test": [
                 "//applications/standard/calendardata/calendarmanager/test:unittest"
             ],
-            "inner_kits": [
+            "inner_api": [
                 {
                     "header": {
                         "header_base": "//applications/standard/calendardata/calendarmanager/cj/include",
