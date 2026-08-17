@@ -107,7 +107,6 @@ export class DayData {
   private static readonly WEEKDAYS: number = 7;
   public dayMarkValue: string = '';
   public isToday: boolean = false;
-  // 节日 暂时用数组，待后期分类标准化之后切换为map
   protected _date: Date;
   // 星期
   private _weekDay: number = -1; // 星期索引 0:星期天; 1：星期1

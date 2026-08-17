@@ -23,7 +23,7 @@ export function isMainThread(): boolean {
 }
 
 /**
- * 多线程太危险了,赋值上下文
+ * 在TaskPool线程中重新初始化GlobalThis上下文
  * @param context
  */
 export function reInitGlobalContextInTaskPool(context: common.UIAbilityContext) {
