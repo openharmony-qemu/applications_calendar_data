@@ -15,6 +15,7 @@
  */
 
 import ohosDataRdb from '@ohos.data.relationalStore';
+import { ensureCalendarMutationSchema } from './CalendarMutationSchema';
 import { EventColumns } from '@ohos/datastructure/src/main/ets/events/EventColumns';
 import { InstancesColumns } from '@ohos/datastructure/src/main/ets/instances/InstancesColumns';
 import { CalendarsColumns } from '@ohos/datastructure/src/main/ets/calendars/CalendarsColumns';
@@ -352,6 +353,7 @@ class CalendarDataHelper {
   private static instance: CalendarDataHelper;
 
   private rdbStore: ohosDataRdb.RdbStore | undefined = undefined;
+  private initializing: Promise<void> | undefined = undefined;
 
   private constructor() {
   }
@@ -371,9 +373,10 @@ class CalendarDataHelper {
    * get the instance of rdbStore
    */
   public async getRdbStore() {
-    if (this.rdbStore === null || this.rdbStore === undefined) {
-      await CalendarDataHelper.getInstance().initRdbStore();
+    if (this.initializing === undefined) {
+      this.initializing = this.initRdbStore();
     }
+    await this.initializing;
     return this.rdbStore;
   }
 
@@ -424,18 +427,20 @@ class CalendarDataHelper {
       await this.rdbStore?.executeSql(CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL, []);
       Log.log(TAG, 'initRdbStore CREATE_EXTEND_CALENDAR_EVENT_TABLE_NAME_SQL succeed');
 
-      this.createSyncIdUpdateTrigger();
+      await this.createSyncIdUpdateTrigger();
       Log.log(TAG, 'initRdbStore createSyncIdUpdateTrigger succeed');
-      this.createDeleteEventTriggers();
+      await this.createDeleteEventTriggers();
       Log.log(TAG, 'initRdbStore createDeleteEventTriggers succeed');
-      this.createColorsTriggers();
+      await this.createColorsTriggers();
       Log.log(TAG, 'initRdbStore createColorsTriggers succeed');
-      this.createCalendarCleanupTrigger();
+      await this.createCalendarCleanupTrigger();
       Log.log(TAG, 'initRdbStore createCalendarCleanupTrigger succeed');
       Log.log(TAG, 'initRdbStore executeSql end');
     } catch (err) {
       Log.error(TAG, `initRdbStore err:${err.message}`);
+      throw err as Error;
     }
+    await ensureCalendarMutationSchema(this.rdbStore);
   }
 
   private async createEventsTable() {

@@ -44,6 +44,7 @@
         "build": {
             "group_type": {
                 "service_group": [
+                    "//applications/standard/calendardata:calendardata_hap",
                     "//applications/standard/calendardata/calendarmanager:calendarmanager",
                     "//applications/standard/calendardata/calendarmanager/cj:cj_calendar_manager_ffi"
                 ]

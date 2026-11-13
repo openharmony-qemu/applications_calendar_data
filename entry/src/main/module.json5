@@ -35,6 +35,13 @@
     ],
     "extensionAbilities": [
       {
+        "name": "EditorUIExtensionAbility",
+        "srcEntry": "./ets/EditorUIExtensionAbility.ets",
+        "type": "sys/commonUI",
+        "exported": true,
+        "extensionProcessMode": "instance"
+      },
+      {
         "name": "DataShareLowerExtAbility",
         "srcEntry": "./ets/DataAbility/DataShareLowerExtAbility.ets",
         "type": "dataShare",
@@ -94,7 +101,9 @@
           "abilities": [
             "DataShareLowerExtAbility",
             "DataShareHighExtAbility",
-            "ReminderCallbackExtAbility"
+            "ReminderCallbackExtAbility",
+            "EditorUIExtensionAbility",
+            "MainAbility"
           ],
           "when": "inuse"
         }
@@ -106,7 +115,9 @@
           "abilities": [
             "DataShareLowerExtAbility",
             "DataShareHighExtAbility",
-            "ReminderCallbackExtAbility"
+            "ReminderCallbackExtAbility",
+            "EditorUIExtensionAbility",
+            "MainAbility"
           ],
           "when": "inuse"
         }

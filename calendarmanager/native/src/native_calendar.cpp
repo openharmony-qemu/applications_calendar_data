@@ -19,6 +19,8 @@
 #include "data_ability_helper.h"
 #include "native_util.h"
 #include "napi_queue.h"
+#include <regex>
+#include <cmath>
 
 namespace {
     const string eventUrl = "datashare:///calendardata/Events";
@@ -237,6 +239,159 @@ Result<bool> Calendar::UpdateEvent(const Event& event)
     }
 
     return Result<bool>(ret.GetValue() == 1);
+}
+
+Result<std::string> Calendar::ReadMutationRevision(int id)
+{
+    DataShare::DataSharePredicates predicates;
+    predicates.EqualTo("_id", id);
+    predicates.EqualTo("calendar_id", GetId());
+    std::vector<std::string> columns = {"calendarMutationRevision"};
+    auto result = DataShareHelperManager::GetInstance().Query(*m_eventUri, predicates, columns);
+    if (result.IsErr()) { return Result<std::string>(result.GetError()); }
+    auto rows = result.GetValue();
+    if (rows == nullptr) { return Result<std::string>(Error{"Missing Calendar revision result", INTERNAL_ERROR}); }
+    int count = 0;
+    int index = 0;
+    int64_t revision = -1;
+    auto status = rows->GetRowCount(count);
+    if (status == DataShare::E_OK && count == 1) { status = rows->GoToFirstRow(); }
+    if (status == DataShare::E_OK && count == 1) { status = rows->GetColumnIndex(columns[0], index); }
+    if (status == DataShare::E_OK && count == 1) { status = rows->GetLong(index, revision); }
+    rows->Close();
+    if (count == 0) { return Result<std::string>(Error{"Calendar event not found", QUERY_RESULT_EMPTY}); }
+    if (status != DataShare::E_OK || count != 1 || revision < 0 || revision > 9007199254740990LL) {
+        return Result<std::string>(Error{"Invalid Calendar revision result", INTERNAL_ERROR});
+    }
+    return Result<std::string>(std::to_string(GetId()) + ":" + std::to_string(id) + ":" + std::to_string(revision));
+}
+
+Result<EventSnapshot> Calendar::GetEventSnapshot(int id)
+{
+    if (id <= 0) { return Result<EventSnapshot>(Error{"Invalid Calendar event ID", PARAMETER_INVALID}); }
+    const std::vector<std::string> keys = {"id", "type", "title", "startTime", "endTime", "isAllDay",
+        "location", "description", "reminderTime", "recurrenceRule", "attendee", "service", "identifier",
+        "isLunar", "timeZone"};
+    // Every Event/Attendees/Reminders write advances the persistent revision in
+    // its own SQLite transaction. Equal before/after revisions prove the Event
+    // plus relations were read from a stable state, including legacy writers.
+    for (int attempt = 0; attempt < 3; ++attempt) {
+        auto before = ReadMutationRevision(id);
+        if (before.IsErr()) { return Result<EventSnapshot>(before.GetError()); }
+        DataShare::DataSharePredicates exact;
+        exact.EqualTo("_id", id); exact.EqualTo("calendar_id", GetId());
+        std::vector<std::string> columns = {"_id"};
+        std::set<std::string> fields;
+        Error fieldError = {"", NO_ERROR};
+        SetField(keys, columns, fields, fieldError);
+        if (fieldError.code != NO_ERROR) { return Result<EventSnapshot>(fieldError); }
+        auto base = DataShareHelperManager::GetInstance().Query(*m_eventUri, exact, columns);
+        if (base.IsErr()) { return Result<EventSnapshot>(base.GetError()); }
+        auto rows = base.GetValue();
+        if (rows == nullptr) { return Result<EventSnapshot>(Error{"Missing Calendar event result", INTERNAL_ERROR}); }
+        std::vector<Event> events;
+        std::vector<std::string> ids;
+        const auto baseStatus = ResultSetToEvents(ids, events, rows, fields);
+        rows->Close();
+        if (baseStatus != DataShare::E_OK || events.size() != 1 || events[0].id.value_or(-1) != id) {
+            return Result<EventSnapshot>(Error{"Calendar event snapshot missing", QUERY_RESULT_EMPTY});
+        }
+        events[0].attendees.clear();
+        events[0].reminderTime = std::vector<int>{};
+        for (int relation = 0; relation < 2; ++relation) {
+            DataShare::DataSharePredicates predicate;
+            predicate.EqualTo("event_id", id);
+            std::vector<std::string> childColumns = relation == 0
+                ? std::vector<std::string>{"event_id", "attendeeName", "attendeeEmail", "attendeeRelationship",
+                    "attendeeStatus", "attendeeType"}
+                : std::vector<std::string>{"event_id", "minutes"};
+            const auto& uri = relation == 0 ? m_attendeeUri : m_reminderUrl;
+            if (uri == nullptr) { return Result<EventSnapshot>(Error{"Missing Calendar relation URI", INTERNAL_ERROR}); }
+            auto child = DataShareHelperManager::GetInstance().Query(*uri, predicate, childColumns);
+            if (child.IsErr()) { return Result<EventSnapshot>(child.GetError()); }
+            auto childRows = child.GetValue();
+            if (childRows == nullptr) {
+                return Result<EventSnapshot>(Error{"Missing Calendar relation result", INTERNAL_ERROR});
+            }
+            int count = 0;
+            auto status = childRows->GetRowCount(count);
+            if (status == DataShare::E_OK && count > 0) {
+                status = relation == 0 ? ResultSetToMultiAttendees(events, childRows)
+                    : ResultSetToMultiReminders(events, childRows);
+            }
+            childRows->Close();
+            if (status != DataShare::E_OK || count < 0) {
+                return Result<EventSnapshot>(Error{"Invalid Calendar relation result", INTERNAL_ERROR});
+            }
+        }
+        auto after = ReadMutationRevision(id);
+        if (after.IsErr()) { return Result<EventSnapshot>(after.GetError()); }
+        if (before.GetValue() != after.GetValue()) { continue; }
+        return Result<EventSnapshot>(EventSnapshot{events[0], after.GetValue()});
+    }
+    return Result<EventSnapshot>(Error{"Calendar event changed during snapshot; retry", INTERNAL_ERROR});
+}
+
+Result<bool> Calendar::ConditionalMutation(const std::string& revision, int id, const Event* event)
+{
+    const std::string prefix = std::to_string(GetId()) + ":" + std::to_string(id) + ":";
+    if (id <= 0 || revision.size() > 64 || revision.compare(0, prefix.size(), prefix) != 0) {
+        return Result<bool>(Error{"Calendar revision belongs to another event", PARAMETER_INVALID});
+    }
+    const auto counter = revision.substr(prefix.size());
+    if (!std::regex_match(counter, std::regex("0|[1-9][0-9]{0,15}"))) {
+        return Result<bool>(Error{"Invalid Calendar revision", PARAMETER_INVALID});
+    }
+    int64_t parsed = 0;
+    for (const char digit : counter) { parsed = parsed * 10 + (digit - '0'); }
+    if (parsed > 9007199254740990LL) {
+        return Result<bool>(Error{"Calendar revision out of range", PARAMETER_INVALID});
+    }
+    DataShare::DataShareValuesBucket values;
+    values.Put("__calendarMutationKind", std::string(event == nullptr ? "delete" : "update"));
+    values.Put("__calendarMutationId", id);
+    values.Put("__calendarMutationExpectedRevision", counter);
+    if (event != nullptr) {
+        if (event->type != Normal || !event->title.has_value() || event->title->empty() || event->title->size() > 20000 ||
+            !event->description.has_value() || event->description->size() > 20000 ||
+            event->startTime < 0 || event->endTime <= event->startTime || event->endTime > 8640000000000000LL ||
+            !event->reminderTime.has_value() || event->reminderTime->size() > 1) {
+            return Result<bool>(Error{"Invalid conditional Calendar edit fields", PARAMETER_INVALID});
+        }
+        std::string reminders;
+        if (!event->reminderTime->empty()) {
+            const int minutes = event->reminderTime->front();
+            if (minutes < 0 || minutes > 10080) {
+                return Result<bool>(Error{"Invalid Calendar reminder minutes", PARAMETER_INVALID});
+            }
+            reminders = std::to_string(minutes);
+        }
+        values.Put("title", *event->title);
+        values.Put("description", *event->description);
+        values.Put("dtstart", event->startTime);
+        values.Put("dtend", event->endTime);
+        values.Put("__calendarMutationReminders", reminders);
+    }
+    DataShare::DataSharePredicates predicates;
+    predicates.EqualTo("_id", id);
+    predicates.EqualTo("calendar_id", GetId());
+    predicates.EqualTo("calendarMutationRevision", parsed);
+    auto result = DataShareHelperManager::GetInstance().Update(*m_eventUri, predicates, values);
+    if (result.IsErr()) { return Result<bool>(result.GetError()); }
+    if (result.GetValue() != 0 && result.GetValue() != 1) {
+        return Result<bool>(Error{"Unexpected conditional Calendar mutation count", INTERNAL_ERROR});
+    }
+    return Result<bool>(result.GetValue() == 1);
+}
+
+Result<bool> Calendar::UpdateEventIfUnchanged(const std::string& revision, const Event& event)
+{
+    return ConditionalMutation(revision, event.id.value_or(-1), &event);
+}
+
+Result<bool> Calendar::DeleteEventIfUnchanged(const std::string& revision, int id)
+{
+    return ConditionalMutation(revision, id, nullptr);
 }
 
 int Calendar::UpdateEvents(const std::vector<Event>& events)

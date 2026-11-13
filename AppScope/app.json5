@@ -5,6 +5,6 @@
         "versionCode": 140005130,
         "versionName": "14.0.5.130",
         "icon": "$media:icon",
-        "label": "$string:app_name",
+        "label": "$string:app_name"
     }
 }

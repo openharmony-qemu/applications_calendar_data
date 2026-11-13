@@ -17,6 +17,7 @@
 #define CALENDAR_MANAGER_NAPI_H
 
 #include <vector>
+#include <mutex>
 
 #include "napi/native_api.h"
 #include "napi/native_common.h"
@@ -35,18 +36,37 @@
 
 #include <ui_content.h>
 #include "napi_base_context.h"
+namespace OHOS::AbilityRuntime { class AbilityContext; }
 namespace OHOS::CalendarApi {
 class CalendarManagerNapi {
 public:
+    struct EditorEnvironment {
+        std::mutex mutex;
+        napi_env env = nullptr;
+        bool alive = true;
+    };
     struct EditEventContext : public ContextBase {
+        std::mutex mutex;
         string event;
-        napi_value _jsContext;
         string caller;
         int32_t _sessionId = 0;
+        // Identity only: reacquire through the caller's live AbilityContext before closing.
         Ace::UIContent *_uiContent = nullptr;
-        napi_value id;
+        std::weak_ptr<AbilityRuntime::AbilityContext> hostContext;
+        std::shared_ptr<EditorEnvironment> environment;
+        napi_deferred deferred = nullptr;
+        void *cleanup = nullptr;
+        uint64_t generation = 0;
+        bool completionQueued = false;
+        bool cancelled = false;
+        bool settled = false;
+        bool closed = false;
     };
-    
+    struct EditorCleanup {
+        std::shared_ptr<EditorEnvironment> environment;
+        std::weak_ptr<EditEventContext> context;
+    };
+
     static napi_value New(napi_env env, napi_callback_info info);
     static napi_value CreateCalendar(napi_env env, napi_callback_info info);
     static napi_value DeleteCalendar(napi_env env, napi_callback_info info);
@@ -55,6 +75,12 @@ public:
     static napi_value EditEvent(napi_env env, napi_callback_info info);
     static napi_value Init(napi_env env, napi_value exports);
 private:
+    static void CleanupEditorEnvironment(void *data);
+    static void CloseEditorSession(const std::shared_ptr<EditEventContext> &ctxt);
+    static void QueueEditorResult(const std::shared_ptr<EditEventContext> &ctxt,
+        bool failed, int32_t code, const std::string &message, int32_t eventId, bool closeModal);
+    static void FinishEditor(const std::shared_ptr<EditEventContext> &ctxt, uint64_t generation,
+        bool failed, int32_t code, const std::string &message, int32_t eventId, bool closeModal);
     static napi_value LaunchEditorPage(napi_env env, std::shared_ptr<EditEventContext> ctxt);
 };
 

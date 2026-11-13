@@ -40,8 +40,23 @@ import { isEmptyStr } from '@ohos/common/src/main/ets/utils/TextUtils';
 import { parseEventByIndex } from '@ohos/datastructure';
 import { GlobalPackageName } from '@ohos/common';
 
+import { MUTATION_KIND, MUTATION_COLUMN, mutateEventConditionally } from './ConditionalEventMutation';
+import { notifyProviderChange, OPERATION_UPDATE, OPERATION_DELETE } from '../../commonevents/notify/ProviderChangeNotifier';
+import { AlertsObserverManager } from '../alerts/observer/AlertsObserverManager';
+
 const TAG: string = 'EventsProcessor';
 const CHANNEL_ID: string = 'channel_id';
+
+/** Copy every permitted value without allowing callers to write the CAS revision. */
+function filterMutableEventValues(value: data_rdb.ValuesBucket): data_rdb.ValuesBucket {
+  const filtered: data_rdb.ValuesBucket = filterValuesBucket(value, CHANNEL_ID);
+  const values: data_rdb.ValuesBucket = {};
+  for (const key of Object.keys(filtered)) {
+    if (key !== MUTATION_COLUMN) { values[key] = filtered[key]; }
+  }
+  return values;
+}
+
 
 /**
  * the Events table processor
@@ -51,7 +66,7 @@ const CHANNEL_ID: string = 'channel_id';
 export class EventsProcessor extends DefaultProcessor {
   async insertByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string,
                               value: data_rdb.ValuesBucket, callback: Function) {
-    let values = filterValuesBucket(value, CHANNEL_ID);
+    let values = filterMutableEventValues(value);
     if (!this.isFromMigrate) {
       const callerName = getBundleNameByUri(uri);
       initValueCreator(values, callerName);
@@ -74,7 +89,7 @@ export class EventsProcessor extends DefaultProcessor {
 
   async insertByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string,
                              value: data_rdb.ValuesBucket, callback: Function) {
-    let values = filterValuesBucket(value, CHANNEL_ID);
+    let values = filterMutableEventValues(value);
     if (!this.isFromMigrate) {
       const callerName = getBundleNameByUri(uri);
       initValueCreator(values, callerName);
@@ -125,18 +140,45 @@ export class EventsProcessor extends DefaultProcessor {
 
   async updateByHighAuthority(rdbStore: data_rdb.RdbStore, uri: string, value: data_rdb.ValuesBucket,
                               predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
-    let values = filterValuesBucket(value, CHANNEL_ID);
-    deleteValueCreator(values);
+    let values = filterMutableEventValues(value);
+    values = deleteValueCreator(values);
+    if (values[MUTATION_KIND] !== undefined) {
+      await this.conditionalMutation(rdbStore, values, predicates, callback);
+      return;
+    }
     this.updateEventWithInstance(rdbStore, uri, values, predicates, callback);
   }
 
   async updateByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, value: data_rdb.ValuesBucket,
                              predicates: dataSharePredicates.DataSharePredicates, callback: Function) {
-    let values = filterValuesBucket(value, CHANNEL_ID);
+    let values = filterMutableEventValues(value);
     const callerName = getBundleNameByUri(uri);
-    deleteValueCreator(values);
+    values = deleteValueCreator(values);
     initPredicateCreator(predicates, callerName);
+    if (values[MUTATION_KIND] !== undefined) {
+      await this.conditionalMutation(rdbStore, values, predicates, callback);
+      return;
+    }
     this.updateEventWithInstance(rdbStore, uri, values, predicates, callback);
+  }
+
+  private async conditionalMutation(rdbStore: data_rdb.RdbStore, values: data_rdb.ValuesBucket,
+    predicates: dataSharePredicates.DataSharePredicates, callback: Function): Promise<void> {
+    try {
+      const result = await mutateEventConditionally(rdbStore, values, predicates);
+      if (result.count === 1) {
+        if (result.operation === 'update') {
+          await updateInstances(rdbStore, [result.id]);
+        }
+        const operation = result.operation === 'delete' ? OPERATION_DELETE : OPERATION_UPDATE;
+        notifyProviderChange(EventColumns.TABLE_NAME, operation);
+        AlertsObserverManager.getInstance().notifyAlertsChanges(operation, EventColumns.TABLE_NAME);
+      }
+      callback(null, result.count);
+    } catch (error) {
+      // A real provider/transaction error is never a stale-revision result.
+      callback(error as BusinessError, -1);
+    }
   }
 
   async queryByLowAuthority(rdbStore: data_rdb.RdbStore, uri: string, columns: Array<string>,

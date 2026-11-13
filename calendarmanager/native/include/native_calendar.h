@@ -22,6 +22,11 @@
 #include "uri.h"
 using Uri = OHOS::Uri;
 namespace OHOS::CalendarApi::Native {
+struct EventSnapshot {
+    Event event;
+    std::string revision;
+};
+
 class Calendar final {
 public:
     Calendar(int id);
@@ -41,6 +46,9 @@ public:
     Result<int> DeleteEvents(const std::vector<int>& id);
     void DeleteAllEvents();
     Result<bool> UpdateEvent(const Event& event);
+    Result<EventSnapshot> GetEventSnapshot(int id);
+    Result<bool> UpdateEventIfUnchanged(const std::string& revision, const Event& event);
+    Result<bool> DeleteEventIfUnchanged(const std::string& revision, int id);
     int UpdateEvents(const std::vector<Event>& events);
     CalendarConfig GetConfig();
     Result<bool> SetConfig(const CalendarConfig& config);
@@ -66,6 +74,8 @@ public:
         return m_id;
     }
 private:
+    Result<std::string> ReadMutationRevision(int id);
+    Result<bool> ConditionalMutation(const std::string& revision, int id, const Event* event);
     CalendarAccount m_account = {"", "", std::nullopt};
     CalendarConfig m_config = {true, 0};
     int m_id = 0;

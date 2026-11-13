@@ -33,7 +33,7 @@ const TAG: string = `ReminderAgentHelper`;
 
 const SNOOZE_DELAY = 5 * 60;
 
-const CALENDAR_BUNDLE_NAME = 'com.ohos.calendar';
+const CALENDAR_BUNDLE_NAME = 'com.ohos.calendardata';
 
 const CALENDAR_ABILITY_NAME = 'MainAbility';
 

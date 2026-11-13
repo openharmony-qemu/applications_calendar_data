@@ -1,61 +1,72 @@
-/**
- * @file Describe the file
- * Copyright (c) 2023 Huawei Device Co., Ltd.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+/* Copyright (c) 2026 Harmony Contrib. SPDX-License-Identifier: Apache-2.0 */
 import UIAbility from '@ohos.app.ability.UIAbility';
-import { Log } from '@ohos/common/src/main/ets/utils/Log'
 import Want from '@ohos.app.ability.Want';
 import window from '@ohos.window';
-import { BusinessError } from '@ohos.base';
-
-const TAG = 'MainAbility';
+import util from '@ohos.util';
+import { CalendarObserverLifetime } from '../calendar/CalendarChangeSubscription';
 
 export default class MainAbility extends UIAbility {
-  onCreate(want: Want) {
-    Log.log(TAG, "MainAbility onCreate");
+  private storage: LocalStorage = new LocalStorage();
+  private revision: number = 0;
+  private visible: boolean = false;
+  private instance: string = util.generateRandomUUID();
+  private observerLifetime: CalendarObserverLifetime = new CalendarObserverLifetime();
+
+  private observe(event: string, uri: string = ''): void {
+    console.info('CALENDAR579 ' + JSON.stringify({ event: event, instance: this.instance,
+      revision: this.revision, timestamp: Date.now(), uri: uri }));
   }
 
-  onDestroy() {
-    Log.log(TAG, "MainAbility onDestroy");
+  onCreate(want: Want): void {
+    this.storage.setOrCreate<string>('calendarInstance', this.instance);
+    this.storage.setOrCreate<CalendarObserverLifetime>('calendarObserverLifetime', this.observerLifetime);
+    this.observe('onCreate', want.uri ?? '');
+    this.storage.setOrCreate<boolean>('calendarForeground', false);
+    this.storage.setOrCreate<string>('calendarRoute', want.uri ?? '');
+    this.storage.setOrCreate<number>('calendarRevision', ++this.revision);
   }
 
-  onWindowStageCreate(windowStage: window.WindowStage) {
-    // Main window is created, set main page for this ability
-    Log.log(TAG, "MainAbility onWindowStageCreate");
-
-    windowStage.loadContent("pages/index", (err: BusinessError, data) => {
-      if (err.code) {
-        Log.error(TAG, 'Failed to load content. Cause: ' + JSON.stringify(err) ?? '');
-        return;
-      }
-      Log.info(TAG, 'Success in loading the content. Data: ' + JSON.stringify(data) ?? '');
-    });
+  onNewWant(want: Want): void {
+    this.observe('onNewWant', want.uri ?? '');
+    this.storage.setOrCreate<string>('calendarRoute', want.uri ?? '');
+    this.storage.setOrCreate<number>('calendarRevision', ++this.revision);
   }
 
-  onWindowStageDestroy() {
-    // Main window is destroyed, release UI related resources
-    Log.log(TAG, "MainAbility onWindowStageDestroy");
+  onWindowStageCreate(windowStage: window.WindowStage): void {
+    this.observe('onWindowStageCreate');
+    this.storage.setOrCreate<boolean>('calendarForeground', this.visible);
+    this.storage.setOrCreate<number>('calendarRevision', ++this.revision);
+    windowStage.loadContent('pages/index', this.storage);
   }
 
-  onForeground() {
-    // Ability has brought to foreground
-    Log.log(TAG, "MainAbility onForeground");
+  onForeground(): void {
+    this.observe('onForeground');
+    this.visible = true;
+    this.storage.setOrCreate<boolean>('calendarForeground', true);
+    this.storage.setOrCreate<number>('calendarRevision', ++this.revision);
   }
 
-  onBackground() {
-    // Ability has back to background
-    Log.log(TAG, "MainAbility onBackground");
+  onBackground(): void {
+    this.observe('onBackground');
+    this.observerLifetime.stop();
+    this.visible = false;
+    this.storage.setOrCreate<boolean>('calendarForeground', false);
+    this.storage.setOrCreate<number>('calendarRevision', ++this.revision);
   }
-};
+
+  onWindowStageDestroy(): void {
+    this.observe('onWindowStageDestroy');
+    this.observerLifetime.stop();
+    this.storage.setOrCreate<boolean>('calendarForeground', false);
+    this.storage.setOrCreate<number>('calendarRevision', ++this.revision);
+  }
+
+  onDestroy(): void {
+    this.observe('onDestroy');
+    this.observerLifetime.stop();
+    this.visible = false;
+    this.storage.setOrCreate<boolean>('calendarForeground', false);
+    this.storage.setOrCreate<string>('calendarRoute', '');
+    this.storage.setOrCreate<number>('calendarRevision', ++this.revision);
+  }
+}
